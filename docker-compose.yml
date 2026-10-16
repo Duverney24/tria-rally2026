@@ -8,4 +8,6 @@ services:
     environment:
       # Deje TRIA_CLAVE vacía en la red cerrada del PMU; póngala si el equipo queda expuesto
       TRIA_CLAVE: ${TRIA_CLAVE:-}
+      # Clave gratuita de mapas CARTO (opcional; sin ella se usan los de Esri)
+      TRIA_CARTO_KEY: ${TRIA_CARTO_KEY:-}
     restart: unless-stopped

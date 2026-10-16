@@ -66,7 +66,11 @@ La primera vez aparece una guía con estos pasos y un botón **Ver una demostrac
 
 **Capas del mapa** (botón arriba a la derecha):
 
-- *Bases:* Oscuro y Claro (CARTO) cambian solas con el tema; también hay OSM oscurecido, Satélite, Calles y Relieve. Si elige una base a mano, se recuerda.
+- *Bases:* Oscuro y Claro cambian solas con el tema; también hay OSM oscurecido, Satélite, Calles y Relieve. Si elige una base a mano, se recuerda.
+- *Clave de mapas CARTO (opcional):* desde septiembre de 2026 CARTO pide una clave gratuita (se solicita en https://carto.com/basemaps/apikey, llega por correo, sin cuenta; gratis hasta 5 millones de teselas al mes para uso no comercial). Sin clave, Oscuro y Claro usan los mapas gris de Esri, que no la piden, y nunca aparece la marca "API KEY REQUIRED". Con clave se usan los de CARTO. La clave se pone de cualquiera de estas formas:
+  - **Para todos:** variable `TRIA_CARTO_KEY` en Render (*Environment*) o en Docker; la API la entrega al prototipo.
+  - **Solo en este navegador:** menú **Más → Clave de mapas CARTO**.
+  - **En un enlace:** `?cartokey=SU_CLAVE`.
 - *Nivel de amenaza del fenómeno:* cuando llega el mapa del fenómeno activo (intensidad del SGC en el sismo; alerta hidrológica, lluvia acumulada o ráfagas del IDEAM en los demás), un círculo por zona con su nivel (amarillo, naranja, rojo de menor a mayor).
 - *Cupo de hospitales:* el círculo punteado crece con las camas libres y cambia de color con la ocupación (verde, ámbar, rojo; gris sin energía).
 - **◎ Mi ubicación** (bajo el zoom) centra el mapa donde está el equipo; necesita permiso del navegador y conexión segura (https).

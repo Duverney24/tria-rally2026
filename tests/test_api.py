@@ -50,3 +50,9 @@ def test_cors(cliente, origen, permitido):
     r = cliente.options("/reportes", headers={"Origin": origen, "Access-Control-Request-Method": "POST",
                                              "Access-Control-Request-Headers": "content-type,x-tria-clave"})
     assert (r.headers.get("access-control-allow-origin") == origen) is permitido
+
+
+def test_config_entrega_la_clave_de_carto(cliente, monkeypatch):
+    assert cliente.get("/config").json() == {"carto_key": ""}
+    monkeypatch.setenv("TRIA_CARTO_KEY", "clave-de-prueba-123")
+    assert cliente.get("/config").json()["carto_key"] == "clave-de-prueba-123"

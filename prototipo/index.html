@@ -1356,6 +1356,8 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
             <hr>
             <button role="menuitemcheckbox" id="btnNarra" aria-pressed="false"><b>Narrar eventos</b><span>Subtítulos sobre el mapa</span></button>
             <button role="menuitemcheckbox" id="btnEdit" aria-pressed="false"><b>Ajustar ubicaciones</b><span>Arrastrar zonas en el mapa</span></button>
+            <hr>
+            <button role="menuitem" id="btnCarto"><b>Clave de mapas CARTO</b><span id="cartoEstado">Opcional: mapas base de CARTO</span></button>
           </div></div></div></div>
       <div class="mapwrap" id="mapwrap">
         <div id="map" role="region" aria-label="Mapa de Pitalito con zonas, vías, hospitales y equipos"></div>
@@ -1793,19 +1795,36 @@ const URB=new Set(["CEN","CAS","CED","C1","C2","C4"]);
 const ll=id=>[NODES[id].lat,NODES[id].lng];
 
 let MAP=null,LY={},TM={},EDIT=false,edgesKey="",BASE=null,CAPAS=null,BASE_AUTO=false,mmiKey="",hcapKey="";
-const baseDelTema=()=>document.documentElement.dataset.theme==="light"?"Claro (CARTO)":"Oscuro (CARTO)";
+const baseDelTema=()=>document.documentElement.dataset.theme==="light"?"Claro":"Oscuro";
+const esBaseTema=n=>/^(Oscuro|Claro)( \(CARTO\))?$/.test(n||"");
+// ---------- Clave de mapas CARTO ----------
+// CARTO exige una clave gratuita (carto.com/basemaps/apikey) desde septiembre de 2026; sin ella, sus teselas salen con
+// la marca "API KEY REQUIRED". Sin clave, las bases Oscuro y Claro usan los lienzos gris de Esri, que no la piden.
+// La clave se toma, en este orden, de: ?cartokey=… (se recuerda), lo guardado en este navegador (menú Más),
+// la constante CARTO_FIJA y la ruta /config de la API (variable TRIA_CARTO_KEY en Render o Docker).
+const CARTO_FIJA="";
+let CARTO_SERVIDOR="";
+const claveValida=k=>/^[A-Za-z0-9_\-]{8,200}$/.test(k||"");
+try{const q=new URLSearchParams(location.search).get("cartokey");if(q!==null){if(claveValida(q))localStorage.setItem("tria-carto",q);else if(!q)localStorage.removeItem("tria-carto")}}catch(e){}
+function claveCarto(){let k="";try{k=localStorage.getItem("tria-carto")||""}catch(e){}return [k,CARTO_FIJA,CARTO_SERVIDOR].find(claveValida)||""}
+function capasBase(tema){const k=claveCarto();
+  if(k)return [L.tileLayer(`https://basemaps.cartocdn.com/rastertiles/${tema==="claro"?"light_all":"dark_all"}/{z}/{x}/{y}.png?key=${encodeURIComponent(k)}`,
+    {maxZoom:20,attribution:"© OpenStreetMap · © CARTO"})];
+  const g=tema==="claro"?"Light":"Dark",u=n=>`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${g}_Gray_${n}/MapServer/tile/{z}/{y}/{x}`;
+  return [L.tileLayer(u("Base"),{maxZoom:20,maxNativeZoom:16,attribution:"Mapa base © Esri, HERE, Garmin, © OpenStreetMap"}),L.tileLayer(u("Reference"),{maxZoom:20,maxNativeZoom:16})]}
+// Rehace las bases Oscuro y Claro (al cambiar o recibir la clave) sin tocar la que esté elegida
+function refrescarBases(){if(!BASE)return;for(const [n,t] of [["Oscuro","oscuro"],["Claro","claro"]]){BASE[n].clearLayers();capasBase(t).forEach(l=>BASE[n].addLayer(l))}}
 // Cambia la base al cambiar el tema, salvo que el usuario haya elegido otra a mano
 function baseSegunTema(){if(!MAP||!BASE)return;let elegida=null;try{elegida=localStorage.getItem("tria-base")}catch(e){}
-  if(elegida&&!/CARTO/.test(elegida))return;const quiero=BASE[baseDelTema()];if(MAP.hasLayer(quiero))return;
+  if(elegida&&!esBaseTema(elegida))return;const quiero=BASE[baseDelTema()];if(MAP.hasLayer(quiero))return;
   BASE_AUTO=true;for(const l of Object.values(BASE))if(MAP.hasLayer(l))MAP.removeLayer(l);quiero.addTo(MAP);BASE_AUTO=false;
   try{localStorage.removeItem("tria-base")}catch(e){}}
 function initMap(){
   MAP=L.map("map",{zoomControl:true,zoomSnap:.5,minZoom:8,maxZoom:18});
   const base={
-    // Ninguna de estas capas requiere clave (API key).
-    // CARTO (sin clave, con atribución): base por defecto, cambia sola con el tema claro u oscuro
-    "Oscuro (CARTO)":L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap · © CARTO"}),
-    "Claro (CARTO)":L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap · © CARTO"}),
+    // Oscuro y Claro siguen al tema: CARTO si hay clave, lienzo gris de Esri si no (ver capasBase)
+    "Oscuro":L.layerGroup(capasBase("oscuro")),
+    "Claro":L.layerGroup(capasBase("claro")),
     "OSM oscurecido":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:"tiles-dark",attribution:"© OpenStreetMap"}),
     "Satélite":L.layerGroup([
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imágenes © Esri, Maxar, Earthstar Geographics"}),
@@ -1816,7 +1835,7 @@ function initMap(){
   };
   BASE=base;
   {let elegida=null;try{elegida=localStorage.getItem("tria-base")}catch(e){}
-   (base[elegida]||base[baseDelTema()]).addTo(MAP)}
+   (esBaseTema(elegida)?base[baseDelTema()]:(base[elegida]||base[baseDelTema()])).addTo(MAP)}
   // Si el usuario elige una base a mano, se recuerda y deja de seguir al tema
   MAP.on("baselayerchange",e=>{if(BASE_AUTO)return;try{localStorage.setItem("tria-base",e.name)}catch(err){}});
   LY.areas=L.layerGroup().addTo(MAP);LY.edges=L.layerGroup().addTo(MAP);LY.routes=L.layerGroup().addTo(MAP);
@@ -2248,6 +2267,17 @@ $("btnCsv").onclick=()=>{const c=v=>`"${String(v).replace(/"/g,'""')}"`;
     e.preventDefault();e.stopPropagation();const n=tabs[(j+tabs.length)%tabs.length];n.focus();n.click()});
   tabs.forEach(t=>{const id="tab-"+t.dataset.tab;t.setAttribute("aria-controls",id);t.id=t.id||"tb-"+t.dataset.tab;
     const pnl=$(id);if(pnl){pnl.setAttribute("role","tabpanel");pnl.setAttribute("aria-labelledby",t.id)}})}
+// ---------- Clave CARTO: menú y servidor ----------
+function estadoCarto(){const k=claveCarto();$("cartoEstado").textContent=k?"Activa: mapas base de CARTO":"Sin clave: mapas base de Esri"}
+$("btnCarto").onclick=()=>{let actual="";try{actual=localStorage.getItem("tria-carto")||""}catch(e){}
+  const k=prompt("Pegue su clave gratuita de CARTO (se pide en carto.com/basemaps/apikey). Se guarda solo en este navegador.\nDéjela vacía para volver a los mapas de Esri, que no piden clave.",actual);
+  if(k===null)return;const v=k.trim();
+  if(v&&!claveValida(v)){aviso({t:S.t,kind:"alerta",text:"Esa clave no parece válida (solo letras, números, - y _)."});return}
+  try{v?localStorage.setItem("tria-carto",v):localStorage.removeItem("tria-carto")}catch(e){}
+  refrescarBases();estadoCarto();aviso({t:S.t,kind:"ok",text:v?"Clave de CARTO guardada: mapas base de CARTO.":"Sin clave: mapas base de Esri."})};
+estadoCarto();
+// La API puede entregar la clave del equipo (TRIA_CARTO_KEY) para que todos vean CARTO sin configurar nada
+api("config").then(c=>{if(c&&claveValida(c.carto_key)){CARTO_SERVIDOR=c.carto_key;refrescarBases();estadoCarto()}}).catch(()=>{});
 // ---------- Menú Más ----------
 {const b=$("btnMas"),m=$("menuMas");
   const abrir=v=>{m.hidden=!v;b.setAttribute("aria-expanded",String(v));if(v)m.querySelector("button")?.focus()};
