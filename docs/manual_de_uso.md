@@ -7,6 +7,14 @@ El prototipo simula la consola del **Puesto de Mando Unificado (PMU)** de Pitali
 
 ---
 
+## Empezar en 30 segundos
+
+1. Elija un **escenario** arriba.
+2. Pulse **▶** en la barra de mando (siempre visible arriba) o arrastre la línea de tiempo.
+3. Lea las **prioridades**: la zona 1 es la más urgente y dice qué equipo va y cuándo llega; tóquela para ver por qué.
+
+La primera vez aparece una guía con estos pasos y un botón **Ver una demostración**. El botón **?** (o la tecla `?`) abre la ayuda en cualquier momento. Las opciones secundarias (compartir, informe, CSV, narración, ajustar ubicaciones) están en el menú **Más** sobre el mapa.
+
 ## 1. Partes de la pantalla
 
 | Zona de la pantalla | Qué muestra |

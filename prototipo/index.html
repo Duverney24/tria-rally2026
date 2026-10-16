@@ -90,7 +90,6 @@ svg#map{width:100%;height:auto;display:block}
 .team{transition-property:transform;transition-timing-function:linear}
 
 /* Controles de reproducción */
-.transport{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:12px 16px;border-top:1px solid var(--line)}
 .play{width:40px;height:40px;padding:0;border-radius:50%;background:var(--accent);color:var(--accent-ink);border-color:var(--accent);display:grid;place-items:center}
 .play svg{width:16px;height:16px;fill:currentColor}
 .timeline{flex:1 1 220px;min-width:180px;position:relative;height:30px}
@@ -104,7 +103,6 @@ svg#map{width:100%;height:auto;display:block}
 .seg button{border:0;border-radius:0;background:var(--surface2);padding:7px 10px;color:var(--muted)}
 .seg button+button{border-left:1px solid var(--line2)}
 .seg button[aria-pressed="true"]{background:var(--surface3);color:var(--ink)}
-.hint{margin:0;padding:0 16px 12px;font-size:12px;color:var(--faint)}
 
 /* Panel lateral con pestañas */
 .side{display:flex;flex-direction:column;position:sticky;top:12px;max-height:calc(100vh - 24px)}
@@ -1164,6 +1162,66 @@ button:active{transform:translateY(1px) scale(.98)}
   .informe .est{font-weight:600}
   .informe .pie{margin-top:14pt;color:#555;font-size:8.5pt}
 }
+/* Barra de mando: lo esencial siempre a la vista */
+.mando{position:sticky;top:8px;z-index:1500;display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;margin-top:12px;padding:8px 12px;border:1px solid var(--line2);border-radius:12px;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(12px) saturate(1.2);backdrop-filter:blur(12px) saturate(1.2);box-shadow:0 12px 30px -16px rgba(0,0,0,.7)}
+.mando .timeline{flex:1 1 260px}
+.mclock{display:grid;line-height:1.05;min-width:58px}
+.mclock b{font-family:var(--mono);font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+.mclock span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.mando .seg button{padding:7px 9px;font-family:var(--mono);font-size:12px}
+.ayuda{width:34px;height:34px;padding:0;border-radius:50%;font-weight:700;font-size:15px}
+.play.invita{animation:invita 1.8s ease-out infinite}
+@keyframes invita{0%{box-shadow:0 0 0 0 var(--glow-accent),0 8px 22px -6px var(--glow-accent)}70%,100%{box-shadow:0 0 0 14px transparent,0 8px 22px -6px var(--glow-accent)}}
+@media (min-width:1151px){.side{top:84px;max-height:calc(100vh - 96px)}}
+.kpis{margin-top:0}
+.layout{margin-top:12px}
+/* Menú Más */
+.mas{position:relative}
+#btnMas{display:inline-flex;align-items:center;gap:6px}
+#btnMas svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;transition:transform .2s}
+#btnMas[aria-expanded="true"] svg{transform:rotate(180deg)}
+.menu{position:absolute;right:0;top:calc(100% + 6px);z-index:1600;min-width:250px;display:grid;padding:6px;border-radius:10px;border:1px solid var(--line2);
+  background:color-mix(in srgb,var(--surface) 96%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 18px 40px -14px rgba(0,0,0,.75);animation:panelIn .2s var(--ease-out)}
+.menu button{display:grid;gap:1px;text-align:left;border:0;background:none;padding:8px 10px;border-radius:7px;box-shadow:none}
+.menu button:hover,.menu button:focus-visible{background:var(--surface2);box-shadow:none}
+.menu button b{font-weight:600;font-size:13px}
+.menu button span{font-size:11.5px;color:var(--muted)}
+.menu button[aria-pressed="true"] b::after{content:" ✓";color:var(--accent)}
+.maptools .menu button[aria-pressed="true"]{background:none;color:var(--ink);box-shadow:none}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
+/* Leyenda plegable */
+details.legend summary{cursor:pointer;font-weight:600;color:var(--muted);list-style:none;display:inline}
+details.legend summary::before{content:"▸ ";display:inline-block;transition:transform .2s}
+details.legend[open] summary::before{transform:rotate(90deg)}
+details.legend[open] summary{margin-right:8px}
+/* Ayuda y guía */
+.ayudad{width:min(600px,calc(100vw - 32px))}
+.ayudad h3{font-size:14px;margin:14px 0 4px}
+.ayudad p,.ayudad li{font-size:13px;color:var(--muted)} .ayudad b{color:var(--ink)}
+.pasos{margin:6px 0 0;padding-left:20px;display:grid;gap:6px}
+.guia{position:fixed;z-index:3000;left:0;right:0;margin:0 auto;top:96px;width:min(420px,calc(100vw - 24px));padding:14px 16px;border-radius:12px;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface) 70%);border:1px solid color-mix(in srgb,var(--accent) 50%,var(--line2));
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.85),0 0 0 1px color-mix(in srgb,var(--accent) 20%,transparent);animation:pageIn .5s var(--ease-out) both}
+.guia b#guiaTit{font-family:var(--display);font-size:17px}
+.guia ol{margin:8px 0 12px;padding-left:20px;display:grid;gap:4px;font-size:13px;color:var(--muted)} .guia ol b{color:var(--ink)}
+.guia-acc{display:flex;gap:8px;flex-wrap:wrap} .guia .pri,.ayudad .pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+/* Celular: encabezado compacto, mapa más alto, controles arriba */
+@media (max-width:640px){
+  .appbar{gap:8px 10px;padding:8px 12px}
+  .appbar .ctx,.appbar .status,.appbar .clockbox,.brand span{display:none}
+  .brand b{font-size:20px} .brand svg{width:30px;height:30px}
+  .appbar label{flex:1 1 100%;order:5} .appbar label .eyebrow{display:none!important}
+  .appbar select{width:100%}
+  .mando{top:6px;gap:8px;padding:8px}
+  .mando .timeline{order:9;flex:1 1 100%}
+  .mando .seg{display:none}
+  #map{height:62vh}
+  .cardhead{padding:10px 12px}
+  .cardhead h2{font-size:15px} .cardhead #recalcInfo{display:none}
+}
+/* Mapa más limpio al alejarse: sin rótulos secundarios */
+#map.z-lo .nsub{display:none}
 /* Pestaña En vivo */
 .livedot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;vertical-align:1px;background:var(--faint)}
 .livedot.ok{background:var(--verde);box-shadow:0 0 8px var(--verde);animation:pulseRingV 2.2s var(--ease-out) infinite}
@@ -1232,6 +1290,26 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
   <button data-ir="live"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/></svg>En vivo</button>
 </nav>
 <section id="informe" class="informe" aria-hidden="true"></section>
+<dialog id="ayuda" class="resumen ayudad" aria-labelledby="ayTit">
+  <span class="eyebrow">Ayuda</span><h2 id="ayTit">Cómo usar TRIA</h2>
+  <ol class="pasos">
+    <li><b>Elija un escenario</b> arriba (sismo, avenida torrencial, alud, inundación, tormenta).</li>
+    <li><b>Pulse ▶</b> para que pase el tiempo, o arrastre la línea de tiempo a cualquier minuto.</li>
+    <li><b>Lea las prioridades</b> a la derecha (abajo en el celular): la zona 1 es la más urgente y dice qué equipo va y cuándo llega. Toque una zona para ver por qué.</li>
+  </ol>
+  <h3>En el mapa</h3>
+  <p>Los círculos de color son zonas con reporte (rojo, amarillo, verde); los punteados violeta, zonas sin contacto con su probabilidad de afectación. Los cuadrados numerados son los equipos. <b>Toque una vía</b> para marcarla como caída: TRIA recalcula rutas al instante. En <b>Capas del mapa</b> cambia la base (oscura, clara, satélite) y activa el nivel de amenaza o el cupo de hospitales. ◎ centra el mapa en su ubicación.</p>
+  <h3>Atajos</h3>
+  <p><kbd>Espacio</kbd> reproduce o pausa · <kbd>→</kbd> avanza 15 min · <kbd>R</kbd> reinicia · <kbd>?</kbd> esta ayuda</p>
+  <h3>Más opciones</h3>
+  <p>En <b>Más</b>, sobre el mapa: compartir un enlace, informe en PDF, bitácora en CSV, narración y ajuste de ubicaciones. La pestaña <b>En vivo</b> muestra el motor real con los reportes de las balizas.</p>
+  <div class="res-acc"><button id="ayCerrar" class="pri">Entendido</button></div>
+</dialog>
+<div class="guia" id="guia" role="dialog" aria-labelledby="guiaTit" hidden>
+  <b id="guiaTit">Empiece aquí</b>
+  <ol><li>Elija un <b>escenario</b> arriba.</li><li>Pulse <b>▶</b> y mire cómo cambian las prioridades.</li><li>Toque una <b>zona</b> para saber por qué va primero.</li></ol>
+  <div class="guia-acc"><button id="guiaVer" class="pri">Ver una demostración</button><button id="guiaOk">Entendido</button></div>
+</div>
 <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
 <!-- Leaflet 1.9.4 local (BSD-2): el mapa carga sin internet -->
 <script src="vendor/leaflet/leaflet.js"></script>
@@ -1253,15 +1331,35 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
   <div class="clockbox"><span class="eyebrow">Hora del evento</span><b id="clock">02:10</b><span id="tplus">T+0 min</span></div>
 </header>
 
+<section class="mando" id="mando" aria-label="Controles de la simulación">
+  <button id="btnPlay" class="play invita" aria-label="Reproducir"><svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg></button>
+  <div class="mclock"><b id="mClock">02:10</b><span id="mTplus">T+0</span></div>
+  <div class="timeline" id="timeline" role="slider" tabindex="0" aria-label="Línea de tiempo del evento: arrastre o use las flechas para ir a otro minuto" aria-valuemin="0" aria-valuemax="240" aria-valuenow="0"></div>
+  <button id="btnStep" title="Avanzar 15 minutos">+15 min</button>
+  <div class="seg" role="group" aria-label="Velocidad">
+    <button data-ms="1100" title="Lenta">1×</button><button data-ms="600" aria-pressed="true" title="Normal">2×</button><button data-ms="220" title="Rápida">5×</button>
+  </div>
+  <button id="btnReset" title="Volver al inicio del escenario (R)">Reiniciar</button>
+  <button id="btnAyuda" class="ayuda" aria-label="Ayuda" title="Cómo usar TRIA">?</button>
+</section>
+
 <main class="layout" id="layout">
   <div style="min-width:0">
     <section class="kpis" id="kpis" aria-label="Indicadores"></section>
     <section class="card mapcard">
       <div class="cardhead"><div><h2>Mapa operativo</h2><span id="recalcInfo">Recalcula cada 15 min</span></div>
-        <div class="maptools"><button id="btnPanel" aria-pressed="false" title="Ocultar o mostrar el panel lateral"><svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg><span>Ocultar panel</span></button><button id="btnCentrar">Centrar</button><button id="btnFull">Pantalla completa</button><button id="btnCompartir" title="Copia un enlace que abre este escenario, minuto y zona">Compartir</button><button id="btnInforme" title="Informe para imprimir o guardar como PDF">Informe</button><button id="btnCsv" title="Descarga la bitácora en CSV (Excel)">Bitácora CSV</button><button id="btnNarra" aria-pressed="false">Narrar</button><button id="btnEdit" aria-pressed="false">Ajustar ubicaciones</button></div></div>
+        <div class="maptools"><button id="btnPanel" aria-pressed="false" title="Ocultar o mostrar el panel lateral"><svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg><span>Ocultar panel</span></button><button id="btnCentrar">Centrar</button><button id="btnFull">Pantalla completa</button><div class="mas"><button id="btnMas" aria-haspopup="menu" aria-expanded="false" aria-controls="menuMas">Más <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+          <div class="menu" id="menuMas" role="menu" hidden>
+            <button role="menuitem" id="btnCompartir"><b>Compartir</b><span>Enlace a este escenario, minuto y zona</span></button>
+            <button role="menuitem" id="btnInforme"><b>Informe</b><span>Imprimir o guardar como PDF</span></button>
+            <button role="menuitem" id="btnCsv"><b>Bitácora CSV</b><span>Para abrir en Excel</span></button>
+            <hr>
+            <button role="menuitemcheckbox" id="btnNarra" aria-pressed="false"><b>Narrar eventos</b><span>Subtítulos sobre el mapa</span></button>
+            <button role="menuitemcheckbox" id="btnEdit" aria-pressed="false"><b>Ajustar ubicaciones</b><span>Arrastrar zonas en el mapa</span></button>
+          </div></div></div></div>
       <div class="mapwrap" id="mapwrap">
         <div id="map" role="region" aria-label="Mapa de Pitalito con zonas, vías, hospitales y equipos"></div>
-        <div class="legend">
+        <details class="legend" id="leyenda" open><summary>Leyenda</summary>
           <span><i style="background:var(--rojo)"></i>Roja</span>
           <span><i style="background:var(--ambar)"></i>Amarilla</span>
           <span><i style="background:var(--verde)"></i>Verde</span>
@@ -1271,23 +1369,13 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
           <span><i style="border-radius:2px;background:var(--verde)"></i>Atención y traslado</span>
           <span><i style="border-radius:2px;background:var(--silencio)"></i>Reconocimiento</span>
           <span>Círculo violeta: área probable de afectación</span>
-        </div>
+        </details>
       </div>
       <div id="geoEdit" class="geoedit" hidden>
         <p>Arrastre cada zona, hospital o cruce a su ubicación real. Los cambios se guardan en este navegador. Para dejarlos fijos para todos, copie este bloque y péguelo en <code>GEO_FIJO</code> dentro de <code>prototipo/index.html</code>.</p>
         <textarea id="geoOut" rows="6" readonly></textarea>
         <div class="maptools"><button id="btnGeoCopy">Copiar coordenadas</button><button id="btnGeoReset">Restablecer</button><span id="geoMsg"></span></div>
       </div>
-      <div class="transport">
-        <button id="btnPlay" class="play" aria-label="Reproducir"><svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg></button>
-        <button id="btnStep">+15 min</button>
-        <div class="timeline" id="timeline" role="slider" tabindex="0" aria-label="Línea de tiempo del evento: arrastre o use las flechas para ir a otro minuto" aria-valuemin="0" aria-valuemax="240" aria-valuenow="0"></div>
-        <div class="seg" role="group" aria-label="Velocidad">
-          <button data-ms="1100">Lenta</button><button data-ms="600" aria-pressed="true">Normal</button><button data-ms="220">Rápida</button>
-        </div>
-        <button id="btnReset">Reiniciar</button>
-      </div>
-      <p class="hint">Acerque o aleje con la rueda del mouse o con los dedos; cambie entre mapa oscuro o claro, satélite, calles y relieve, y active el nivel de amenaza o el cupo de hospitales en "Capas del mapa"; ◎ centra el mapa en su ubicación. Toque una vía para marcarla como caída o habilitada; TRIA recalcula rutas y asignaciones al instante. Atajos: <kbd>Espacio</kbd> reproduce o pausa, <kbd>→</kbd> avanza 15 min, <kbd>R</kbd> reinicia.</p>
     </section>
   </div>
 
@@ -1968,7 +2056,7 @@ function contar(nodo,de,a){if(!nodo||matchMedia("(prefers-reduced-motion:reduce)
 function render(){
   $("scenTag").textContent=SC().tag;
   $("scen").value=S.scen;
-  $("clock").textContent=hhmm(S.t);$("tplus").textContent=`T+${S.t} min`;
+  $("clock").textContent=hhmm(S.t);$("mClock").textContent=hhmm(S.t);$("mTplus").textContent="T+"+S.t;$("tplus").textContent=`T+${S.t} min`;
   $("recalcInfo").textContent=`Último cálculo ${hhmm(S.lastRecalc)} · próximo ${hhmm(S.lastRecalc+15)}`;
   const zs=Object.values(S.zones);
   const sil=zs.filter(z=>z.silent).length;
@@ -2160,8 +2248,31 @@ $("btnCsv").onclick=()=>{const c=v=>`"${String(v).replace(/"/g,'""')}"`;
     e.preventDefault();e.stopPropagation();const n=tabs[(j+tabs.length)%tabs.length];n.focus();n.click()});
   tabs.forEach(t=>{const id="tab-"+t.dataset.tab;t.setAttribute("aria-controls",id);t.id=t.id||"tb-"+t.dataset.tab;
     const pnl=$(id);if(pnl){pnl.setAttribute("role","tabpanel");pnl.setAttribute("aria-labelledby",t.id)}})}
+// ---------- Menú Más ----------
+{const b=$("btnMas"),m=$("menuMas");
+  const abrir=v=>{m.hidden=!v;b.setAttribute("aria-expanded",String(v));if(v)m.querySelector("button")?.focus()};
+  b.onclick=e=>{e.stopPropagation();abrir(m.hidden)};
+  m.addEventListener("click",()=>setTimeout(()=>abrir(false)));
+  document.addEventListener("click",e=>{if(!m.hidden&&!e.target.closest(".mas"))abrir(false)});
+  m.addEventListener("keydown",e=>{const it=[...m.querySelectorAll("button")],i=it.indexOf(document.activeElement);
+    if(e.key==="Escape"){e.preventDefault();abrir(false);b.focus()}
+    else if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();e.stopPropagation();it[(i+(e.key==="ArrowDown"?1:-1)+it.length)%it.length].focus()}})}
+// ---------- Ayuda y guía de primera vez ----------
+$("btnAyuda").onclick=()=>{const d=$("ayuda");if(d.showModal&&!d.open)d.showModal()};
+$("ayCerrar").onclick=()=>$("ayuda").close();
+function cerrarGuia(){$("guia").hidden=true;try{localStorage.setItem("tria-guia","1")}catch(e){}}
+function mostrarGuia(){let visto=false;try{visto=localStorage.getItem("tria-guia")==="1"}catch(e){}
+  if(!visto&&!new URLSearchParams(location.search).has("escenario"))$("guia").hidden=false}
+$("guiaOk").onclick=cerrarGuia;
+$("guiaVer").onclick=()=>{cerrarGuia();if(!playing)$("btnPlay").click()};
+// El botón ▶ deja de llamar la atención cuando se usa por primera vez
+$("btnPlay").addEventListener("click",()=>$("btnPlay").classList.remove("invita"));
+$("btnStep").addEventListener("click",()=>$("btnPlay").classList.remove("invita"));
+// En el celular la leyenda empieza plegada
+if(matchMedia("(max-width:640px)").matches)$("leyenda").open=false;
 // Atajos para presentar la demo; no actúan mientras se escribe, en el mapa enfocado ni con la pantalla de arranque
-addEventListener("keydown",e=>{if(e.ctrlKey||e.metaKey||e.altKey||!$("boot").hidden||$("resumen").open)return;
+addEventListener("keydown",e=>{if(e.ctrlKey||e.metaKey||e.altKey||!$("boot").hidden||document.querySelector("dialog[open]"))return;
+  if(e.key==="?"&&!e.target.closest?.("input,select,textarea")){e.preventDefault();$("btnAyuda").click();return}
   if(e.target.closest?.("input,select,textarea,.leaflet-container"))return;
   if(e.key===" "&&e.target.closest?.("button,[tabindex]"))return; // Espacio sobre un botón o zona enfocada lo activa a él
   if(e.key===" "){e.preventDefault();$("btnPlay").click()}else if(e.key==="ArrowRight")$("btnStep").click();else if(e.key==="r"||e.key==="R")$("btnReset").click()});
@@ -2192,11 +2303,11 @@ init();
 // Pantalla de arranque: solo la primera vez en la sesión y nunca con movimiento reducido
 (function boot(){
   let visto=false;try{visto=sessionStorage.getItem("tria-boot")==="1";sessionStorage.setItem("tria-boot","1")}catch(e){}
-  if(visto||matchMedia("(prefers-reduced-motion:reduce)").matches){sacudir();return}
+  if(visto||matchMedia("(prefers-reduced-motion:reduce)").matches){sacudir();mostrarGuia();return}
   const el=$("boot"),ol=$("bootLines"),bar=$("bootBar");el.hidden=false;
   const pasos=["Enlace satelital del PMU","Escuchando balizas LoRa","Amenaza SGC · censo DANE","Prioridades (AHP + Bayes)"];
   let i=0,tm=null;
-  const fin=()=>{if(el.classList.contains("out"))return;clearTimeout(tm);el.classList.add("out");removeEventListener("keydown",fin);setTimeout(()=>el.hidden=true,500);sacudir()};
+  const fin=()=>{if(el.classList.contains("out"))return;clearTimeout(tm);el.classList.add("out");removeEventListener("keydown",fin);setTimeout(()=>el.hidden=true,500);sacudir();setTimeout(mostrarGuia,600)};
   const paso=()=>{if(i>=pasos.length){tm=setTimeout(fin,350);return}
     ol.insertAdjacentHTML("beforeend",`<li><span>${pasos[i]}</span><em>OK</em></li>`);i++;bar.style.width=(i/pasos.length*100)+"%";tm=setTimeout(paso,380)};
   el.addEventListener("click",fin);addEventListener("keydown",fin);tm=setTimeout(paso,250);
