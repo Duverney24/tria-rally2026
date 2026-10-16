@@ -46,7 +46,7 @@ docs/             Arquitectura y reparto de temas del equipo
 
 ## Cómo ejecutarlo
 
-**Prototipo:** abrir `prototipo/index.html` con doble clic en cualquier navegador.
+**Prototipo:** abrir `prototipo/index.html` en el navegador. El mapa usa Leaflet con capas de OpenStreetMap, CARTO, Esri (satélite) y OpenTopoMap, que necesitan internet; en campo se reemplazan por teselas descargadas previamente. Las veredas están en posiciones **aproximadas**: corríjanlas con el botón "Ajustar ubicaciones" y peguen el resultado en `GEO_FIJO`.
 
 **Motor y API:**
 
