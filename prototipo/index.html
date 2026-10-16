@@ -1052,6 +1052,7 @@ button:active{transform:translateY(1px) scale(.98)}
 /* Cambio de puesto en la lista de prioridades */
 .rank .mv{display:block;font-size:9px;line-height:1;margin-top:3px;animation:mvIn 1.6s ease-out both}
 .rank .mv.up{color:var(--rojo);text-shadow:0 0 6px var(--rojo)} .rank .mv.down{color:var(--faint)}
+.pbar i,.hbar i{transition:width .45s cubic-bezier(.16,1,.3,1)}
 @keyframes mvIn{0%{opacity:0;transform:translateY(4px)}15%,70%{opacity:1;transform:none}100%{opacity:0}}
 .badge.pop{animation:badgePop .5s var(--ease-out)}
 .badge.hot{background:var(--rojo)!important;color:#fff!important;box-shadow:0 0 10px color-mix(in srgb,var(--rojo) 70%,transparent)}
@@ -1530,7 +1531,10 @@ function renderTimeline(){
     <div class="tl-labels"><span>${hhmm(0)}</span><span>${hhmm(60)}</span><span>${hhmm(120)}</span><span>${hhmm(180)}</span><span>${hhmm(240)}</span></div>`;
 }
 
-let prevRank={},movs={};
+let prevRank={},movs={},prevW={};
+// Barras: se pintan con el ancho anterior y luego se deslizan al nuevo
+function barra(key,pct){const de=prevW[key]??pct;prevW[key]=pct;return `width:${de}%" data-w="${pct}`}
+function deslizar(root){const bs=root.querySelectorAll("[data-w]");if(!bs.length)return;root.getBoundingClientRect();bs.forEach(b=>b.style.width=b.dataset.w+"%")}
 // Marca ▲/▼ que dura 1,6 s aunque la lista se regenere: la animación retoma por donde iba
 function marcaMov(id){const m=movs[id];if(!m)return "";const t=performance.now()-m.t0;if(t>1600){delete movs[id];return ""}
   return `<span class="mv ${m.n>0?"up":"down"}" style="animation-delay:-${Math.round(t)}ms">${m.n>0?"▲":"▼"}${Math.abs(m.n)}</span>`}
@@ -1549,8 +1553,9 @@ function renderPrio(){
     const sub=z.silent?`Sin contacto hace ${S.t-z.since} min · ${medioTxt(z)}`:`${z.personas} personas · ${pl(z.heridos,"herido")}${z.senales?` · ${z.senales} con señales de vida`:""} · vía ${z.via}`;
     return `<li class="pitem s-${st}${S.sel===z.id?" sel":""}" data-z="${z.id}" tabindex="0"><span class="rank">${i+1}${marcaMov(z.id)}</span><div style="min-width:0">
       <div class="prow1"><b>${NODES[z.id].name}</b><span class="chip">${STATE_LABEL[st]}</span>${S.fifo?`<span class="fifo">llegada ${fi<0?"nunca":"#"+(fi+1)}</span>`:""}<span class="score">${r.U.toFixed(2)}</span></div>
-      <div class="pbar"><i style="width:${Math.round(r.U*100)}%"></i></div>
+      <div class="pbar"><i style="${barra("z"+z.id,Math.round(r.U*100))}"></i></div>
       <div class="psub">${sub}</div>${asg?`<div class="pasg">${asg}</div>`:""}</div></li>`}).join("");
+  deslizar($("prio"));
   const mover=!matchMedia("(prefers-reduced-motion:reduce)").matches;
   $("prio").querySelectorAll(".pitem").forEach(li=>{const y0=antes[li.dataset.z];if(!mover||y0===undefined)return;const dy=y0-li.getBoundingClientRect().top;
     if(Math.abs(dy)>2)li.animate([{transform:`translateY(${dy}px)`},{transform:"none"}],{duration:Math.min(500,tickMs*.9),easing:"cubic-bezier(.16,1,.3,1)"})});
@@ -1569,7 +1574,8 @@ function renderPrio(){
 function renderRec(){
   $("hosp").innerHTML=Object.entries(S.hosp).map(([id,h])=>{const pct=Math.min(100,Math.round(h.occ/h.cap*100));const col=!h.energia?"var(--faint)":pct>=100?"var(--rojo)":pct>80?"var(--ambar)":"var(--verde)";
     return `<div class="hrow"><div class="top"><span><b>${NODES[id].name}</b>${h.energia?"":' <span class="chip s-rojo">Sin energía</span>'}</span><span class="num">${h.occ}/${h.cap} camas</span></div>
-      <div class="hbar"><i style="width:${pct}%;background:${col}"></i></div></div>`}).join("");
+      <div class="hbar"><i style="background:${col};${barra("h"+id,pct)}"></i></div></div>`}).join("");
+  deslizar($("hosp"));
   $("teams").innerHTML=S.teams.map(t=>{const j=t.job;let st="Libre en "+NODES[t.node].name;
     if(j){st=j.phase==="ida"?`En camino a ${NODES[j.zone].name} · llega ${hhmm(j.eta)}`:j.phase==="servicio"?`En sitio: ${NODES[j.zone].name}`:`Trasladando ${pl(t.carrying,"herido")} a ${NODES[j.hosp].name}`;if(j.cancel)st="Regresando (tarea cancelada)"}
     return `<div class="trow"><span class="tbadge" style="background:${TEAM_COLOR[t.type]}">${t.id.slice(1)}</span><div><b>${t.name}</b><span>${TYPE_LABEL[t.type]} · ${st}</span></div></div>`}).join("");
@@ -1605,7 +1611,7 @@ $("fifo").onchange=e=>{S.fifo=e.target.checked;render()};
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>{x.setAttribute("aria-selected",String(x===b));$("tab-"+x.dataset.tab).hidden=x!==b});
   if(b.dataset.tab==="log")$("logCount").classList.remove("hot")});
 $("scen").onchange=e=>{CUR_SCEN=e.target.value;$("btnReset").onclick()};
-$("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;prevRank={};movs={};prevShake=false;$("toasts").innerHTML="";$("logCount").classList.remove("hot");resetTeams();init();sacudir()};
+$("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;prevRank={};movs={};prevW={};prevShake=false;$("toasts").innerHTML="";$("logCount").classList.remove("hot");resetTeams();init();sacudir()};
 document.addEventListener("pointermove",e=>{const el=e.target.closest?.(".spot");if(!el)return;const r=el.getBoundingClientRect();
   el.style.setProperty("--spot-x",(e.clientX-r.left)+"px");el.style.setProperty("--spot-y",(e.clientY-r.top)+"px")},{passive:true});
 initMap();
