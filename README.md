@@ -6,6 +6,39 @@ TRIA es un sistema de apoyo a la decisión para el **Puesto de Mando Unificado (
 
 > TRIA recomienda; la autoridad decide. Cada recomendación muestra sus criterios.
 
+**📖 [Manual de uso del prototipo](docs/manual_de_uso.md)** · **🏗️ [Arquitectura](docs/arquitectura.md)** · **🎤 [Preguntas del jurado](docs/temas_por_integrante.md)**
+
+---
+
+## Funcionalidades
+
+### Para el Puesto de Mando (quien coordina la emergencia)
+
+| Funcionalidad | Qué hace |
+|---|---|
+| **Cola de prioridades** | Ordena todas las zonas por un índice de urgencia (0 a 1) y se recalcula cada 15 minutos o ante cualquier evento. |
+| **Explicación de cada prioridad** | Al elegir una zona muestra cuánto aporta cada criterio: severidad, personas afectadas, vulnerabilidad y tiempo sin atención. |
+| **Estimación de zonas en silencio** | Calcula la probabilidad de afectación grave de las zonas que no reportan, con el mapa de amenaza, la intensidad sísmica y el tipo de silencio. |
+| **Detección de balizas destruidas** | Si una baliza deja de enviar su latido automático, eleva la urgencia de esa zona. |
+| **Asignación de equipos** | Asigna a cada necesidad (rescate, atención y traslado, reconocimiento) un solo equipo del tipo correcto, sin duplicar esfuerzos. |
+| **Rutas con vías caídas** | Calcula la ruta más rápida evitando las vías bloqueadas y re-enruta a los equipos que van en camino. |
+| **Elección de hospital** | Envía a los heridos al hospital alcanzable con cupo y energía, no al más cercano si está saturado. |
+| **Mapa operativo real** | Pitalito con zoom; capas oscura, satelital, de calles y de relieve; áreas probables de afectación; equipos en movimiento. |
+| **Bitácora** | Registro con hora de cada reporte, asignación, re-enrutamiento y entrega de heridos. |
+| **Comparación con "quien reporta primero"** | Muestra que atender por orden de llegada deja por fuera a las zonas incomunicadas. |
+| **Escenarios** | Peor caso (apagón total) y apagón parcial, con línea de tiempo y velocidad ajustable. |
+
+### Para la comunidad (quien reporta)
+
+| Medio | Cómo se usa | ¿Necesita app o internet? |
+|---|---|---|
+| **Baliza comunitaria** | Botones rojo, amarillo y verde, y "+5 personas". | No |
+| **WiFi TRIA-EMERGENCIA** *(en desarrollo)* | El celular se conecta a la baliza y abre una página de reporte sola. | No |
+| **SMS** | Mensaje corto a un número fijo cuando hay algo de señal. | No |
+| **Kit comunitario** | Radio LoRa de bolsillo conectado al celular por Bluetooth. | App del radio, sin internet |
+| **Lona y señales tierra-aire** | Lona de color o una "V" o "X" visible para el dron. | No |
+| **A pie** | Llevar el reporte al punto de encuentro o a un equipo en terreno. | No |
+
 ---
 
 ## Idea central
