@@ -1607,7 +1607,7 @@ function render(){
   if($("tab-log").hidden){if(S.log.slice(0,nuevas).some(l=>l.kind==="alerta"))bc.classList.add("hot")}else bc.classList.remove("hot");
   if(S.shake&&!prevShake)ondasSGC();prevShake=S.shake;
   if(S.t>=T_MAX&&!S.resumido){S.resumido=true;resumen()}
-  S.log.slice(0,nuevas).reverse().filter(l=>l.kind==="alerta").forEach(aviso);
+  if(!NARRA)S.log.slice(0,nuevas).reverse().filter(l=>l.kind==="alerta").forEach(aviso); // con narración, el subtítulo reemplaza los avisos
   if(nuevas)narrar(S.log.slice(0,nuevas).find(l=>l.kind==="alerta")||S.log[0]);
 }
 
