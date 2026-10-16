@@ -1,0 +1,11 @@
+# Puesto de Mando en una laptop o mini-PC de la red local:  docker compose up -d  →  http://<ip-del-equipo>:8000
+services:
+  tria:
+    build: .
+    image: tria:local
+    ports:
+      - "8000:8000"
+    environment:
+      # Deje TRIA_CLAVE vacía en la red cerrada del PMU; póngala si el equipo queda expuesto
+      TRIA_CLAVE: ${TRIA_CLAVE:-}
+    restart: unless-stopped

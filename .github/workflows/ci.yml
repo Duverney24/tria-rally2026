@@ -33,3 +33,19 @@ jobs:
         with:
           node-version: "22"
       - run: node herramientas/revisar_prototipo.mjs
+
+  docker:
+    name: Imagen Docker (build y arranque)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t tria:ci .
+      - name: Arranca y responde
+        run: |
+          docker run -d --name tria -p 8000:8000 tria:ci
+          for i in $(seq 1 30); do
+            if curl -fs localhost:8000/version && curl -fs -o /dev/null localhost:8000/; then exit 0; fi
+            sleep 1
+          done
+          docker logs tria
+          exit 1

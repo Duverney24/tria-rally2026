@@ -1607,20 +1607,20 @@ $("resLog").onclick=()=>{$("resumen").close();document.querySelector('.tabs butt
 $("resOtra").onclick=()=>{$("resumen").close();$("btnReset").click()};
 // ---------- En vivo: prioridades del motor real vía API ----------
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const LIVE={ok:false,prev:null,timer:null,t:0};
+const LIVE={ok:false,prev:null,timer:null,t:0,espera:5000};
 const API_CRIT=[["severidad","Severidad"],["personas","Personas"],["vulnerabilidad","Vulnerab."],["tiempo","Tiempo"]];
 // La clave (si la API la pide) va en X-TRIA-Clave y se guarda solo en este navegador
 const claveGet=()=>{try{return localStorage.getItem("tria-clave")||""}catch(e){return ""}};
 async function api(ruta,opts){const h={"Content-Type":"application/json"};const k=claveGet();if(k)h["X-TRIA-Clave"]=k;
-  const r=await fetch(ruta,{headers:h,...opts});if(!r.ok)throw new Error(r.status===401?"falta la clave o no es correcta":r.status);return r.json()}
+  const r=await fetch(ruta,{headers:h,signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined,...opts});if(!r.ok)throw new Error(r.status===401?"falta la clave o no es correcta":r.status);return r.json()}
 async function liveCargar(){
   try{const [est,filas,asig]=await Promise.all([api("estado"),api("prioridades"),api("asignacion").catch(()=>null)]);LIVE.ok=true;LIVE.t=est.minuto;$("liveDot").classList.add("ok");
     $("liveEstado").textContent=`Conectado al motor · minuto ${Math.round(est.minuto)} · consistencia AHP ${est.consistencia}${est.requiere_clave?" · requiere clave":""}`;
     $("lvClaveBox").hidden=!est.requiere_clave;
     if(!$("lvZona").options.length)$("lvZona").innerHTML=filas.map(f=>`<option value="${esc(f.zona)}">${esc(f.nombre)}</option>`).join("");
-    liveRender(filas);liveAsig(asig)}
-  catch(e){LIVE.ok=false;$("liveDot").classList.remove("ok");
-    $("liveEstado").textContent="Sin API: abra el prototipo con uvicorn (uvicorn tria.api:app) o en Render para ver el motor en vivo.";$("livePrio").innerHTML="";liveAsig(null)}}
+    liveRender(filas);liveAsig(asig);LIVE.espera=5000}
+  catch(e){LIVE.ok=false;$("liveDot").classList.remove("ok");LIVE.espera=Math.min(60000,LIVE.espera*2);
+    $("liveEstado").textContent=`Sin API: abra el prototipo con uvicorn (uvicorn tria.api:app) o en Render para ver el motor en vivo. Nuevo intento en ${Math.round(LIVE.espera/1000)} s.`;$("livePrio").innerHTML="";liveAsig(null)}}
 // Asignación óptima del motor (PuLP): lista equipo → zona y dibuja sus rutas en el mapa mientras la pestaña está abierta
 function liveAsig(asig){
   if(!LY.live&&MAP)LY.live=L.layerGroup().addTo(MAP);LY.live?.clearLayers();
@@ -1649,7 +1649,10 @@ function liveRender(filas){
   // El texto del aviso va como HTML: todo lo que viene de la API se escapa
   cambios.forEach(f=>aviso({t:S.t,kind:"alerta",text:`Motor en vivo: ${esc(f.nombre)} ${f.en_silencio?(f.latido?"sin contacto":"perdió el latido de su baliza"):`reportó ${esc(f.color)} · ${Number(f.personas)||0} personas`}.`}));
   LIVE.prev=Object.fromEntries(filas.map(f=>[f.zona,[f.en_silencio,f.color,f.personas,f.heridos,f.latido].join("|")]))}
-function liveCiclo(){clearInterval(LIVE.timer);LIVE.timer=null;if($("tab-live").hidden)LY.live?.clearLayers();if($("tab-live").hidden||document.hidden)return;liveCargar();LIVE.timer=setInterval(liveCargar,5000)}
+function liveCiclo(){clearTimeout(LIVE.timer);LIVE.timer=null;if($("tab-live").hidden)LY.live?.clearLayers();if($("tab-live").hidden||document.hidden)return;
+  // Cada llamada inicia una "generación"; una vuelta vieja que termine tarde no agenda otra
+  const gen=LIVE.gen=(LIVE.gen||0)+1;
+  const vuelta=async()=>{await liveCargar();if(gen===LIVE.gen&&!$("tab-live").hidden&&!document.hidden)LIVE.timer=setTimeout(vuelta,LIVE.espera)};vuelta()}
 document.addEventListener("visibilitychange",liveCiclo);
 $("lvClave").value=claveGet();
 $("lvClave").onchange=e=>{try{localStorage.setItem("tria-clave",e.target.value.trim())}catch(err){}};
@@ -1677,6 +1680,12 @@ function narrar(l){if(!NARRA)return;let el=$("narra");if(!el){el=document.create
 $("btnNarra").onclick=()=>{NARRA=!NARRA;$("btnNarra").setAttribute("aria-pressed",String(NARRA));try{localStorage.setItem("tria-narra",NARRA?"1":"0")}catch(e){}
   if(NARRA&&S&&S.log.length)narrar(S.log[0]);else if(!NARRA)$("narra")?.classList.remove("on")};
 try{if(localStorage.getItem("tria-narra")==="1"){NARRA=true;$("btnNarra").setAttribute("aria-pressed","true")}}catch(e){}
+// Errores inesperados: se muestran una vez por mensaje y quedan en la consola
+const fallasVistas=new Set();
+function falla(err,pre="Error inesperado"){const msg=String(err&&err.message||err||"desconocido").slice(0,160);console.error(pre,err);
+  if(fallasVistas.has(msg))return;fallasVistas.add(msg);try{aviso({t:S?S.t:0,kind:"alerta",text:`${esc(pre)}: ${esc(msg)}. Pulse Reiniciar si el tablero no responde.`})}catch(e){}}
+addEventListener("error",e=>{if(e.error||e.message)falla(e.error||e.message)});
+addEventListener("unhandledrejection",e=>falla(e.reason,"Error en segundo plano"));
 // Avisos: máximo tres a la vista; cada uno se retira solo a los 6 s
 function aviso(l){const box=$("toasts");const el=document.createElement("div");el.className="toast";
   el.innerHTML=`<i></i><div><time>${hhmm(l.t)}</time><div>${l.text}</div></div><button aria-label="Cerrar aviso">×</button>`;
@@ -1797,7 +1806,8 @@ const PLAY_ICON='<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>',PA
 function setPlayUI(){const b=$("btnPlay");b.innerHTML=playing?PAUSE_ICON:PLAY_ICON;b.setAttribute("aria-label",playing?"Pausar":"Reproducir")}
 function loop(){if(stepLeft<=0&&!playing){stop();return}
   if(S.t>=T_MAX){playing=false;stepLeft=0;setPlayUI();stop();return}
-  tickMinute();stepLeft--;render()}
+  try{tickMinute();stepLeft--;render()}
+  catch(e){playing=false;stepLeft=0;setPlayUI();stop();falla(e,"La simulación se detuvo por un error")}}
 function stop(){clearInterval(timer);timer=null}
 function start(){stop();timer=setInterval(loop,tickMs)}
 $("btnStep").onclick=()=>{stepLeft=Math.max(stepLeft,0)+15;if(!timer)start()};
