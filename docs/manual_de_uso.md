@@ -68,11 +68,19 @@ Solo funciona cuando el prototipo se abre desde la API (Render o `uvicorn tria.a
 3. **Probar sin hardware**: envía un reporte (zona, color, personas, heridos) como si llegara de una baliza, o marca una baliza como destruida.
 4. Con el receptor LoRa conectado, `herramientas/puente_serial.py` envía los reportes reales a la misma API y aparecen aquí.
 
-Nota: la API no tiene usuarios ni contraseñas; en Render cualquiera con la dirección puede enviar reportes de prueba. Para operación real se usa en la red local del PMU.
+**Clave de la API.** Si el servidor tiene la variable `TRIA_CLAVE`, todo lo que cambia el estado (reportes, latidos, vías, intensidad, reloj) exige esa clave; consultar sigue abierto. En Render la clave se genera sola: se ve en el panel del servicio, en *Environment*. En el prototipo se escribe en **Probar sin hardware → Clave de TRIA** (queda guardada solo en ese navegador), y en el puente LoRa con `--clave` o la variable `TRIA_CLAVE`:
+
+```bash
+python herramientas/puente_serial.py --puerto COM3 --api https://<servicio>.onrender.com --clave <clave>
+```
+
+En la red local del PMU, sin `TRIA_CLAVE`, la API sigue abierta como antes.
 
 ## 7. API (para desarrolladores)
 
 En la ruta `/docs` de la dirección de Render (o `http://localhost:8000/docs` en local) se pueden probar:
+
+Si la API tiene clave, las rutas `POST` necesitan la cabecera `X-TRIA-Clave`.
 
 | Ruta | Uso |
 |---|---|

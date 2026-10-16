@@ -6,14 +6,19 @@ Uso:
     python herramientas/puente_serial.py --puerto /dev/ttyUSB0  (Linux)
 
 Sin hardware se puede probar con --simular, que escribe mensajes de ejemplo.
+
+Si la API exige clave (variable TRIA_CLAVE en el servidor), pásela con --clave o con la
+variable de entorno TRIA_CLAVE. Otra API (por ejemplo la de Render) se indica con --api.
 """
 import argparse
 import json
+import os
 import time
 
 import requests
 
 API = "http://localhost:8000"
+CABECERAS: dict = {}
 
 
 def procesar(linea: str) -> None:
@@ -22,18 +27,25 @@ def procesar(linea: str) -> None:
     if partes[0] == "R":
         _, zona, color, personas, *_ = partes
         r = requests.post(f"{API}/reportes", json={"zona": zona, "color": color,
-                                                  "personas": int(personas), "canal": "baliza"})
+                                                  "personas": int(personas), "canal": "baliza"},
+                          headers=CABECERAS, timeout=10)
         print("Reporte", zona, color, personas, "->", r.status_code)
     elif partes[0] == "L":
-        requests.post(f"{API}/latidos", json={"zona": partes[1], "vivo": True})
-        print("Latido", partes[1])
+        r = requests.post(f"{API}/latidos", json={"zona": partes[1], "vivo": True}, headers=CABECERAS, timeout=10)
+        print("Latido", partes[1], "->", r.status_code)
 
 
 def main() -> None:
+    global API
     ap = argparse.ArgumentParser()
     ap.add_argument("--puerto")
     ap.add_argument("--simular", action="store_true")
+    ap.add_argument("--api", default=API, help="URL de la API de TRIA")
+    ap.add_argument("--clave", default=os.getenv("TRIA_CLAVE"), help="clave de la API, si la exige")
     args = ap.parse_args()
+    API = args.api.rstrip("/")
+    if args.clave:
+        CABECERAS["X-TRIA-Clave"] = args.clave
 
     if args.simular:
         for linea in ['{"msg":"L,CRI,3900,1","rssi":-98,"snr":7}',

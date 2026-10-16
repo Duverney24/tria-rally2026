@@ -6,16 +6,31 @@ Documentación interactiva:  http://localhost:8000/docs
 from __future__ import annotations
 
 import os
+import secrets
 from pathlib import Path
 from typing import Literal, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .escenario import PuestoDeMando
 
 app = FastAPI(title="TRIA – Triaje Territorial Inteligente", version="0.1.0")
+
+
+def exigir_clave(x_tria_clave: Optional[str] = Header(default=None)) -> None:
+    """Si TRIA_CLAVE está definida, las rutas que cambian el estado exigen la cabecera X-TRIA-Clave.
+
+    Sin TRIA_CLAVE (red local del PMU) todo queda abierto, como antes. Se lee en cada llamada para
+    poder cambiarla sin reiniciar y para las pruebas.
+    """
+    clave = os.getenv("TRIA_CLAVE")
+    if clave and not secrets.compare_digest((x_tria_clave or "").encode(), clave.encode()):
+        raise HTTPException(401, "Falta la clave de TRIA o no es correcta (cabecera X-TRIA-Clave)")
+
+
+CON_CLAVE = [Depends(exigir_clave)]
 pmu = PuestoDeMando()
 
 
@@ -44,16 +59,16 @@ def version():
 @app.get("/estado")
 def estado():
     return {"minuto": pmu.t, "pesos_ahp": [round(w, 3) for w in pmu.pesos],
-            "consistencia": round(pmu.consistencia, 3)}
+            "consistencia": round(pmu.consistencia, 3), "requiere_clave": bool(os.getenv("TRIA_CLAVE"))}
 
 
-@app.post("/reloj/{minuto}")
+@app.post("/reloj/{minuto}", dependencies=CON_CLAVE)
 def fijar_minuto(minuto: float):
     pmu.t = minuto
     return {"minuto": pmu.t}
 
 
-@app.post("/reportes")
+@app.post("/reportes", dependencies=CON_CLAVE)
 def nuevo_reporte(r: Reporte):
     z = pmu.zonas.get(r.zona)
     if not z:
@@ -62,7 +77,7 @@ def nuevo_reporte(r: Reporte):
     return {"ok": True, "zona": z.id, "canal": r.canal}
 
 
-@app.post("/latidos")
+@app.post("/latidos", dependencies=CON_CLAVE)
 def latido(l: Latido):
     z = pmu.zonas.get(l.zona)
     if not z:
@@ -71,7 +86,7 @@ def latido(l: Latido):
     return {"ok": True}
 
 
-@app.post("/vias/{a}/{b}")
+@app.post("/vias/{a}/{b}", dependencies=CON_CLAVE)
 def marcar_via(a: str, b: str, caida: bool = True):
     if not pmu.red.g.has_edge(a, b):
         raise HTTPException(404, "Vía no existe")
@@ -79,7 +94,7 @@ def marcar_via(a: str, b: str, caida: bool = True):
     return {"ok": True, "via": [a, b], "caida": caida}
 
 
-@app.post("/intensidad/{zona}/{mmi}")
+@app.post("/intensidad/{zona}/{mmi}", dependencies=CON_CLAVE)
 def intensidad(zona: str, mmi: int):
     pmu.zonas[zona].intensidad = mmi
     return {"ok": True}

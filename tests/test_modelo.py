@@ -60,3 +60,25 @@ def test_reporte_solo_acepta_colores_validos():
     assert Reporte(zona="REG", color="rojo").color == "rojo"
     with pytest.raises(ValidationError):
         Reporte(zona="REG", color="<img src=x onerror=alert(1)>")
+
+
+def test_clave_opcional_de_la_api(monkeypatch):
+    import pytest
+    from fastapi import HTTPException
+    from tria.api import exigir_clave
+    monkeypatch.delenv("TRIA_CLAVE", raising=False)
+    exigir_clave(None)  # sin clave configurada, todo abierto
+    monkeypatch.setenv("TRIA_CLAVE", "s3creta")
+    exigir_clave("s3creta")
+    for mala in (None, "", "otra"):
+        with pytest.raises(HTTPException) as e:
+            exigir_clave(mala)
+        assert e.value.status_code == 401
+
+
+def test_toda_ruta_que_cambia_estado_pide_clave():
+    from tria.api import app, exigir_clave
+    posts = [r for r in app.routes if "POST" in getattr(r, "methods", set())]
+    assert posts
+    for r in posts:
+        assert any(d.call is exigir_clave for d in r.dependant.dependencies), r.path
