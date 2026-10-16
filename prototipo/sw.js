@@ -1,7 +1,7 @@
 // Service worker de TRIA: el prototipo abre sin internet y el mapa ya recorrido sigue visible.
 // - Página: red primero (para ver siempre la última versión) y copia guardada si no hay red.
 // - Librerías, fuentes, íconos y manifiesto locales: copia guardada primero.
-// - Teselas de OpenStreetMap y Esri: se guardan al verlas (no se descargan en bloque, por las políticas de uso).
+// - Teselas de CARTO, OpenStreetMap y Esri: se guardan al verlas (no se descargan en bloque, por las políticas de uso).
 // - La API (/version, /estado, …) nunca se guarda.
 const VER = "tria-v2";
 const APP = VER + "-app";
@@ -14,7 +14,7 @@ const BASE = [
       "sans-condensed-latin-500", "sans-condensed-latin-600", "sans-condensed-latin-700",
       "mono-latin-400", "mono-latin-500", "mono-latin-600"].map(f => `vendor/fonts/ibm-plex-${f}-normal.woff2`),
 ];
-const HOSTS_TESELAS = ["tile.openstreetmap.org", "server.arcgisonline.com", "tile.opentopomap.org"];
+const HOSTS_TESELAS = ["basemaps.cartocdn.com", "tile.openstreetmap.org", "server.arcgisonline.com", "tile.opentopomap.org"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(APP).then(c => c.addAll(BASE)).then(() => self.skipWaiting()));

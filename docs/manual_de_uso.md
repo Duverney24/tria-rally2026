@@ -48,6 +48,13 @@ El prototipo simula la consola del **Puesto de Mando Unificado (PMU)** de Pitali
 
 **Controles del mapa:** rueda del mouse o dedos para acercar y alejar · **Capas del mapa** (oscuro, satélite, calles, relieve) · **Centrar** · **Pantalla completa**.
 
+**Capas del mapa** (botón arriba a la derecha):
+
+- *Bases:* Oscuro y Claro (CARTO) cambian solas con el tema; también hay OSM oscurecido, Satélite, Calles y Relieve. Si elige una base a mano, se recuerda.
+- *Intensidad sísmica (SGC):* desde que llega el mapa del SGC (T+20), un círculo por zona con su intensidad (VI amarilla, VII naranja, VIII roja).
+- *Cupo de hospitales:* el círculo punteado crece con las camas libres y cambia de color con la ocupación (verde, ámbar, rojo; gris sin energía).
+- **◎ Mi ubicación** (bajo el zoom) centra el mapa donde está el equipo; necesita permiso del navegador y conexión segura (https).
+
 ## 4. Interactuar
 
 - **Tumbar o habilitar una vía:** clic sobre la vía. TRIA recalcula rutas y asignaciones al instante.

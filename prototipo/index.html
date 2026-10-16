@@ -1132,6 +1132,15 @@ button:active{transform:translateY(1px) scale(.98)}
   .toasts{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
   .mapcard,.side{scroll-margin-top:8px}
 }
+/* Capas nuevas del mapa */
+.mmi span{display:inline-block;transform:translate(-50%,170%);font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--c);padding:0 6px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 85%,transparent);border:1px solid var(--c);box-shadow:0 0 10px -2px var(--c)}
+.leaflet-bar a.ubic{display:grid!important;place-items:center}
+.leaflet-bar a.ubic.busca svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.yo i{display:block;width:18px;height:18px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 0 0 0 var(--glow-accent);animation:yoPulse 2s ease-out infinite}
+@keyframes yoPulse{0%{box-shadow:0 0 0 0 var(--glow-accent)}100%{box-shadow:0 0 0 16px transparent}}
+@media (prefers-reduced-motion:reduce){.yo i,.leaflet-bar a.ubic.busca svg{animation:none}}
 /* Pestaña En vivo */
 .livedot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;vertical-align:1px;background:var(--faint)}
 .livedot.ok{background:var(--verde);box-shadow:0 0 8px var(--verde);animation:pulseRingV 2.2s var(--ease-out) infinite}
@@ -1251,7 +1260,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
         </div>
         <button id="btnReset">Reiniciar</button>
       </div>
-      <p class="hint">Acerque o aleje con la rueda del mouse o con los dedos; cambie entre mapa oscuro, satélite, calles y relieve en "Capas del mapa". Toque una vía para marcarla como caída o habilitada; TRIA recalcula rutas y asignaciones al instante. Atajos: <kbd>Espacio</kbd> reproduce o pausa, <kbd>→</kbd> avanza 15 min, <kbd>R</kbd> reinicia.</p>
+      <p class="hint">Acerque o aleje con la rueda del mouse o con los dedos; cambie entre mapa oscuro o claro, satélite, calles y relieve, y active la intensidad sísmica o el cupo de hospitales en "Capas del mapa"; ◎ centra el mapa en su ubicación. Toque una vía para marcarla como caída o habilitada; TRIA recalcula rutas y asignaciones al instante. Atajos: <kbd>Espacio</kbd> reproduce o pausa, <kbd>→</kbd> avanza 15 min, <kbd>R</kbd> reinicia.</p>
     </section>
   </div>
 
@@ -1525,12 +1534,21 @@ for(const [id,n] of Object.entries(NODES)){
 const URB=new Set(["CEN","CAS","CED"]);
 const ll=id=>[NODES[id].lat,NODES[id].lng];
 
-let MAP=null,LY={},TM={},EDIT=false,edgesKey="";
+let MAP=null,LY={},TM={},EDIT=false,edgesKey="",BASE=null,CAPAS=null,BASE_AUTO=false,mmiKey="",hcapKey="";
+const baseDelTema=()=>document.documentElement.dataset.theme==="light"?"Claro (CARTO)":"Oscuro (CARTO)";
+// Cambia la base al cambiar el tema, salvo que el usuario haya elegido otra a mano
+function baseSegunTema(){if(!MAP||!BASE)return;let elegida=null;try{elegida=localStorage.getItem("tria-base")}catch(e){}
+  if(elegida&&!/CARTO/.test(elegida))return;const quiero=BASE[baseDelTema()];if(MAP.hasLayer(quiero))return;
+  BASE_AUTO=true;for(const l of Object.values(BASE))if(MAP.hasLayer(l))MAP.removeLayer(l);quiero.addTo(MAP);BASE_AUTO=false;
+  try{localStorage.removeItem("tria-base")}catch(e){}}
 function initMap(){
   MAP=L.map("map",{zoomControl:true,zoomSnap:.5,minZoom:8,maxZoom:18});
   const base={
     // Ninguna de estas capas requiere clave (API key).
-    "Oscuro":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:"tiles-dark",attribution:"© OpenStreetMap"}),
+    // CARTO (sin clave, con atribución): base por defecto, cambia sola con el tema claro u oscuro
+    "Oscuro (CARTO)":L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap · © CARTO"}),
+    "Claro (CARTO)":L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap · © CARTO"}),
+    "OSM oscurecido":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:"tiles-dark",attribution:"© OpenStreetMap"}),
     "Satélite":L.layerGroup([
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imágenes © Esri, Maxar, Earthstar Geographics"}),
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,opacity:.9}),
@@ -1538,10 +1556,27 @@ function initMap(){
     "Calles":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}),
     "Relieve":L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,attribution:"© OpenStreetMap · SRTM · © OpenTopoMap"}),
   };
-  base["Oscuro"].addTo(MAP);
+  BASE=base;
+  {let elegida=null;try{elegida=localStorage.getItem("tria-base")}catch(e){}
+   (base[elegida]||base[baseDelTema()]).addTo(MAP)}
+  // Si el usuario elige una base a mano, se recuerda y deja de seguir al tema
+  MAP.on("baselayerchange",e=>{if(BASE_AUTO)return;try{localStorage.setItem("tria-base",e.name)}catch(err){}});
   LY.areas=L.layerGroup().addTo(MAP);LY.edges=L.layerGroup().addTo(MAP);LY.routes=L.layerGroup().addTo(MAP);
   LY.nodes=L.layerGroup().addTo(MAP);LY.teams=L.layerGroup().addTo(MAP);
-  L.control.layers(base,{"Vías":LY.edges,"Rutas de equipos":LY.routes,"Área probable de afectación":LY.areas,"Equipos":LY.teams},{position:"topright",collapsed:true}).addTo(MAP);
+  LY.mmi=L.layerGroup();LY.hcap=L.layerGroup().addTo(MAP);
+  CAPAS=L.control.layers(base,{"Vías":LY.edges,"Rutas de equipos":LY.routes,"Área probable de afectación":LY.areas,"Equipos":LY.teams,
+    "Intensidad sísmica (SGC)":LY.mmi,"Cupo de hospitales":LY.hcap},{position:"topright",collapsed:true}).addTo(MAP);
+  // Botón "Mi ubicación" (necesita https y permiso del navegador)
+  const Ubic=L.Control.extend({options:{position:"topleft"},onAdd(){const d=L.DomUtil.create("div","leaflet-bar");
+    const a=L.DomUtil.create("a","ubic",d);a.href="#";a.title="Mi ubicación";a.setAttribute("role","button");a.setAttribute("aria-label","Mi ubicación");
+    a.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
+    L.DomEvent.on(a,"click",e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);a.classList.add("busca");MAP.locate({setView:true,maxZoom:15,enableHighAccuracy:true,timeout:10000})});
+    return d}});
+  MAP.addControl(new Ubic());
+  MAP.on("locationfound",e=>{document.querySelector(".ubic")?.classList.remove("busca");LY.yo?.remove();
+    LY.yo=L.layerGroup([L.circle(e.latlng,{radius:e.accuracy,color:css("--accent"),weight:1,fillOpacity:.08,interactive:false}),
+      L.marker(e.latlng,{interactive:false,icon:L.divIcon({className:"yo",html:"<i></i>",iconSize:[18,18]})})]).addTo(MAP)});
+  MAP.on("locationerror",e=>{document.querySelector(".ubic")?.classList.remove("busca");aviso({t:S?S.t:0,kind:"alerta",text:"No se pudo obtener su ubicación: "+esc(e.message)})});
   L.control.scale({imperial:false,position:"bottomleft"}).addTo(MAP);
   centrar();
   MAP.on("zoomstart",()=>$("map").classList.add("zooming"));
@@ -1590,6 +1625,16 @@ function renderMap(){
   LY.areas.clearLayers();
   for(const z0 of Object.values(S.zones))if(z0.silent){const p=posterior(z0);
     L.circle(ll(z0.id),{radius:URB.has(z0.id)?250+p*600:500+p*2500,color:"#a690f2",weight:1,dashArray:"4 4",fillColor:"#a690f2",fillOpacity:.06+p*.12,interactive:false}).addTo(LY.areas)}
+  // Intensidad sísmica del SGC (llega por el enlace satelital en T+20)
+  const mk=S.shake+"|"+Math.floor(z);if(LY.mmi&&mk!==mmiKey){mmiKey=mk;LY.mmi.clearLayers();
+    if(S.shake)for(const [id,m] of Object.entries(MMI)){if(!NODES[id])continue;const col=m>=8?css("--rojo"):m>=7?"#f08a3c":css("--ambar");
+      L.circle(ll(id),{radius:URB.has(id)?450:1500,color:col,weight:1.5,fillColor:col,fillOpacity:.16,interactive:false}).addTo(LY.mmi);
+      L.marker(ll(id),{interactive:false,icon:L.divIcon({className:"mmi",html:`<span style="--c:${col}">${ROMAN[m]}</span>`,iconSize:null})}).addTo(LY.mmi)}}
+  // Cupo de hospitales: el círculo crece con las camas libres y cambia de color con la ocupación
+  const hk=Object.values(S.hosp).map(h=>h.occ+"/"+h.cap+(h.energia?"":"x")).join(",");if(LY.hcap&&hk!==hcapKey){hcapKey=hk;LY.hcap.clearLayers();
+    for(const [id,h] of Object.entries(S.hosp)){if(!NODES[id])continue;const libres=Math.max(0,h.cap-h.occ),oc=h.occ/h.cap;
+      const col=!h.energia?css("--faint"):oc>=1?css("--rojo"):oc>.8?css("--ambar"):css("--verde");
+      L.circle(ll(id),{radius:200+libres*45,color:col,weight:1,dashArray:"3 5",fillColor:col,fillOpacity:.1,interactive:false}).addTo(LY.hcap)}}
   // Nodos
   LY.nodes.clearLayers();
   for(const [id,n] of Object.entries(NODES)){
@@ -1908,7 +1953,7 @@ const SOL='<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3"/><path d="M8 1.5
 function tema(t){const claro=t==="light";document.documentElement.toggleAttribute("data-theme",claro);if(claro)document.documentElement.dataset.theme="light";
   const b=$("btnTema");b.innerHTML=claro?LUNA:SOL;b.setAttribute("aria-pressed",String(claro));b.setAttribute("aria-label",claro?"Tema oscuro":"Tema claro");
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content",claro?"#eaf0f5":"#0a1118");
-  try{localStorage.setItem("tria-tema",t)}catch(e){}if(S){edgesKey="";renderMap()}}
+  try{localStorage.setItem("tria-tema",t)}catch(e){}baseSegunTema();if(S){edgesKey="";mmiKey="";hcapKey="";renderMap()}}
 $("btnTema").onclick=()=>tema(document.documentElement.dataset.theme==="light"?"dark":"light");
 $("fifo").onchange=e=>{S.fifo=e.target.checked;render()};
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>{x.setAttribute("aria-selected",String(x===b));$("tab-"+x.dataset.tab).hidden=x!==b});
