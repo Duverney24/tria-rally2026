@@ -41,3 +41,22 @@ def test_asignacion_sin_duplicar_y_con_vias_caidas():
     assert len(equipos) == len(set(equipos))
     bru = [a for a in asig if a["zona"] == "BRU"]
     assert bru and "PAL" in bru[0]["ruta"]  # rodea por Palmarito
+
+
+def test_prioridades_incluyen_estado_de_la_zona():
+    pmu = PuestoDeMando()
+    pmu.zonas["REG"].registrar_reporte(10, "rojo", 40, heridos=6)
+    pmu.zonas["BRU"].latido = False
+    filas = {f["zona"]: f for f in pmu.prioridades()}
+    assert filas["REG"]["color"] == "rojo" and filas["REG"]["personas"] == 40 and filas["REG"]["heridos"] == 6
+    assert not filas["REG"]["en_silencio"]
+    assert filas["BRU"]["latido"] is False and filas["BRU"]["en_silencio"]
+
+
+def test_reporte_solo_acepta_colores_validos():
+    import pytest
+    from pydantic import ValidationError
+    from tria.api import Reporte
+    assert Reporte(zona="REG", color="rojo").color == "rojo"
+    with pytest.raises(ValidationError):
+        Reporte(zona="REG", color="<img src=x onerror=alert(1)>")
