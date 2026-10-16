@@ -1047,6 +1047,10 @@ button:active{transform:translateY(1px) scale(.98)}
 .qring i{position:absolute;left:50%;top:50%;width:var(--d);height:var(--d);margin:calc(var(--d)/-2) 0 0 calc(var(--d)/-2);border-radius:50%;border:2px solid var(--rojo);box-shadow:0 0 18px var(--rojo),inset 0 0 18px color-mix(in srgb,var(--rojo) 50%,transparent);animation:qring 2.2s var(--ease-out) both}
 .qring i+i{animation-delay:.45s}
 @keyframes qring{from{transform:scale(.1);opacity:.9}to{transform:scale(1);opacity:0}}
+.tabs button .badge{display:inline-block}
+.badge.pop{animation:badgePop .5s var(--ease-out)}
+.badge.hot{background:var(--rojo)!important;color:#fff!important;box-shadow:0 0 10px color-mix(in srgb,var(--rojo) 70%,transparent)}
+@keyframes badgePop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.mapwrap.quake #map,.mapwrap.quake::after,.qring i{animation:none!important}}
 </style>
 </head>
@@ -1507,6 +1511,9 @@ function render(){
   const nuevas=prevLog<0?0:Math.max(0,S.log.length-prevLog);prevLog=S.log.length;
   $("log").innerHTML=S.log.map((l,i)=>`<div class="lrow k-${l.kind}${i<nuevas?" new":""}"><time>${hhmm(l.t)}</time><i></i><span>${l.text}</span></div>`).join("");
   $("logCount").textContent=S.log.length;
+  // Contador de la bitácora: salta con entradas nuevas y se enciende en rojo si hay alertas sin leer
+  const bc=$("logCount");if(nuevas){bc.classList.remove("pop");void bc.offsetWidth;bc.classList.add("pop")}
+  if($("tab-log").hidden){if(S.log.slice(0,nuevas).some(l=>l.kind==="alerta"))bc.classList.add("hot")}else bc.classList.remove("hot");
   if(S.shake&&!prevShake)ondasSGC();prevShake=S.shake;
   S.log.slice(0,nuevas).reverse().filter(l=>l.kind==="alerta").forEach(aviso);
 }
@@ -1579,9 +1586,10 @@ $("btnStep").onclick=()=>{stepLeft=Math.max(stepLeft,0)+15;if(!timer)start()};
 $("btnPlay").onclick=()=>{playing=!playing;setPlayUI();if(playing){stepLeft=1e9;start()}else{stepLeft=0;stop()}};
 document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));tickMs=+b.dataset.ms;if(timer)start()});
 $("fifo").onchange=e=>{S.fifo=e.target.checked;render()};
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>{x.setAttribute("aria-selected",String(x===b));$("tab-"+x.dataset.tab).hidden=x!==b})});
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>{x.setAttribute("aria-selected",String(x===b));$("tab-"+x.dataset.tab).hidden=x!==b});
+  if(b.dataset.tab==="log")$("logCount").classList.remove("hot")});
 $("scen").onchange=e=>{CUR_SCEN=e.target.value;$("btnReset").onclick()};
-$("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;prevShake=false;$("toasts").innerHTML="";resetTeams();init();sacudir()};
+$("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;prevShake=false;$("toasts").innerHTML="";$("logCount").classList.remove("hot");resetTeams();init();sacudir()};
 document.addEventListener("pointermove",e=>{const el=e.target.closest?.(".spot");if(!el)return;const r=el.getBoundingClientRect();
   el.style.setProperty("--spot-x",(e.clientX-r.left)+"px");el.style.setProperty("--spot-y",(e.clientY-r.top)+"px")},{passive:true});
 initMap();
