@@ -830,6 +830,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .geoedit p{margin:0} .geoedit code{font-family:var(--mono);color:var(--ink)}
 .geoedit textarea{width:100%;font-family:var(--mono);font-size:11.5px;background:var(--surface2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px}
 .leaflet-container{background:var(--map);font-family:var(--body)}
+.tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.85) saturate(.6)}
 .nicon,.tmark,.elabel{background:none;border:0}
 .nzone{position:relative;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:10.5px;font-weight:600;cursor:pointer}
 .nzone b{font-weight:600}
@@ -1181,8 +1182,12 @@ let MAP=null,LY={},TM={},EDIT=false,edgesKey="";
 function initMap(){
   MAP=L.map("map",{zoomControl:true,zoomSnap:.5,minZoom:8,maxZoom:18});
   const base={
-    "Oscuro":L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:"© OpenStreetMap · © CARTO"}),
-    "Satélite":L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imágenes © Esri, Maxar, Earthstar Geographics"}),
+    // Ninguna de estas capas requiere clave (API key).
+    "Oscuro":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:"tiles-dark",attribution:"© OpenStreetMap"}),
+    "Satélite":L.layerGroup([
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imágenes © Esri, Maxar, Earthstar Geographics"}),
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,opacity:.9}),
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19})]),
     "Calles":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}),
     "Relieve":L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,attribution:"© OpenStreetMap · SRTM · © OpenTopoMap"}),
   };
@@ -1236,7 +1241,7 @@ function renderMap(){
   // Áreas probables de afectación (zonas en silencio)
   LY.areas.clearLayers();
   for(const z0 of Object.values(S.zones))if(z0.silent){const p=posterior(z0);
-    L.circle(ll(z0.id),{radius:500+p*2500,color:"#a690f2",weight:1,dashArray:"4 4",fillColor:"#a690f2",fillOpacity:.06+p*.12,interactive:false}).addTo(LY.areas)}
+    L.circle(ll(z0.id),{radius:URB.has(z0.id)?250+p*600:500+p*2500,color:"#a690f2",weight:1,dashArray:"4 4",fillColor:"#a690f2",fillOpacity:.06+p*.12,interactive:false}).addTo(LY.areas)}
   // Nodos
   LY.nodes.clearLayers();
   for(const [id,n] of Object.entries(NODES)){
