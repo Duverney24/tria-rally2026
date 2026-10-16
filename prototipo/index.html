@@ -1068,6 +1068,18 @@ button:active{transform:translateY(1px) scale(.98)}
 [data-theme="light"] .mapwrap{box-shadow:inset 0 0 40px rgba(15,27,39,.12)}
 [data-theme="light"] .brand b{background-image:linear-gradient(100deg,var(--ink) 40%,var(--accent) 50%,var(--ink) 60%)}
 [data-theme="light"] .resumen::backdrop{background:rgba(15,27,39,.35)}
+/* Narración: subtítulo del último evento sobre el mapa */
+.narra{position:absolute;left:50%;bottom:30px;z-index:850;transform:translate(-50%,8px);width:min(640px,calc(100% - 24px));pointer-events:none;opacity:0;transition:opacity .35s,transform .35s var(--ease-out);
+  display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:baseline;padding:10px 14px;border-radius:10px;font-family:var(--body);font-size:14px;line-height:1.4;color:var(--ink);
+  background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line2);box-shadow:0 14px 34px -14px rgba(0,0,0,.6)}
+.narra.on{opacity:1;transform:translate(-50%,0)}
+.narra time{font-family:var(--mono);font-size:12px;color:var(--faint)}
+.narra.k-alerta{border-color:color-mix(in srgb,var(--rojo) 55%,var(--line2))} .narra.k-alerta time{color:var(--rojo)}
+.narra.k-ok time{color:var(--verde)} .narra.k-asig time{color:var(--accent)}
+.narra span::after{content:"";display:inline-block;width:7px;height:1em;margin-left:2px;vertical-align:-2px;background:var(--accent);animation:caret 1s steps(1) infinite}
+.narra.done span::after{display:none}
+@keyframes caret{50%{opacity:0}}
+@media (max-width:640px){.narra{font-size:12.5px;bottom:24px}}
 .tema svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .tema{padding:7px 9px;display:grid;place-items:center}
 /* Cambio de puesto en la lista de prioridades */
@@ -1128,7 +1140,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
     <section class="kpis" id="kpis" aria-label="Indicadores"></section>
     <section class="card mapcard">
       <div class="cardhead"><div><h2>Mapa operativo</h2><span id="recalcInfo">Recalcula cada 15 min</span></div>
-        <div class="maptools"><button id="btnCentrar">Centrar</button><button id="btnFull">Pantalla completa</button><button id="btnEdit" aria-pressed="false">Ajustar ubicaciones</button></div></div>
+        <div class="maptools"><button id="btnCentrar">Centrar</button><button id="btnFull">Pantalla completa</button><button id="btnNarra" aria-pressed="false">Narrar</button><button id="btnEdit" aria-pressed="false">Ajustar ubicaciones</button></div></div>
       <div class="mapwrap" id="mapwrap">
         <div id="map" role="region" aria-label="Mapa de Pitalito con zonas, vías, hospitales y equipos"></div>
         <div class="legend">
@@ -1537,6 +1549,17 @@ function resumen(){const zs=Object.values(S.zones),d=$("resumen");
 $("resCerrar").onclick=()=>$("resumen").close();
 $("resLog").onclick=()=>{$("resumen").close();document.querySelector('.tabs button[data-tab="log"]').click()};
 $("resOtra").onclick=()=>{$("resumen").close();$("btnReset").click()};
+// Narración: escribe el evento letra a letra como subtítulo del mapa
+let NARRA=false,narraTm=null,narraOff=null;
+function narrar(l){if(!NARRA)return;let el=$("narra");if(!el){el=document.createElement("div");el.id="narra";el.className="narra";el.setAttribute("aria-hidden","true");$("map").append(el)}
+  clearInterval(narraTm);clearTimeout(narraOff);el.className="narra on k-"+l.kind;el.innerHTML=`<time>${hhmm(l.t)}</time><span></span>`;
+  const sp=el.querySelector("span"),txt=l.text;
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches){sp.textContent=txt;el.classList.add("done")}
+  else{let i=0;narraTm=setInterval(()=>{i+=2;sp.textContent=txt.slice(0,i);if(i>=txt.length){clearInterval(narraTm);el.classList.add("done")}},18)}
+  narraOff=setTimeout(()=>el.classList.remove("on"),Math.max(5000,txt.length*45))}
+$("btnNarra").onclick=()=>{NARRA=!NARRA;$("btnNarra").setAttribute("aria-pressed",String(NARRA));try{localStorage.setItem("tria-narra",NARRA?"1":"0")}catch(e){}
+  if(NARRA&&S&&S.log.length)narrar(S.log[0]);else if(!NARRA)$("narra")?.classList.remove("on")};
+try{if(localStorage.getItem("tria-narra")==="1"){NARRA=true;$("btnNarra").setAttribute("aria-pressed","true")}}catch(e){}
 // Avisos: máximo tres a la vista; cada uno se retira solo a los 6 s
 function aviso(l){const box=$("toasts");const el=document.createElement("div");el.className="toast";
   el.innerHTML=`<i></i><div><time>${hhmm(l.t)}</time><div>${l.text}</div></div><button aria-label="Cerrar aviso">×</button>`;
@@ -1574,6 +1597,7 @@ function render(){
   if(S.shake&&!prevShake)ondasSGC();prevShake=S.shake;
   if(S.t>=T_MAX&&!S.resumido){S.resumido=true;resumen()}
   S.log.slice(0,nuevas).reverse().filter(l=>l.kind==="alerta").forEach(aviso);
+  if(nuevas)narrar(S.log.slice(0,nuevas).find(l=>l.kind==="alerta")||S.log[0]);
 }
 
 function renderTimeline(){
