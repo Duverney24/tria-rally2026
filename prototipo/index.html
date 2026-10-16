@@ -1109,7 +1109,8 @@ button:active{transform:translateY(1px) scale(.98)}
 .livedemo summary{cursor:pointer;font-weight:600;font-size:13px}
 .livegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
 .livegrid label{display:grid;gap:3px;font-size:11.5px;color:var(--muted)}
-.livegrid input{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line2);border-radius:6px;padding:6px 8px}
+.liveclave{display:grid;gap:3px;margin:0 0 10px;font-size:11.5px;color:var(--muted)}
+.liveclave input,.livegrid input{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line2);border-radius:6px;padding:6px 8px}
 /* Zona señalada desde la lista */
 .nzone.hl{transform:scale(1.28);box-shadow:0 0 0 6px color-mix(in srgb,var(--st,var(--silencio)) 35%,transparent),0 0 30px 8px color-mix(in srgb,var(--st,var(--silencio)) 60%,transparent)!important;transition:transform .2s var(--ease-out),box-shadow .2s}
 .leaflet-marker-icon:has(.hl){z-index:9000!important}
@@ -1239,6 +1240,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
           <label>Personas<input id="lvPers" type="number" min="0" value="20"></label>
           <label>Heridos<input id="lvHer" type="number" min="0" value="2"></label>
         </div>
+        <label class="liveclave" id="lvClaveBox" hidden>Clave de TRIA (la da quien administra la API; se guarda solo en este navegador)<input id="lvClave" type="password" autocomplete="off"></label>
         <div class="maptools"><button id="lvReporte">Enviar reporte</button><button id="lvLatido">Baliza destruida</button><span id="lvMsg" class="livenota"></span></div>
       </details>
     </div>
@@ -1604,10 +1606,14 @@ $("resOtra").onclick=()=>{$("resumen").close();$("btnReset").click()};
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const LIVE={ok:false,prev:null,timer:null,t:0};
 const API_CRIT=[["severidad","Severidad"],["personas","Personas"],["vulnerabilidad","Vulnerab."],["tiempo","Tiempo"]];
-async function api(ruta,opts){const r=await fetch(ruta,{headers:{"Content-Type":"application/json"},...opts});if(!r.ok)throw new Error(r.status);return r.json()}
+// La clave (si la API la pide) va en X-TRIA-Clave y se guarda solo en este navegador
+const claveGet=()=>{try{return localStorage.getItem("tria-clave")||""}catch(e){return ""}};
+async function api(ruta,opts){const h={"Content-Type":"application/json"};const k=claveGet();if(k)h["X-TRIA-Clave"]=k;
+  const r=await fetch(ruta,{headers:h,...opts});if(!r.ok)throw new Error(r.status===401?"falta la clave o no es correcta":r.status);return r.json()}
 async function liveCargar(){
   try{const [est,filas]=await Promise.all([api("estado"),api("prioridades")]);LIVE.ok=true;LIVE.t=est.minuto;$("liveDot").classList.add("ok");
-    $("liveEstado").textContent=`Conectado al motor · minuto ${Math.round(est.minuto)} · consistencia AHP ${est.consistencia}`;
+    $("liveEstado").textContent=`Conectado al motor · minuto ${Math.round(est.minuto)} · consistencia AHP ${est.consistencia}${est.requiere_clave?" · requiere clave":""}`;
+    $("lvClaveBox").hidden=!est.requiere_clave;
     if(!$("lvZona").options.length)$("lvZona").innerHTML=filas.map(f=>`<option value="${esc(f.zona)}">${esc(f.nombre)}</option>`).join("");
     liveRender(filas)}
   catch(e){LIVE.ok=false;$("liveDot").classList.remove("ok");
@@ -1629,7 +1635,9 @@ function liveRender(filas){
   LIVE.prev=Object.fromEntries(filas.map(f=>[f.zona,[f.en_silencio,f.color,f.personas,f.heridos,f.latido].join("|")]))}
 function liveCiclo(){clearInterval(LIVE.timer);LIVE.timer=null;if($("tab-live").hidden||document.hidden)return;liveCargar();LIVE.timer=setInterval(liveCargar,5000)}
 document.addEventListener("visibilitychange",liveCiclo);
-$("liveSync").onclick=async()=>{try{await api(`reloj/${S.t}`,{method:"POST"});liveCargar()}catch(e){$("liveEstado").textContent="No se pudo sincronizar el reloj."}};
+$("lvClave").value=claveGet();
+$("lvClave").onchange=e=>{try{localStorage.setItem("tria-clave",e.target.value.trim())}catch(err){}};
+$("liveSync").onclick=async()=>{try{await api(`reloj/${S.t}`,{method:"POST"});liveCargar()}catch(e){$("liveEstado").textContent="No se pudo sincronizar el reloj ("+e.message+")."}};
 $("lvReporte").onclick=async()=>{const z=$("lvZona").value;try{await api("reportes",{method:"POST",body:JSON.stringify({zona:z,color:$("lvColor").value,personas:+$("lvPers").value||0,heridos:+$("lvHer").value||0,canal:"baliza"})});
   $("lvMsg").textContent="Reporte enviado.";liveCargar()}catch(e){$("lvMsg").textContent="No se pudo enviar ("+e.message+")."}};
 $("lvLatido").onclick=async()=>{const z=$("lvZona").value;try{await api("latidos",{method:"POST",body:JSON.stringify({zona:z,vivo:false})});
