@@ -5,9 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TRIA Pitalito</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
+/* IBM Plex local (SIL OFL 1.1, vendor/fonts/OFL.txt): la tipografía no depende de internet */
+@font-face{font-family:"IBM Plex Sans";font-style:normal;font-weight:400;font-display:swap;src:url(vendor/fonts/ibm-plex-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-style:normal;font-weight:500;font-display:swap;src:url(vendor/fonts/ibm-plex-sans-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-style:normal;font-weight:600;font-display:swap;src:url(vendor/fonts/ibm-plex-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans Condensed";font-style:normal;font-weight:500;font-display:swap;src:url(vendor/fonts/ibm-plex-sans-condensed-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans Condensed";font-style:normal;font-weight:600;font-display:swap;src:url(vendor/fonts/ibm-plex-sans-condensed-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans Condensed";font-style:normal;font-weight:700;font-display:swap;src:url(vendor/fonts/ibm-plex-sans-condensed-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:400;font-display:swap;src:url(vendor/fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url(vendor/fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:600;font-display:swap;src:url(vendor/fonts/ibm-plex-mono-latin-600-normal.woff2) format("woff2")}
 /* Layout: sala de crisis — barra de mando arriba; mapa operativo con línea de tiempo a la izquierda; panel con pestañas (prioridades, recursos, bitácora, modelo) a la derecha.
    Tema oscuro por defecto (consola de operación nocturna); tema claro opcional para proyectar en salas iluminadas. */
 :root{
@@ -1120,7 +1128,8 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
   <p id="resTxt"></p><div class="res-grid" id="resGrid"></div>
   <div class="res-acc"><button id="resLog">Ver bitácora</button><button id="resCerrar">Cerrar</button><button id="resOtra" class="pri">Reiniciar</button></div></dialog>
 <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<!-- Leaflet 1.9.4 local (BSD-2): el mapa carga sin internet -->
+<script src="vendor/leaflet/leaflet.js"></script>
 
 <header class="appbar spot">
   <div class="brand">
@@ -1438,7 +1447,7 @@ function initMap(){
     "Satélite":L.layerGroup([
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imágenes © Esri, Maxar, Earthstar Geographics"}),
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,opacity:.9}),
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19})]),
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,})]),
     "Calles":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}),
     "Relieve":L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,attribution:"© OpenStreetMap · SRTM · © OpenTopoMap"}),
   };
@@ -1731,6 +1740,9 @@ init();
     ol.insertAdjacentHTML("beforeend",`<li><span>${pasos[i]}</span><em>OK</em></li>`);i++;bar.style.width=(i/pasos.length*100)+"%";tm=setTimeout(paso,380)};
   el.addEventListener("click",fin);addEventListener("keydown",fin);tm=setTimeout(paso,250);
 })();
+// Sin internet: guarda la app y las teselas vistas (solo funciona servido por http/https, no con file://)
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))
+  navigator.serviceWorker.register("sw.js").then(()=>$("footer").insertAdjacentHTML("beforeend"," · Disponible sin conexión: el mapa ya recorrido queda guardado en este navegador"),()=>{});
 // Versión desplegada (solo cuando lo sirve la API de TRIA, por ejemplo en Render)
 fetch("version").then(r=>r.ok?r.json():null).then(v=>{if(v&&v.commit){$("footer").insertAdjacentHTML("beforeend",` · Versión ${v.version} (${v.commit})`)}}).catch(()=>{});
 </script>

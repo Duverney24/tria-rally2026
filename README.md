@@ -30,7 +30,7 @@ La mayoría de los sistemas atiende a quien logra reportar. TRIA también **prio
 ## Estructura del repositorio
 
 ```
-prototipo/        Demo interactiva (un solo HTML, funciona sin internet)
+prototipo/        Demo interactiva (un HTML + Leaflet y fuentes locales en vendor/; sw.js la deja disponible sin internet)
 tria/             Motor en Python
   modelo.py         AHP, Bayes para zonas en silencio, índice de urgencia
   rutas.py          Grafo vial con NetworkX; evita vías caídas
@@ -46,7 +46,7 @@ docs/             Arquitectura y reparto de temas del equipo
 
 ## Cómo ejecutarlo
 
-**Prototipo:** abrir `prototipo/index.html` en el navegador. El mapa usa Leaflet con capas de OpenStreetMap, CARTO, Esri (satélite) y OpenTopoMap, que necesitan internet; en campo se reemplazan por teselas descargadas previamente. La alcaldía, los hospitales y los centros poblados de los corregimientos están en su **ubicación real**; las riberas urbanas son aproximadas. Se pueden corregir con el botón "Ajustar ubicaciones" y pegar el resultado en `GEO_FIJO`.
+**Prototipo:** abrir `prototipo/index.html` en el navegador. El mapa usa Leaflet (incluido en `prototipo/vendor/`) con capas de OpenStreetMap, Esri (satélite) y OpenTopoMap, que necesitan internet la primera vez. Servido por la API o en Render, un service worker (`prototipo/sw.js`) guarda la app y las teselas que se van viendo, así que el prototipo abre y muestra el mapa ya recorrido aunque se caiga la red; en campo se complementa con teselas descargadas previamente. La alcaldía, los hospitales y los centros poblados de los corregimientos están en su **ubicación real**; las riberas urbanas son aproximadas. Se pueden corregir con el botón "Ajustar ubicaciones" y pegar el resultado en `GEO_FIJO`.
 
 **Motor y API:**
 
