@@ -32,6 +32,14 @@ El prototipo simula la consola del **Puesto de Mando Unificado (PMU)** de Pitali
 
 **Panel lateral:** en pantallas grandes, *Ocultar panel* deja el mapa a todo el ancho; la elección se recuerda. En el celular, la **barra inferior** lleva a Mapa, Prioridades, Recursos, Bitácora y En vivo, y marca en rojo la Bitácora si hay alertas sin leer.
 
+**Compartir, informe y CSV** (botones sobre el mapa):
+
+- **Compartir** copia un enlace que abre el mismo escenario, minuto y zona, por ejemplo `…/?escenario=alud&t=90&zona=BRU` (también acepta `&tema=claro`). En el celular abre el menú de compartir.
+- **Informe** abre la impresión con un resumen limpio: indicadores, prioridades con equipos asignados, hospitales y bitácora completa. Elija "Guardar como PDF" para enviarlo.
+- **Bitácora CSV** descarga la bitácora para Excel (separador `;`, con tildes).
+
+**Pestañas con teclado:** con el foco en una pestaña, las flechas ← → pasan a la anterior o la siguiente; *Inicio* y *Fin* van a la primera y la última.
+
 ## 3. Cómo leer el mapa
 
 | Símbolo | Significado |
@@ -72,7 +80,7 @@ El prototipo simula la consola del **Puesto de Mando Unificado (PMU)** de Pitali
 
 ## 6. Pestaña En vivo (motor real)
 
-Solo funciona cuando el prototipo se abre desde la API (Render o `uvicorn tria.api:app`). Al abrirla, el punto junto a **En vivo** se pone verde.
+Funciona cuando el prototipo se abre desde la API (Render, Docker o `uvicorn tria.api:app`) y también desde Vercel o GitHub Pages: ahí se conecta por defecto a la API de Render (`https://tria-rally2026.onrender.com`). El campo **Servidor de la API** permite usar otra (por ejemplo la del PMU en la red local); también se puede abrir con `?api=https://…`. La API acepta peticiones de Vercel, GitHub Pages y localhost; para otros dominios se define `TRIA_ORIGENES` (expresión regular). Al abrirla, el punto junto a **En vivo** se pone verde.
 
 1. La lista muestra las prioridades que calcula el **motor en Python** (AHP + Bayes) con los reportes que recibe la API, con el aporte de cada criterio. Se actualiza cada 5 s; cuando una zona cambia, parpadea y aparece un aviso.
 2. **Sincronizar reloj** pone el motor en el minuto de la simulación, para comparar ambas listas.
