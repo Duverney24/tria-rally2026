@@ -33,11 +33,11 @@ def test_zona_poblada_va_primero():
 def test_asignacion_sin_duplicar_y_con_vias_caidas():
     pmu = PuestoDeMando()
     pmu.zonas["BRU"].latido = False
-    pmu.red.marcar_caida("J3", "BRU")
+    pmu.red.marcar_caida("CRI", "BRU")
     asig = pmu.asignacion()
     zonas_tipo = [(a["zona"], a["tipo"]) for a in asig]
     assert len(zonas_tipo) == len(set(zonas_tipo))
     equipos = [a["equipo"] for a in asig]
     assert len(equipos) == len(set(equipos))
     bru = [a for a in asig if a["zona"] == "BRU"]
-    assert bru and "CHI" in bru[0]["ruta"]  # rodea por Chillurco
+    assert bru and "PAL" in bru[0]["ruta"]  # rodea por Palmarito

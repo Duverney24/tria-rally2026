@@ -1,43 +1,376 @@
 {
-  "_nota": "Escenario ILUSTRATIVO para la demo. Poblaciones, probabilidades previas, intensidades y tiempos de viaje se reemplazan por el censo del DANE, el mapa de amenaza municipal y la cartografía real.",
-  "zonas": [
-    {"id": "CEN", "nombre": "Centro (casco urbano)", "poblacion": 12000, "vulnerabilidad": 0.35, "previa": 0.35, "medio": "ninguno", "intensidad": 7},
-    {"id": "CAS", "nombre": "Ribera La Cascajosa", "poblacion": 3000, "vulnerabilidad": 0.6, "previa": 0.45, "medio": "ninguno", "intensidad": 8},
-    {"id": "CED", "nombre": "Ribera El Cedro", "poblacion": 3000, "vulnerabilidad": 0.6, "previa": 0.4, "medio": "ninguno", "intensidad": 7},
-    {"id": "BRU", "nombre": "Bruselas", "poblacion": 4800, "vulnerabilidad": 0.8, "previa": 0.55, "medio": "baliza", "intensidad": 8},
-    {"id": "CRI", "nombre": "Criollo", "poblacion": 1500, "vulnerabilidad": 0.7, "previa": 0.3, "medio": "baliza", "intensidad": 6},
-    {"id": "LAG", "nombre": "La Laguna", "poblacion": 2200, "vulnerabilidad": 0.7, "previa": 0.35, "medio": "baliza", "intensidad": 6},
-    {"id": "REG", "nombre": "Regueros", "poblacion": 1800, "vulnerabilidad": 0.7, "previa": 0.4, "medio": "baliza", "intensidad": 7},
-    {"id": "CHA", "nombre": "Charguayaco", "poblacion": 1600, "vulnerabilidad": 0.75, "previa": 0.3, "medio": "baliza", "intensidad": 6},
-    {"id": "GUA", "nombre": "Guacacallo", "poblacion": 1400, "vulnerabilidad": 0.7, "previa": 0.3, "medio": "baliza", "intensidad": 6},
-    {"id": "CHI", "nombre": "Chillurco", "poblacion": 1100, "vulnerabilidad": 0.75, "previa": 0.2, "medio": "ninguno", "intensidad": 6},
-    {"id": "PAL", "nombre": "Palmarito", "poblacion": 900, "vulnerabilidad": 0.8, "previa": 0.35, "medio": "baliza", "intensidad": 8}
-  ],
-  "hospitales": {
-    "H1": {"nombre": "Hospital San Antonio", "capacidad": 30, "ocupacion": 18, "energia": true},
-    "H2": {"nombre": "Clínica urbana", "capacidad": 15, "ocupacion": 6, "energia": true},
-    "H3": {"nombre": "Hospital de Garzón", "capacidad": 60, "ocupacion": 30, "energia": true}
+ "_nota": "Coordenadas reales de alcaldía, hospitales y centros poblados (las riberas urbanas son aproximadas). Poblaciones, probabilidades previas, intensidades y tiempos de viaje son ESTIMADOS para la demo; se reemplazan por el censo del DANE, el mapa de amenaza municipal y la cartografía oficial.",
+ "zonas": [
+  {
+   "id": "CEN",
+   "nombre": "Centro (casco urbano)",
+   "poblacion": 12000,
+   "vulnerabilidad": 0.35,
+   "previa": 0.35,
+   "medio": "ninguno",
+   "intensidad": 7
   },
-  "equipos": [
-    {"id": "T1", "nombre": "Bomberos Pitalito (USAR)", "tipo": "rescate", "ubicacion": "PMU"},
-    {"id": "T2", "nombre": "Defensa Civil – rescate", "tipo": "rescate", "ubicacion": "CEN"},
-    {"id": "T3", "nombre": "Cruz Roja – APH 1", "tipo": "aph", "ubicacion": "H1"},
-    {"id": "T4", "nombre": "Ambulancia APH 2", "tipo": "aph", "ubicacion": "H2"},
-    {"id": "T5", "nombre": "Brigada EDAN (CMGRD)", "tipo": "edan", "ubicacion": "PMU"},
-    {"id": "T6", "nombre": "Voluntarios en moto (EDAN)", "tipo": "edan", "ubicacion": "J1"}
+  {
+   "id": "CAS",
+   "nombre": "Ribera La Cascajosa",
+   "poblacion": 3000,
+   "vulnerabilidad": 0.6,
+   "previa": 0.45,
+   "medio": "ninguno",
+   "intensidad": 8
+  },
+  {
+   "id": "CED",
+   "nombre": "Ribera El Cedro",
+   "poblacion": 3000,
+   "vulnerabilidad": 0.6,
+   "previa": 0.4,
+   "medio": "ninguno",
+   "intensidad": 7
+  },
+  {
+   "id": "BRU",
+   "nombre": "Bruselas",
+   "poblacion": 4800,
+   "vulnerabilidad": 0.8,
+   "previa": 0.55,
+   "medio": "baliza",
+   "intensidad": 8
+  },
+  {
+   "id": "CRI",
+   "nombre": "Criollo",
+   "poblacion": 1500,
+   "vulnerabilidad": 0.7,
+   "previa": 0.3,
+   "medio": "baliza",
+   "intensidad": 6
+  },
+  {
+   "id": "LAG",
+   "nombre": "La Laguna",
+   "poblacion": 2200,
+   "vulnerabilidad": 0.7,
+   "previa": 0.35,
+   "medio": "baliza",
+   "intensidad": 6
+  },
+  {
+   "id": "REG",
+   "nombre": "Regueros",
+   "poblacion": 1800,
+   "vulnerabilidad": 0.7,
+   "previa": 0.4,
+   "medio": "baliza",
+   "intensidad": 7
+  },
+  {
+   "id": "CHA",
+   "nombre": "Charguayaco",
+   "poblacion": 1600,
+   "vulnerabilidad": 0.75,
+   "previa": 0.3,
+   "medio": "baliza",
+   "intensidad": 6
+  },
+  {
+   "id": "GUA",
+   "nombre": "Guacacallo",
+   "poblacion": 1400,
+   "vulnerabilidad": 0.7,
+   "previa": 0.3,
+   "medio": "baliza",
+   "intensidad": 6
+  },
+  {
+   "id": "CHI",
+   "nombre": "Chillurco",
+   "poblacion": 1100,
+   "vulnerabilidad": 0.75,
+   "previa": 0.2,
+   "medio": "ninguno",
+   "intensidad": 6
+  },
+  {
+   "id": "PAL",
+   "nombre": "Palmarito",
+   "poblacion": 900,
+   "vulnerabilidad": 0.8,
+   "previa": 0.35,
+   "medio": "baliza",
+   "intensidad": 8
+  }
+ ],
+ "hospitales": {
+  "H1": {
+   "nombre": "Hospital San Antonio",
+   "capacidad": 30,
+   "ocupacion": 18,
+   "energia": true
+  },
+  "H2": {
+   "nombre": "Clínica Reina Isabel",
+   "capacidad": 15,
+   "ocupacion": 6,
+   "energia": true
+  },
+  "H3": {
+   "nombre": "Hospital San Vicente de Paúl (Garzón)",
+   "capacidad": 60,
+   "ocupacion": 30,
+   "energia": true
+  }
+ },
+ "equipos": [
+  {
+   "id": "T1",
+   "nombre": "Bomberos Pitalito (USAR)",
+   "tipo": "rescate",
+   "ubicacion": "PMU"
+  },
+  {
+   "id": "T2",
+   "nombre": "Defensa Civil – rescate",
+   "tipo": "rescate",
+   "ubicacion": "CEN"
+  },
+  {
+   "id": "T3",
+   "nombre": "Cruz Roja – APH 1",
+   "tipo": "aph",
+   "ubicacion": "H1"
+  },
+  {
+   "id": "T4",
+   "nombre": "Ambulancia APH 2",
+   "tipo": "aph",
+   "ubicacion": "H2"
+  },
+  {
+   "id": "T5",
+   "nombre": "Brigada EDAN (CMGRD)",
+   "tipo": "edan",
+   "ubicacion": "PMU"
+  },
+  {
+   "id": "T6",
+   "nombre": "Voluntarios en moto (EDAN)",
+   "tipo": "edan",
+   "ubicacion": "J1"
+  }
+ ],
+ "vias": [
+  {
+   "a": "PMU",
+   "b": "CEN",
+   "minutos": 2
+  },
+  {
+   "a": "PMU",
+   "b": "H1",
+   "minutos": 4
+  },
+  {
+   "a": "PMU",
+   "b": "H2",
+   "minutos": 3
+  },
+  {
+   "a": "PMU",
+   "b": "CAS",
+   "minutos": 5
+  },
+  {
+   "a": "PMU",
+   "b": "CED",
+   "minutos": 4
+  },
+  {
+   "a": "CED",
+   "b": "H1",
+   "minutos": 2
+  },
+  {
+   "a": "H1",
+   "b": "J3",
+   "minutos": 5
+  },
+  {
+   "a": "PMU",
+   "b": "J3",
+   "minutos": 7
+  },
+  {
+   "a": "PMU",
+   "b": "J1",
+   "minutos": 9,
+   "nombre": "Vía a San Agustín"
+  },
+  {
+   "a": "CAS",
+   "b": "J1",
+   "minutos": 6
+  },
+  {
+   "a": "CEN",
+   "b": "J2",
+   "minutos": 6,
+   "nombre": "Salida norte"
+  },
+  {
+   "a": "J2",
+   "b": "REG",
+   "minutos": 5,
+   "nombre": "Vía a Regueros"
+  },
+  {
+   "a": "J2",
+   "b": "GUA",
+   "minutos": 8,
+   "nombre": "Puente de la vía a Guacacallo"
+  },
+  {
+   "a": "REG",
+   "b": "GUA",
+   "minutos": 5
+  },
+  {
+   "a": "GUA",
+   "b": "H3",
+   "minutos": 75,
+   "nombre": "Ruta 45 hacia Garzón"
+  },
+  {
+   "a": "J2",
+   "b": "LAG",
+   "minutos": 20,
+   "nombre": "Vía a La Laguna"
+  },
+  {
+   "a": "LAG",
+   "b": "CHI",
+   "minutos": 25,
+   "nombre": "Trocha La Laguna–Chillurco"
+  },
+  {
+   "a": "J1",
+   "b": "CRI",
+   "minutos": 15,
+   "nombre": "Vía a Criollo"
+  },
+  {
+   "a": "J1",
+   "b": "CHI",
+   "minutos": 18,
+   "nombre": "Vía a Chillurco"
+  },
+  {
+   "a": "CRI",
+   "b": "CHI",
+   "minutos": 12
+  },
+  {
+   "a": "CRI",
+   "b": "BRU",
+   "minutos": 30,
+   "nombre": "Vía a Bruselas"
+  },
+  {
+   "a": "PAL",
+   "b": "BRU",
+   "minutos": 45,
+   "nombre": "Trocha Palmarito–Bruselas"
+  },
+  {
+   "a": "J3",
+   "b": "CHA",
+   "minutos": 10,
+   "nombre": "Vía a Charguayaco"
+  },
+  {
+   "a": "J3",
+   "b": "PAL",
+   "minutos": 12,
+   "nombre": "Vía a Palmarito"
+  },
+  {
+   "a": "CHA",
+   "b": "PAL",
+   "minutos": 8
+  }
+ ],
+ "coordenadas": {
+  "CEN": [
+   1.85165,
+   -76.04681
   ],
-  "vias": [
-    {"a": "PMU", "b": "CEN", "minutos": 4}, {"a": "PMU", "b": "CAS", "minutos": 6}, {"a": "PMU", "b": "CED", "minutos": 6},
-    {"a": "PMU", "b": "H1", "minutos": 4}, {"a": "PMU", "b": "H2", "minutos": 4}, {"a": "CEN", "b": "CED", "minutos": 5},
-    {"a": "H1", "b": "CED", "minutos": 3}, {"a": "CEN", "b": "REG", "minutos": 25, "nombre": "Vía a Regueros"},
-    {"a": "REG", "b": "H3", "minutos": 70, "nombre": "Vía al norte (Garzón)"},
-    {"a": "CEN", "b": "GUA", "minutos": 22, "nombre": "Puente vía Guacacallo"}, {"a": "GUA", "b": "PAL", "minutos": 18},
-    {"a": "GUA", "b": "H3", "minutos": 75}, {"a": "PMU", "b": "J1", "minutos": 10}, {"a": "J1", "b": "CHI", "minutos": 20},
-    {"a": "J1", "b": "CRI", "minutos": 22}, {"a": "CRI", "b": "REG", "minutos": 35, "nombre": "Trocha Criollo–Regueros"},
-    {"a": "J1", "b": "J3", "minutos": 12}, {"a": "J3", "b": "CHA", "minutos": 18},
-    {"a": "J3", "b": "BRU", "minutos": 35, "nombre": "Vía Pitalito–Mocoa"},
-    {"a": "CHI", "b": "BRU", "minutos": 40, "nombre": "Trocha Chillurco–Bruselas"},
-    {"a": "CED", "b": "J2", "minutos": 10}, {"a": "J2", "b": "LAG", "minutos": 15}, {"a": "J2", "b": "PAL", "minutos": 20},
-    {"a": "J2", "b": "J3", "minutos": 15}, {"a": "CAS", "b": "J1", "minutos": 9}
+  "CAS": [
+   1.86044,
+   -76.0595
+  ],
+  "CED": [
+   1.84411,
+   -76.04811
+  ],
+  "BRU": [
+   1.77767,
+   -76.17352
+  ],
+  "CRI": [
+   1.85608,
+   -76.1511
+  ],
+  "LAG": [
+   1.96094,
+   -76.08367
+  ],
+  "REG": [
+   1.90244,
+   -76.02669
+  ],
+  "CHA": [
+   1.7821,
+   -76.04626
+  ],
+  "GUA": [
+   1.91669,
+   -76.03337
+  ],
+  "CHI": [
+   1.89095,
+   -76.1435
+  ],
+  "PAL": [
+   1.78925,
+   -76.07302
+  ],
+  "PMU": [
+   1.85039,
+   -76.04623
+  ],
+  "H1": [
+   1.84501,
+   -76.05027
+  ],
+  "H2": [
+   1.84856,
+   -76.04333
+  ],
+  "H3": [
+   2.19897,
+   -75.63157
+  ],
+  "J1": [
+   1.859,
+   -76.09
+  ],
+  "J2": [
+   1.88,
+   -76.033
+  ],
+  "J3": [
+   1.82,
+   -76.056
   ]
+ }
 }

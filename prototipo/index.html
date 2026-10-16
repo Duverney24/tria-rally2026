@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
 <title>TRIA Pitalito</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +24,7 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{background:var(--bg)}
 body{color:var(--ink);font-family:var(--body);font-size:13.5px;line-height:1.45;margin:0;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 20px}
@@ -951,37 +959,43 @@ svg.leaflet-image-layer.leaflet-interactive path {
 </main>
 
 <footer id="footer">
-  Prototipo del equipo CHIVAS DE RESCATE · Rally Latinoamericano de Innovación 2026 · Reto 9. Escenario, poblaciones, ubicaciones y tiempos de viaje ilustrativos; en una implementación real se usan la cartografía y el censo del DANE. El escenario por defecto es el peor caso: sin red celular, internet ni energía; solo sobreviven algunas balizas LoRa y el enlace satelital del PMU. TRIA recomienda; el Puesto de Mando decide. En esta demo la asignación es voraz; el motor del repositorio la resuelve con programación lineal entera (PuLP).
+  Prototipo del equipo CHIVAS DE RESCATE · Rally Latinoamericano de Innovación 2026 · Reto 9. Ubicaciones reales de la alcaldía, los hospitales y los centros poblados de cada corregimiento; las riberas urbanas, las poblaciones y los tiempos de viaje son estimados y en una implementación real se toman del censo del DANE y la cartografía oficial. El escenario por defecto es el peor caso: sin red celular, internet ni energía; solo sobreviven algunas balizas LoRa y el enlace satelital del PMU. TRIA recomienda; el Puesto de Mando decide. En esta demo la asignación es voraz; el motor del repositorio la resuelve con programación lineal entera (PuLP).
 </footer>
 
 <script>
 // ---------- Datos del escenario (ilustrativos) ----------
+// Coordenadas reales (Google Maps / OpenStreetMap): alcaldía, parque principal, hospitales y el centro poblado
+// o la institución educativa de cada corregimiento. Las riberas urbanas son aproximadas.
+// x, y: posición en el esquema antiguo (solo de respaldo).
 const NODES = {
-  PMU:{name:"PMU – Alcaldía",x:520,y:330,kind:"pmu"},
-  CEN:{name:"Centro (casco urbano)",x:600,y:290,kind:"zona",pop:12000,vuln:.35,prior:.35},
-  CAS:{name:"Ribera La Cascajosa",x:455,y:265,kind:"zona",pop:3000,vuln:.6,prior:.45},
-  CED:{name:"Ribera El Cedro",x:615,y:385,kind:"zona",pop:3000,vuln:.6,prior:.4},
-  H1:{name:"Hospital San Antonio",x:565,y:425,kind:"hosp"},
-  H2:{name:"Clínica urbana",x:440,y:395,kind:"hosp"},
-  H3:{name:"Hospital de Garzón",x:930,y:70,kind:"hosp"},
-  BRU:{name:"Bruselas",x:120,y:540,kind:"zona",pop:4800,vuln:.8,prior:.55},
-  CRI:{name:"Criollo",x:300,y:150,kind:"zona",pop:1500,vuln:.7,prior:.3},
-  LAG:{name:"La Laguna",x:740,y:545,kind:"zona",pop:2200,vuln:.7,prior:.35},
-  REG:{name:"Regueros",x:720,y:150,kind:"zona",pop:1800,vuln:.7,prior:.4},
-  CHA:{name:"Charguayaco",x:400,y:575,kind:"zona",pop:1600,vuln:.75,prior:.3},
-  GUA:{name:"Guacacallo",x:840,y:290,kind:"zona",pop:1400,vuln:.7,prior:.3},
-  CHI:{name:"Chillurco",x:160,y:320,kind:"zona",pop:1100,vuln:.75,prior:.2},
-  PAL:{name:"Palmarito",x:880,y:470,kind:"zona",pop:900,vuln:.8,prior:.35},
-  J1:{name:"Cruce occidental",x:340,y:340,kind:"cruce"},
-  J2:{name:"Cruce suroriental",x:660,y:465,kind:"cruce"},
-  J3:{name:"Cruce sur",x:420,y:460,kind:"cruce"},
+  PMU:{name:"PMU – Alcaldía",lat:1.85039,lng:-76.04623,x:520,y:330,kind:"pmu"},
+  CEN:{name:"Centro (casco urbano)",lat:1.85165,lng:-76.04681,x:600,y:290,kind:"zona",pop:12000,vuln:.35,prior:.35},
+  CAS:{name:"Ribera La Cascajosa",lat:1.86044,lng:-76.05950,x:455,y:265,kind:"zona",pop:3000,vuln:.6,prior:.45},
+  CED:{name:"Ribera El Cedro",lat:1.84411,lng:-76.04811,x:615,y:385,kind:"zona",pop:3000,vuln:.6,prior:.4},
+  H1:{name:"Hospital San Antonio",lat:1.84501,lng:-76.05027,x:565,y:425,kind:"hosp"},
+  H2:{name:"Clínica Reina Isabel",lat:1.84856,lng:-76.04333,x:440,y:395,kind:"hosp"},
+  H3:{name:"Hospital San Vicente de Paúl (Garzón)",lat:2.19897,lng:-75.63157,x:930,y:70,kind:"hosp"},
+  BRU:{name:"Bruselas",lat:1.77767,lng:-76.17352,x:120,y:540,kind:"zona",pop:4800,vuln:.8,prior:.55},
+  CRI:{name:"Criollo",lat:1.85608,lng:-76.15110,x:300,y:150,kind:"zona",pop:1500,vuln:.7,prior:.3},
+  LAG:{name:"La Laguna",lat:1.96094,lng:-76.08367,x:740,y:545,kind:"zona",pop:2200,vuln:.7,prior:.35},
+  REG:{name:"Regueros",lat:1.90244,lng:-76.02669,x:720,y:150,kind:"zona",pop:1800,vuln:.7,prior:.4},
+  CHA:{name:"Charguayaco",lat:1.78210,lng:-76.04626,x:400,y:575,kind:"zona",pop:1600,vuln:.75,prior:.3},
+  GUA:{name:"Guacacallo",lat:1.91669,lng:-76.03337,x:840,y:290,kind:"zona",pop:1400,vuln:.7,prior:.3},
+  CHI:{name:"Chillurco",lat:1.89095,lng:-76.14350,x:160,y:320,kind:"zona",pop:1100,vuln:.75,prior:.2},
+  PAL:{name:"Palmarito",lat:1.78925,lng:-76.07302,x:880,y:470,kind:"zona",pop:900,vuln:.8,prior:.35},
+  J1:{name:"Salida a San Agustín",lat:1.85900,lng:-76.09000,x:340,y:340,kind:"cruce"},
+  J2:{name:"Salida norte (Ruta 45)",lat:1.88000,lng:-76.03300,x:660,y:465,kind:"cruce"},
+  J3:{name:"Salida sur",lat:1.82000,lng:-76.05600,x:420,y:460,kind:"cruce"},
 };
+// [origen, destino, minutos estimados, nombre]
 const EDGES0 = [
-  ["PMU","CEN",4],["PMU","CAS",6],["PMU","CED",6],["PMU","H1",4],["PMU","H2",4],["CEN","CED",5],["H1","CED",3],
-  ["CEN","REG",25,"Vía a Regueros"],["REG","H3",70,"Vía al norte (Garzón)"],["CEN","GUA",22,"Puente vía Guacacallo"],["GUA","PAL",18],
-  ["GUA","H3",75],["PMU","J1",10],["J1","CHI",20],["J1","CRI",22],["CRI","REG",35,"Trocha Criollo–Regueros"],
-  ["J1","J3",12],["J3","CHA",18],["J3","BRU",35,"Vía Pitalito–Mocoa"],["CHI","BRU",40,"Trocha Chillurco–Bruselas"],
-  ["CED","J2",10],["J2","LAG",15],["J2","PAL",20],["J2","J3",15],["CAS","J1",9]
+  ["PMU","CEN",2],["PMU","H1",4],["PMU","H2",3],["PMU","CAS",5],["PMU","CED",4],["CED","H1",2],["H1","J3",5],
+  ["PMU","J3",7],["PMU","J1",9,"Vía a San Agustín"],["CAS","J1",6],["CEN","J2",6,"Salida norte"],
+  ["J2","REG",5,"Vía a Regueros"],["J2","GUA",8,"Puente de la vía a Guacacallo"],["REG","GUA",5],
+  ["GUA","H3",75,"Ruta 45 hacia Garzón"],["J2","LAG",20,"Vía a La Laguna"],["LAG","CHI",25,"Trocha La Laguna–Chillurco"],
+  ["J1","CRI",15,"Vía a Criollo"],["J1","CHI",18,"Vía a Chillurco"],["CRI","CHI",12],
+  ["CRI","BRU",30,"Vía a Bruselas"],["PAL","BRU",45,"Trocha Palmarito–Bruselas"],
+  ["J3","CHA",10,"Vía a Charguayaco"],["J3","PAL",12,"Vía a Palmarito"],["CHA","PAL",8]
 ];
 const TRUTH = { // lo que encuentra el equipo EDAN al llegar a una zona sin contacto
   BRU:{color:"rojo",personas:120,senales:4,heridos:12,colapso:true,nota:"Viviendas colapsadas, antena y energía caídas."},
@@ -1007,12 +1021,12 @@ const SCEN={
               hbLost(s,"BRU");}},
   {t:5,ev:s=>hbLost(s,"PAL")},
   {t:10,ev:s=>report(s,"CRI","baliza LoRa (salto por la malla)")},
-  {t:15,ev:s=>{block(s,"J3","BRU","Derrumbe en la vía Pitalito–Mocoa");report(s,"REG","baliza LoRa (salto por la malla)");}},
+  {t:15,ev:s=>{block(s,"CRI","BRU","Derrumbe en la vía a Bruselas");report(s,"REG","baliza LoRa (salto por la malla)");}},
   {t:20,ev:s=>{s.shake=true;log(s,"Mapa de intensidad sísmica del SGC recibido por el enlace satelital del PMU: probabilidades previas actualizadas por zona.","asig");}},
   {t:25,ev:s=>report(s,"CHA","baliza LoRa")},
-  {t:30,ev:s=>{s.hosp.H2.energia=false;log(s,"Clínica urbana sin energía: TRIA deja de enviarle heridos.","alerta");report(s,"LAG","baliza LoRa");}},
+  {t:30,ev:s=>{s.hosp.H2.energia=false;log(s,`${NODES.H2.name} sin energía: TRIA deja de enviarle heridos.`,"alerta");report(s,"LAG","baliza LoRa");}},
   {t:40,ev:s=>report(s,"GUA","baliza LoRa")},
-  {t:45,ev:s=>block(s,"CEN","GUA","Puente de la vía a Guacacallo afectado")},
+  {t:45,ev:s=>block(s,"J2","GUA","Puente de la vía a Guacacallo afectado")},
   {t:90,ev:s=>{s.teams.push(team("T7","USAR internacional","rescate","PMU"));log(s,"Llega un grupo USAR internacional y se integra al tablero común.","ok");}},
  ]},
  parcial:{label:"Apagón parcial",medio:()=>"celular",script:[
@@ -1020,12 +1034,12 @@ const SCEN={
               report(s,"CAS","SMS");report(s,"CEN","WhatsApp (red parcial)");}},
   {t:5,ev:s=>report(s,"CED","SMS")},
   {t:10,ev:s=>report(s,"CRI","baliza LoRa")},
-  {t:15,ev:s=>{block(s,"J3","BRU","Derrumbe en la vía Pitalito–Mocoa");report(s,"REG","baliza LoRa");}},
+  {t:15,ev:s=>{block(s,"CRI","BRU","Derrumbe en la vía a Bruselas");report(s,"REG","baliza LoRa");}},
   {t:20,ev:s=>report(s,"LAG","baliza LoRa")},
   {t:25,ev:s=>report(s,"CHA","baliza LoRa")},
-  {t:30,ev:s=>{s.hosp.H2.energia=false;log(s,"Clínica urbana sin energía: TRIA deja de enviarle heridos.","alerta");report(s,"GUA","baliza LoRa");}},
+  {t:30,ev:s=>{s.hosp.H2.energia=false;log(s,`${NODES.H2.name} sin energía: TRIA deja de enviarle heridos.`,"alerta");report(s,"GUA","baliza LoRa");}},
   {t:40,ev:s=>report(s,"PAL","baliza LoRa")},
-  {t:45,ev:s=>block(s,"CEN","GUA","Puente de la vía a Guacacallo afectado")},
+  {t:45,ev:s=>block(s,"J2","GUA","Puente de la vía a Guacacallo afectado")},
   {t:90,ev:s=>{s.teams.push(team("T7","USAR internacional","rescate","PMU"));log(s,"Llega un grupo USAR internacional y se integra al tablero común.","ok");}},
 ]}
 };
@@ -1163,17 +1177,15 @@ function finishService(t){const j=t.job;const z=S.zones[j.zone];const name=NODES
 
 // ---------- Geografía ----------
 // Casco urbano de Pitalito (coordenadas reales) y Hospital de Garzón (cabecera de Garzón).
-// Las veredas están en posiciones APROXIMADAS: use "Ajustar ubicaciones" para corregirlas y pegue aquí el resultado.
-const GEO_FIJO = {PMU:[1.85389,-76.05139],H3:[2.19590,-75.62760],
-  // casco urbano (aproximado, dentro de ~1 km de la alcaldía)
-  CEN:[1.85650,-76.04800],CAS:[1.86050,-76.05950],CED:[1.84300,-76.04000],H1:[1.84980,-76.04650],H2:[1.85250,-76.05750]};
+// Las coordenadas están en NODES. "Ajustar ubicaciones" permite corregirlas arrastrando.
+const GEO_FIJO = {}; // pegue aquí correcciones: {"BRU":[lat,lng], ...}
 const GEO_ORIGEN = {x:520,y:330}, GEO_GRADOS = 0.00036; // ~40 m por unidad del esquema
 let GEO_EDITADO = {};
-try{GEO_EDITADO = JSON.parse(localStorage.getItem("tria-geo")||"{}")}catch(e){GEO_EDITADO={}}
+try{GEO_EDITADO = JSON.parse(localStorage.getItem("tria-geo-v2")||"{}")}catch(e){GEO_EDITADO={}}
 for(const [id,n] of Object.entries(NODES)){
-  const f=GEO_EDITADO[id]||GEO_FIJO[id];
-  n.lat=f?f[0]:+(GEO_FIJO.PMU[0]-(n.y-GEO_ORIGEN.y)*GEO_GRADOS).toFixed(5);
-  n.lng=f?f[1]:+(GEO_FIJO.PMU[1]+(n.x-GEO_ORIGEN.x)*GEO_GRADOS).toFixed(5);
+  const f=GEO_EDITADO[id]||GEO_FIJO[id]||(n.lat!=null?[n.lat,n.lng]:null);
+  n.lat=f?f[0]:+(1.85039-(n.y-GEO_ORIGEN.y)*GEO_GRADOS).toFixed(5);
+  n.lng=f?f[1]:+(-76.04623+(n.x-GEO_ORIGEN.x)*GEO_GRADOS).toFixed(5);
 }
 const URB=new Set(["CEN","CAS","CED"]);
 const ll=id=>[NODES[id].lat,NODES[id].lng];
@@ -1204,7 +1216,7 @@ function initMap(){
   document.addEventListener("fullscreenchange",()=>setTimeout(()=>MAP.invalidateSize(),150));
   $("btnEdit").onclick=()=>{EDIT=!EDIT;$("btnEdit").setAttribute("aria-pressed",String(EDIT));$("geoEdit").hidden=!EDIT;renderMap();geoDump()};
   $("btnGeoCopy").onclick=()=>{const t=$("geoOut");navigator.clipboard?.writeText(t.value).then(()=>{$("btnGeoCopy").textContent="Copiado"},()=>{t.select()})};
-  $("btnGeoReset").onclick=()=>{try{localStorage.removeItem("tria-geo")}catch(e){}$("geoMsg").textContent="Ubicaciones restablecidas. Recargue la página para verlas."};
+  $("btnGeoReset").onclick=()=>{try{localStorage.removeItem("tria-geo-v2")}catch(e){}$("geoMsg").textContent="Ubicaciones restablecidas. Recargue la página para verlas."};
 }
 function centrar(){const pts=Object.keys(NODES).filter(id=>id!=="H3").map(ll);MAP.fitBounds(pts,{padding:[40,40]})}
 function geoDump(){const o={};for(const [id,n] of Object.entries(NODES))if(n.kind!=="cruce"||EDIT)o[id]=[n.lat,n.lng];
@@ -1269,7 +1281,7 @@ function addNode(id,html,size){
   const m=L.marker(ll(id),{draggable:EDIT,riseOnHover:true,icon:L.divIcon({className:"nicon",html,iconSize:size,iconAnchor:[size[0]/2,size[1]/2]})}).addTo(LY.nodes);
   if(S.zones[id])m.on("click",()=>{S.sel=id;document.querySelector('.tabs button[data-tab="prio"]').click();render()});
   if(EDIT)m.on("dragend",()=>{const p=m.getLatLng();NODES[id].lat=+p.lat.toFixed(5);NODES[id].lng=+p.lng.toFixed(5);
-    const o={};for(const [k,n] of Object.entries(NODES))o[k]=[n.lat,n.lng];try{localStorage.setItem("tria-geo",JSON.stringify(o))}catch(e){}
+    const o={};for(const [k,n] of Object.entries(NODES))o[k]=[n.lat,n.lng];try{localStorage.setItem("tria-geo-v2",JSON.stringify(o))}catch(e){}
     edgesKey="";geoDump();renderMap()});
 }
 function resetTeams(){for(const id of Object.keys(TM)){LY.teams.removeLayer(TM[id]);delete TM[id]}}
@@ -1376,3 +1388,6 @@ init();
 // Versión desplegada (solo cuando lo sirve la API de TRIA, por ejemplo en Render)
 fetch("version").then(r=>r.ok?r.json():null).then(v=>{if(v&&v.commit){$("footer").insertAdjacentHTML("beforeend",` · Versión ${v.version} (${v.commit})`)}}).catch(()=>{});
 </script>
+
+</body>
+</html>

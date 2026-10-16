@@ -46,7 +46,7 @@ docs/             Arquitectura y reparto de temas del equipo
 
 ## Cómo ejecutarlo
 
-**Prototipo:** abrir `prototipo/index.html` en el navegador. El mapa usa Leaflet con capas de OpenStreetMap, CARTO, Esri (satélite) y OpenTopoMap, que necesitan internet; en campo se reemplazan por teselas descargadas previamente. Las veredas están en posiciones **aproximadas**: corríjanlas con el botón "Ajustar ubicaciones" y peguen el resultado en `GEO_FIJO`.
+**Prototipo:** abrir `prototipo/index.html` en el navegador. El mapa usa Leaflet con capas de OpenStreetMap, CARTO, Esri (satélite) y OpenTopoMap, que necesitan internet; en campo se reemplazan por teselas descargadas previamente. La alcaldía, los hospitales y los centros poblados de los corregimientos están en su **ubicación real**; las riberas urbanas son aproximadas. Se pueden corregir con el botón "Ajustar ubicaciones" y pegar el resultado en `GEO_FIJO`.
 
 **Motor y API:**
 
@@ -64,9 +64,9 @@ Ejemplo rápido en Python:
 from tria.escenario import PuestoDeMando
 pmu = PuestoDeMando()
 pmu.zonas["BRU"].latido = False        # la baliza de Bruselas dejó de latir
-pmu.red.marcar_caida("J3", "BRU")      # cae la vía Pitalito–Mocoa
+pmu.red.marcar_caida("CRI", "BRU")     # cae la vía a Bruselas
 print(pmu.prioridades()[:3])
-print(pmu.asignacion())                # envía rescate a Bruselas rodeando por Chillurco
+print(pmu.asignacion())                # envía rescate a Bruselas rodeando por Palmarito
 ```
 
 **En línea (Render):** el archivo `render.yaml` despliega la API y el prototipo en un solo servicio. Cada push a `main` publica una versión nueva automáticamente; el pie del prototipo muestra el commit desplegado. Rutas: `/` prototipo · `/docs` API · `/version` versión desplegada.
