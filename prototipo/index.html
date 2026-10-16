@@ -881,10 +881,142 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .leaflet-control-attribution a{color:var(--muted)!important}
 .leaflet-control-scale-line{background:rgba(10,17,24,.65);color:var(--ink);border-color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.route-anim,.nzone{animation:none!important}}
+/* ---------- Efectos visuales: luces, sombras y movimiento ----------
+   Reutiliza patrones de otros proyectos del equipo: fondo con luces a la deriva (bgDrift, ControllerNAV),
+   foco que sigue al puntero (bento de rlases.dev), entrada escalonada (pageIn de Sinergy / entrada-tablero de SG_SST),
+   destello lateral (brillo-lateral de SG_SST), pulso de anillo (gh-pulse-ring de rlases.dev) y destello de cambio (cn-row-flash).
+   Los elementos que se regeneran en cada recálculo no tienen animación de entrada: solo se anima lo que cambia. */
+:root{
+  --glow-accent:color-mix(in srgb,var(--accent) 45%,transparent);
+  --shadow-1:0 1px 0 rgba(255,255,255,.035) inset,0 1px 2px rgba(0,0,0,.35),0 8px 24px -12px rgba(0,0,0,.6);
+  --shadow-2:0 1px 0 rgba(255,255,255,.05) inset,0 2px 4px rgba(0,0,0,.35),0 18px 40px -18px rgba(0,0,0,.75);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+}
+body{position:relative;isolation:isolate;min-height:100vh}
+body::before,body::after{content:"";position:fixed;z-index:-1;pointer-events:none}
+body::before{inset:-20%;background:
+  radial-gradient(38% 32% at 18% 12%,color-mix(in srgb,var(--accent) 13%,transparent),transparent 70%),
+  radial-gradient(30% 28% at 86% 78%,color-mix(in srgb,var(--silencio) 10%,transparent),transparent 70%),
+  radial-gradient(26% 24% at 72% 8%,color-mix(in srgb,var(--rojo) 6%,transparent),transparent 70%);
+  animation:bgDrift 38s ease-in-out infinite}
+body::after{inset:0;opacity:.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0,#000 20%,transparent 75%);mask-image:radial-gradient(ellipse 80% 60% at 50% 0,#000 20%,transparent 75%)}
+@keyframes bgDrift{0%,100%{transform:translate(-3%,-2%) rotate(0)}50%{transform:translate(3%,2%) rotate(4deg)}}
+
+/* Superficies tipo vidrio con luz superior */
+.appbar,.card,.kpis{background:linear-gradient(180deg,color-mix(in srgb,var(--surface2) 70%,var(--surface)),var(--surface) 55%);box-shadow:var(--shadow-1)}
+.appbar{position:relative;overflow:hidden;background:linear-gradient(180deg,color-mix(in srgb,var(--surface2) 85%,transparent),color-mix(in srgb,var(--surface) 92%,transparent));
+  -webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2)}
+.appbar::after{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,var(--glow-accent),transparent);pointer-events:none}
+.card{transition:border-color .3s,box-shadow .3s}
+.card:hover{border-color:var(--line2);box-shadow:var(--shadow-2)}
+
+/* Marca: brillo del logo y destello que recorre el nombre */
+.brand svg{filter:drop-shadow(0 0 6px var(--glow-accent));animation:iconPulse 4s ease-in-out infinite}
+.brand b{background:linear-gradient(100deg,var(--ink) 40%,#fff 50%,var(--ink) 60%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 7s ease-in-out infinite}
+@keyframes iconPulse{0%,100%{filter:drop-shadow(0 0 4px var(--glow-accent))}50%{filter:drop-shadow(0 0 12px var(--glow-accent))}}
+@keyframes sheen{0%,60%{background-position:120% 0}100%{background-position:-120% 0}}
+
+/* Estado de conexión y reloj */
+.status i{animation:pulseRing 2.2s var(--ease-out) infinite}
+@keyframes pulseRing{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ambar) 55%,transparent)}70%,100%{box-shadow:0 0 0 8px transparent}}
+.clockbox b{text-shadow:0 0 18px var(--glow-accent)}
+
+/* Botones: elevación, luz y pulsación */
+button,select{transition:border-color .2s,background-color .2s,box-shadow .25s,transform .15s var(--ease-out)}
+button:hover,select:hover{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent),0 6px 18px -8px var(--glow-accent)}
+button:active{transform:translateY(1px) scale(.98)}
+.play{background:radial-gradient(circle at 35% 30%,color-mix(in srgb,#fff 35%,var(--accent)),var(--accent) 60%);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent),0 8px 22px -6px var(--glow-accent)}
+.play:hover{transform:scale(1.06)}
+.play[aria-label="Pausar"]{animation:playRing 1.8s var(--ease-out) infinite}
+@keyframes playRing{0%{box-shadow:0 0 0 0 var(--glow-accent),0 8px 22px -6px var(--glow-accent)}70%,100%{box-shadow:0 0 0 12px transparent,0 8px 22px -6px var(--glow-accent)}}
+.maptools button[aria-pressed="true"],.seg button[aria-pressed="true"]{box-shadow:0 0 14px -2px var(--glow-accent)}
+
+/* Foco de luz que sigue al puntero (tarjetas e indicadores) */
+.spot::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:0;transition:opacity .35s;
+  background:radial-gradient(260px circle at var(--spot-x,50%) var(--spot-y,50%),color-mix(in srgb,var(--accent) 10%,transparent),transparent 70%)}
+.spot:hover::before{opacity:1}
+.kpi{position:relative;transition:background-color .3s}
+.kpi>*{position:relative;z-index:1}
+.kpi:hover{background:var(--surface2)}
+.kpi.alert b{text-shadow:0 0 14px color-mix(in srgb,var(--rojo) 55%,transparent)}
+.kpi.warn b{text-shadow:0 0 14px color-mix(in srgb,var(--silencio) 55%,transparent)}
+.kpi.bump b{animation:bump .7s var(--ease-out)}
+.kpi.bump{animation:flash 1.1s ease-out}
+@keyframes bump{0%{transform:translateY(-4px);opacity:.3}100%{transform:none;opacity:1}}
+@keyframes flash{0%{background:color-mix(in srgb,var(--accent) 16%,var(--surface))}100%{background:var(--surface)}}
+
+/* Línea de tiempo con luz */
+.tl-fill{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 40%,transparent),var(--accent));box-shadow:0 0 10px var(--glow-accent);transition:width .3s linear}
+.tl-head{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent),0 0 14px var(--glow-accent);transition:left .3s linear}
+.tl-tick.past{background:var(--accent);box-shadow:0 0 6px var(--glow-accent)}
+
+/* Pestañas: subrayado luminoso y aparición del panel */
+.tabs button{position:relative;transition:color .2s}
+.tabs button:hover{color:var(--ink);box-shadow:none}
+.tabs button[aria-selected="true"]{text-shadow:0 0 12px var(--glow-accent);box-shadow:0 8px 14px -12px var(--accent)}
+.tabpanel{animation:panelIn .35s var(--ease-out)}
+@keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Lista de prioridades */
+.pitem{transition:background-color .2s,border-color .2s,box-shadow .25s}
+.pitem::before{box-shadow:0 0 8px var(--st)}
+.pitem:hover{box-shadow:inset 0 0 0 1px var(--line2)}
+.pitem.sel{background:linear-gradient(90deg,color-mix(in srgb,var(--st) 10%,var(--surface2)),var(--surface2) 60%);box-shadow:0 0 0 1px color-mix(in srgb,var(--st) 35%,transparent),0 10px 24px -14px color-mix(in srgb,var(--st) 70%,transparent)}
+.pitem.s-rojo:first-child{overflow:hidden}
+.pitem.s-rojo:first-child::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(105deg,transparent 35%,color-mix(in srgb,var(--rojo) 12%,transparent) 50%,transparent 65%);background-size:250% 100%;animation:brillo 4.8s ease-in-out infinite;animation-delay:var(--ph,0s)}
+@keyframes brillo{0%,35%{background-position:130% 0}70%,100%{background-position:-120% 0}}
+.pbar i,.hbar i{background-image:linear-gradient(90deg,transparent,rgba(255,255,255,.18));box-shadow:0 0 8px color-mix(in srgb,var(--st,var(--accent)) 60%,transparent)}
+.chip{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--st) 30%,transparent)}
+.score{text-shadow:0 0 10px color-mix(in srgb,var(--st) 45%,transparent)}
+
+/* Explicación: los medidores crecen al cambiar de zona */
+.explain{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 7%,var(--surface2)),var(--surface2) 55%);box-shadow:var(--shadow-1)}
+.explain.enter{animation:panelIn .4s var(--ease-out)}
+.explain.enter .contrib .bar i{transform-origin:left;animation:grow .7s var(--ease-out) both}
+.contrib .bar i{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 55%,transparent),var(--accent));box-shadow:0 0 8px var(--glow-accent)}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* Bitácora: las entradas nuevas aparecen */
+.lrow.new{animation:logIn .5s var(--ease-out) both}
+.lrow.new.k-alerta{animation:logIn .5s var(--ease-out) both,alertFlash 1.6s ease-out}
+.lrow.k-alerta i{box-shadow:0 0 8px var(--rojo)} .lrow.k-ok i{box-shadow:0 0 8px var(--verde)} .lrow.k-asig i{box-shadow:0 0 8px var(--accent)}
+@keyframes logIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes alertFlash{0%{background:color-mix(in srgb,var(--rojo) 18%,transparent)}100%{background:transparent}}
+.tbadge{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 12px -4px rgba(0,0,0,.7)}
+
+/* Mapa: halos y luces de los marcadores. --ph sincroniza la fase porque los marcadores se regeneran en cada recálculo */
+.mapwrap{box-shadow:inset 0 0 60px rgba(0,0,0,.55)}
+.nzone.solid{transition:transform .2s var(--ease-out)}
+.nzone.solid:hover,.nhosp:hover{transform:scale(1.12)}
+.nzone.s-rojo.solid::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;animation:halo 2.4s ease-out infinite;animation-delay:var(--ph,0s)}
+@keyframes halo{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--rojo) 70%,transparent)}80%,100%{box-shadow:0 0 0 18px transparent}}
+.nzone.s-silencio{animation-delay:var(--ph,0s);animation-duration:2.4s}
+.nzone.sel{box-shadow:0 0 0 5px color-mix(in srgb,var(--st,#fff) 28%,transparent),0 0 24px 4px color-mix(in srgb,var(--st,#fff) 55%,transparent)}
+.npmu i{animation:pmuGlow 2.4s ease-in-out infinite;animation-delay:var(--ph,0s)}
+@keyframes pmuGlow{0%,100%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 28%,transparent),0 0 10px var(--glow-accent)}50%{box-shadow:0 0 0 9px color-mix(in srgb,var(--accent) 14%,transparent),0 0 22px var(--glow-accent)}}
+.nhosp{transition:transform .2s var(--ease-out)} .nhosp.h-ok{box-shadow:0 0 12px -2px var(--verde),0 2px 8px rgba(0,0,0,.5)} .nhosp.h-full{box-shadow:0 0 12px -2px var(--rojo),0 2px 8px rgba(0,0,0,.5)}
+.tbody{box-shadow:0 0 12px -1px currentColor,0 2px 6px rgba(0,0,0,.6)}
+.t-rescate{color:var(--rojo)} .t-aph{color:var(--verde)} .t-edan{color:var(--silencio)}
+.tbody{-webkit-text-fill-color:#0a1118}
+.leaflet-tooltip.tt,.leaflet-control-layers{background:color-mix(in srgb,var(--surface) 86%,transparent)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+
+/* Entrada escalonada al abrir la página (solo contenedores fijos, una vez) */
+.appbar,.kpis,.mapcard,.side,footer{animation:pageIn .7s var(--ease-out) both}
+.kpis{animation-delay:.08s} .mapcard{animation-delay:.16s} .side{animation-delay:.24s} footer{animation-delay:.32s}
+@keyframes pageIn{from{opacity:0;transform:translateY(12px);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+
+/* Barras de desplazamiento discretas */
+.tabpanel{scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+.tabpanel::-webkit-scrollbar{width:8px} .tabpanel::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px;border:2px solid var(--surface)}
+
+@media (prefers-reduced-motion:reduce){body::before,.brand svg,.brand b,.status i,.play,.npmu i,.nzone::after,.pitem::after{animation:none!important}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 
-<header class="appbar">
+<header class="appbar spot">
   <div class="brand">
     <svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true"><rect width="38" height="38" rx="9" fill="#5aaee6"/><path d="M19 7 L31 29 H7 Z" fill="none" stroke="#06121c" stroke-width="2.6" stroke-linejoin="round"/><path d="M19 15v7M15.5 18.5h7" stroke="#06121c" stroke-width="2.6" stroke-linecap="round"/></svg>
     <div><b>TRIA</b><span>Triaje Territorial Inteligente</span></div>
@@ -1231,6 +1363,7 @@ function toggleEdge(i){const e=S.edges[i];e.blocked=!e.blocked;
 
 function renderMap(){
   if(!MAP)return;
+  document.documentElement.style.setProperty("--ph",`-${Math.round(performance.now()%4800)}ms`);
   const z=MAP.getZoom();
   $("map").classList.toggle("z-lo",z<13.5);
   // Vías: se redibujan solo si cambia su estado o el zoom
@@ -1295,6 +1428,7 @@ const TEAM_COLOR={rescate:"var(--rojo)",aph:"var(--verde)",edan:"var(--silencio)
 function zoneState(z){if(z.silent)return "silencio";if(z.attended)return "atendida";return z.color}
 function medioTxt(z){return z.medio==="ninguno"?"sin medio de reporte":!z.hb?"baliza destruida":"baliza sin reporte"}
 
+let prevKpi=null,prevLog=-1,prevSel=null;
 function render(){
   $("scenTag").textContent=S.scen==="total"?"Operando sin conexión · peor caso":"Operando con red parcial";
   $("scen").value=S.scen;
@@ -1307,9 +1441,11 @@ function render(){
   const caidas=S.edges.filter(e=>e.blocked).length;
   const k=[[`${zs.length-sil}<small> / ${zs.length}</small>`,"Zonas con reporte",""],[sil,"Zonas sin contacto",sil?"warn":""],[pers,"Personas reportadas",""],
            [S.stats.trasladados,"Heridos trasladados",""],[`${free}<small> / ${S.teams.length}</small>`,"Equipos libres",""],[caidas,"Vías caídas",caidas?"alert":""]];
-  $("kpis").innerHTML=k.map(([b,s,c])=>`<div class="kpi ${c}"><b>${b}</b><span>${s}</span></div>`).join("");
+  $("kpis").innerHTML=k.map(([b,s,c],i)=>`<div class="kpi spot ${c}${prevKpi&&prevKpi[i]!==String(b)?" bump":""}"><b>${b}</b><span>${s}</span></div>`).join("");
+  prevKpi=k.map(x=>String(x[0]));
   renderMap();renderTimeline();renderPrio();renderRec();renderModel();
-  $("log").innerHTML=S.log.map(l=>`<div class="lrow k-${l.kind}"><time>${hhmm(l.t)}</time><i></i><span>${l.text}</span></div>`).join("");
+  const nuevas=prevLog<0?0:Math.max(0,S.log.length-prevLog);prevLog=S.log.length;
+  $("log").innerHTML=S.log.map((l,i)=>`<div class="lrow k-${l.kind}${i<nuevas?" new":""}"><time>${hhmm(l.t)}</time><i></i><span>${l.text}</span></div>`).join("");
   $("logCount").textContent=S.log.length;
 }
 
@@ -1342,6 +1478,7 @@ function renderPrio(){
   $("explain").innerHTML=`<div><span class="eyebrow">Por qué esta prioridad</span><h3>${NODES[z.id].name} · índice ${U.toFixed(2)}</h3></div><p>${txt}</p>
    <div class="contrib">${CRIT.map((cr,i)=>`<span>${cr}</span><div class="bar"><i style="width:${Math.round(v[i]*100)}%"></i></div><span class="num">+${(v[i]*W[i]).toFixed(2)}</span>`).join("")}</div>
    <p>Índice = suma de (valor del criterio × peso AHP). Seleccione otra zona en la lista para ver su explicación.</p>`;
+  $("explain").classList.toggle("enter",prevSel!==S.sel);prevSel=S.sel;
 }
 
 function renderRec(){
@@ -1382,7 +1519,9 @@ document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{document.quer
 $("fifo").onchange=e=>{S.fifo=e.target.checked;render()};
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>{x.setAttribute("aria-selected",String(x===b));$("tab-"+x.dataset.tab).hidden=x!==b})});
 $("scen").onchange=e=>{CUR_SCEN=e.target.value;$("btnReset").onclick()};
-$("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;resetTeams();init()};
+$("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;resetTeams();init()};
+document.addEventListener("pointermove",e=>{const el=e.target.closest?.(".spot");if(!el)return;const r=el.getBoundingClientRect();
+  el.style.setProperty("--spot-x",(e.clientX-r.left)+"px");el.style.setProperty("--spot-y",(e.clientY-r.top)+"px")},{passive:true});
 initMap();
 init();
 // Versión desplegada (solo cuando lo sirve la API de TRIA, por ejemplo en Render)
