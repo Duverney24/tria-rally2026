@@ -1101,6 +1101,7 @@ button:active{transform:translateY(1px) scale(.98)}
 .leaflet-marker-icon:has(.hl){z-index:9000!important}
 .tema svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .tema{padding:7px 9px;display:grid;place-items:center}
+.instalar{background:color-mix(in srgb,var(--accent) 16%,var(--surface2));border-color:color-mix(in srgb,var(--accent) 55%,var(--line2));animation:pageIn .5s var(--ease-out) both}
 /* Cambio de puesto en la lista de prioridades */
 .rank .mv{display:block;font-size:9px;line-height:1;margin-top:3px;animation:mvIn 1.6s ease-out both}
 .rank .mv.up{color:var(--rojo);text-shadow:0 0 6px var(--rojo)} .rank .mv.down{color:var(--faint)}
@@ -1149,6 +1150,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
     <strong>Pitalito, Huila</strong>
   </div>
   <div class="status"><i></i><span id="scenTag">Operando sin conexión</span></div>
+  <button id="btnInstalar" class="instalar" hidden title="Instalar TRIA en este equipo">Instalar app</button>
   <button id="btnTema" class="tema" aria-pressed="false" aria-label="Tema claro" title="Tema claro u oscuro"></button>
   <label><span class="eyebrow" style="display:block;margin-bottom:3px">Escenario</span>
     <select id="scen"><option value="total">Peor caso: apagón total</option><option value="parcial">Apagón parcial</option></select></label>
@@ -1724,6 +1726,7 @@ const SOL='<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3"/><path d="M8 1.5
       LUNA='<svg viewBox="0 0 16 16"><path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z"/></svg>';
 function tema(t){const claro=t==="light";document.documentElement.toggleAttribute("data-theme",claro);if(claro)document.documentElement.dataset.theme="light";
   const b=$("btnTema");b.innerHTML=claro?LUNA:SOL;b.setAttribute("aria-pressed",String(claro));b.setAttribute("aria-label",claro?"Tema oscuro":"Tema claro");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content",claro?"#eaf0f5":"#0a1118");
   try{localStorage.setItem("tria-tema",t)}catch(e){}if(S){edgesKey="";renderMap()}}
 $("btnTema").onclick=()=>tema(document.documentElement.dataset.theme==="light"?"dark":"light");
 $("fifo").onchange=e=>{S.fifo=e.target.checked;render()};
@@ -1751,6 +1754,11 @@ init();
 // Sin internet: guarda la app y las teselas vistas (solo funciona servido por http/https, no con file://)
 if("serviceWorker" in navigator&&location.protocol.startsWith("http"))
   navigator.serviceWorker.register("sw.js").then(()=>$("footer").insertAdjacentHTML("beforeend"," · Disponible sin conexión: el mapa ya recorrido queda guardado en este navegador"),()=>{});
+// Instalar como app: el botón solo aparece si el navegador ofrece la instalación
+let pedidoInstalar=null;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();pedidoInstalar=e;$("btnInstalar").hidden=false});
+$("btnInstalar").onclick=async()=>{if(!pedidoInstalar)return;pedidoInstalar.prompt();await pedidoInstalar.userChoice.catch(()=>{});pedidoInstalar=null;$("btnInstalar").hidden=true};
+addEventListener("appinstalled",()=>{pedidoInstalar=null;$("btnInstalar").hidden=true});
 // Versión desplegada (solo cuando lo sirve la API de TRIA, por ejemplo en Render)
 fetch("version").then(r=>r.ok?r.json():null).then(v=>{if(v&&v.commit){$("footer").insertAdjacentHTML("beforeend",` · Versión ${v.version} (${v.commit})`)}}).catch(()=>{});
 </script>
