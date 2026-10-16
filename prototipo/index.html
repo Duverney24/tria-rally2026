@@ -1036,6 +1036,18 @@ button:active{transform:translateY(1px) scale(.98)}
 .toast.out{animation:toastOut .3s ease-in both}
 @keyframes toastIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
 @keyframes toastOut{to{opacity:0;transform:translateX(24px)}}
+
+/* Sismo: sacudida del mapa al inicio y ondas de intensidad cuando llega el mapa del SGC */
+.mapwrap::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:900;opacity:0;box-shadow:inset 0 0 120px color-mix(in srgb,var(--rojo) 55%,transparent)}
+.mapwrap.quake #map{animation:quake .9s cubic-bezier(.36,.07,.19,.97)}
+.mapwrap.quake::after{animation:quakeGlow 1.6s ease-out}
+@keyframes quake{10%,90%{transform:translate(-1px,1px)}20%,80%{transform:translate(3px,-2px)}30%,50%,70%{transform:translate(-5px,2px)}40%,60%{transform:translate(5px,-1px)}}
+@keyframes quakeGlow{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+.qring{background:none;border:0}
+.qring i{position:absolute;left:50%;top:50%;width:var(--d);height:var(--d);margin:calc(var(--d)/-2) 0 0 calc(var(--d)/-2);border-radius:50%;border:2px solid var(--rojo);box-shadow:0 0 18px var(--rojo),inset 0 0 18px color-mix(in srgb,var(--rojo) 50%,transparent);animation:qring 2.2s var(--ease-out) both}
+.qring i+i{animation-delay:.45s}
+@keyframes qring{from{transform:scale(.1);opacity:.9}to{transform:scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.mapwrap.quake #map,.mapwrap.quake::after,.qring i{animation:none!important}}
 </style>
 </head>
 <body>
@@ -1458,7 +1470,12 @@ const TEAM_COLOR={rescate:"var(--rojo)",aph:"var(--verde)",edan:"var(--silencio)
 function zoneState(z){if(z.silent)return "silencio";if(z.attended)return "atendida";return z.color}
 function medioTxt(z){return z.medio==="ninguno"?"sin medio de reporte":!z.hb?"baliza destruida":"baliza sin reporte"}
 
-let prevKpi=null,prevLog=-1,prevSel=null;
+let prevKpi=null,prevLog=-1,prevSel=null,prevShake=false;
+function sacudir(){const w=$("mapwrap");w.classList.remove("quake");void w.offsetWidth;w.classList.add("quake");setTimeout(()=>w.classList.remove("quake"),1700)}
+// Ondas en cada zona según la intensidad del SGC (VI pequeña, VIII grande)
+function ondasSGC(){if(!MAP)return;for(const [id,m] of Object.entries(MMI)){const d=40+(m-6)*45;
+  const mk=L.marker(ll(id),{interactive:false,icon:L.divIcon({className:"qring",iconSize:[0,0],html:`<i style="--d:${d}px"></i><i style="--d:${d}px"></i>`})}).addTo(MAP);
+  setTimeout(()=>MAP.removeLayer(mk),2800)}}
 // Avisos: máximo tres a la vista; cada uno se retira solo a los 6 s
 function aviso(l){const box=$("toasts");const el=document.createElement("div");el.className="toast";
   el.innerHTML=`<i></i><div><time>${hhmm(l.t)}</time><div>${l.text}</div></div><button aria-label="Cerrar aviso">×</button>`;
@@ -1490,6 +1507,7 @@ function render(){
   const nuevas=prevLog<0?0:Math.max(0,S.log.length-prevLog);prevLog=S.log.length;
   $("log").innerHTML=S.log.map((l,i)=>`<div class="lrow k-${l.kind}${i<nuevas?" new":""}"><time>${hhmm(l.t)}</time><i></i><span>${l.text}</span></div>`).join("");
   $("logCount").textContent=S.log.length;
+  if(S.shake&&!prevShake)ondasSGC();prevShake=S.shake;
   S.log.slice(0,nuevas).reverse().filter(l=>l.kind==="alerta").forEach(aviso);
 }
 
@@ -1563,7 +1581,7 @@ document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{document.quer
 $("fifo").onchange=e=>{S.fifo=e.target.checked;render()};
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>{x.setAttribute("aria-selected",String(x===b));$("tab-"+x.dataset.tab).hidden=x!==b})});
 $("scen").onchange=e=>{CUR_SCEN=e.target.value;$("btnReset").onclick()};
-$("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;$("toasts").innerHTML="";resetTeams();init()};
+$("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;prevShake=false;$("toasts").innerHTML="";resetTeams();init();sacudir()};
 document.addEventListener("pointermove",e=>{const el=e.target.closest?.(".spot");if(!el)return;const r=el.getBoundingClientRect();
   el.style.setProperty("--spot-x",(e.clientX-r.left)+"px");el.style.setProperty("--spot-y",(e.clientY-r.top)+"px")},{passive:true});
 initMap();
@@ -1571,11 +1589,11 @@ init();
 // Pantalla de arranque: solo la primera vez en la sesión y nunca con movimiento reducido
 (function boot(){
   let visto=false;try{visto=sessionStorage.getItem("tria-boot")==="1";sessionStorage.setItem("tria-boot","1")}catch(e){}
-  if(visto||matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  if(visto||matchMedia("(prefers-reduced-motion:reduce)").matches){sacudir();return}
   const el=$("boot"),ol=$("bootLines"),bar=$("bootBar");el.hidden=false;
   const pasos=["Enlace satelital del PMU","Escuchando balizas LoRa","Amenaza SGC · censo DANE","Prioridades (AHP + Bayes)"];
   let i=0,tm=null;
-  const fin=()=>{clearTimeout(tm);el.classList.add("out");removeEventListener("keydown",fin);setTimeout(()=>el.hidden=true,500)};
+  const fin=()=>{if(el.classList.contains("out"))return;clearTimeout(tm);el.classList.add("out");removeEventListener("keydown",fin);setTimeout(()=>el.hidden=true,500);sacudir()};
   const paso=()=>{if(i>=pasos.length){tm=setTimeout(fin,350);return}
     ol.insertAdjacentHTML("beforeend",`<li><span>${pasos[i]}</span><em>OK</em></li>`);i++;bar.style.width=(i/pasos.length*100)+"%";tm=setTimeout(paso,380)};
   el.addEventListener("click",fin);addEventListener("keydown",fin);tm=setTimeout(paso,250);
