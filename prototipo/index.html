@@ -1050,6 +1050,8 @@ button:active{transform:translateY(1px) scale(.98)}
 .toast time{font-family:var(--mono);font-size:11px;color:var(--faint)}
 .toast button{padding:0 6px;border:0;background:none;color:var(--faint);font-size:15px;line-height:1.2}
 .toast.out{animation:toastOut .3s ease-in both}
+.toast.k-ok{border-color:color-mix(in srgb,var(--verde) 45%,var(--line2));box-shadow:0 14px 34px -14px rgba(0,0,0,.6)}
+.toast.k-ok i{background:var(--verde);box-shadow:0 0 10px var(--verde)}
 @media (max-width:640px){.toast{font-size:12px;padding:8px 10px}.toast:nth-last-child(n+2):not(:last-child){display:none}}
 @keyframes toastIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
 @keyframes toastOut{to{opacity:0;transform:translateX(24px)}}
@@ -1141,6 +1143,27 @@ button:active{transform:translateY(1px) scale(.98)}
 .yo i{display:block;width:18px;height:18px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 0 0 0 var(--glow-accent);animation:yoPulse 2s ease-out infinite}
 @keyframes yoPulse{0%{box-shadow:0 0 0 0 var(--glow-accent)}100%{box-shadow:0 0 0 16px transparent}}
 @media (prefers-reduced-motion:reduce){.yo i,.leaflet-bar a.ubic.busca svg{animation:none}}
+/* Informe para imprimir o guardar como PDF */
+.informe{display:none}
+@media print{
+  @page{margin:14mm}
+  html,body{background:#fff!important;color:#111!important;padding:0!important}
+  body::before,body::after{display:none!important}
+  body>*:not(#informe){display:none!important}
+  .informe{display:block;font-family:var(--body);font-size:11pt;color:#111}
+  .informe h1{font-family:var(--display);font-size:20pt;margin:0 0 2pt}
+  .informe h2{font-family:var(--display);font-size:13pt;margin:14pt 0 6pt;border-bottom:1.5pt solid #111;padding-bottom:2pt;break-after:avoid;page-break-after:avoid}
+  .informe .meta{color:#444;margin:0 0 10pt}
+  .informe table{width:100%;border-collapse:collapse;font-size:9.5pt;page-break-inside:auto}
+  .informe th,.informe td{border-bottom:.5pt solid #bbb;padding:3pt 5pt;text-align:left;vertical-align:top}
+  .informe th{font-family:var(--mono);font-size:8pt;text-transform:uppercase;letter-spacing:.04em;color:#444}
+  .informe tr{page-break-inside:avoid}
+  .informe .kp{display:grid;grid-template-columns:repeat(3,1fr);gap:6pt}
+  .informe .kp div{border:.5pt solid #bbb;border-radius:4pt;padding:5pt 7pt}
+  .informe .kp b{display:block;font-family:var(--mono);font-size:15pt}
+  .informe .est{font-weight:600}
+  .informe .pie{margin-top:14pt;color:#555;font-size:8.5pt}
+}
 /* Pestaña En vivo */
 .livedot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;vertical-align:1px;background:var(--faint)}
 .livedot.ok{background:var(--verde);box-shadow:0 0 8px var(--verde);animation:pulseRingV 2.2s var(--ease-out) infinite}
@@ -1208,6 +1231,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
   <button data-ir="log"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6zM9 8h6M9 12h6M9 16h3"/></svg>Bitácora<span class="mb-badge" id="mbLog" hidden>0</span></button>
   <button data-ir="live"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/></svg>En vivo</button>
 </nav>
+<section id="informe" class="informe" aria-hidden="true"></section>
 <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
 <!-- Leaflet 1.9.4 local (BSD-2): el mapa carga sin internet -->
 <script src="vendor/leaflet/leaflet.js"></script>
@@ -1234,7 +1258,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
     <section class="kpis" id="kpis" aria-label="Indicadores"></section>
     <section class="card mapcard">
       <div class="cardhead"><div><h2>Mapa operativo</h2><span id="recalcInfo">Recalcula cada 15 min</span></div>
-        <div class="maptools"><button id="btnPanel" aria-pressed="false" title="Ocultar o mostrar el panel lateral"><svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg><span>Ocultar panel</span></button><button id="btnCentrar">Centrar</button><button id="btnFull">Pantalla completa</button><button id="btnNarra" aria-pressed="false">Narrar</button><button id="btnEdit" aria-pressed="false">Ajustar ubicaciones</button></div></div>
+        <div class="maptools"><button id="btnPanel" aria-pressed="false" title="Ocultar o mostrar el panel lateral"><svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg><span>Ocultar panel</span></button><button id="btnCentrar">Centrar</button><button id="btnFull">Pantalla completa</button><button id="btnCompartir" title="Copia un enlace que abre este escenario, minuto y zona">Compartir</button><button id="btnInforme" title="Informe para imprimir o guardar como PDF">Informe</button><button id="btnCsv" title="Descarga la bitácora en CSV (Excel)">Bitácora CSV</button><button id="btnNarra" aria-pressed="false">Narrar</button><button id="btnEdit" aria-pressed="false">Ajustar ubicaciones</button></div></div>
       <div class="mapwrap" id="mapwrap">
         <div id="map" role="region" aria-label="Mapa de Pitalito con zonas, vías, hospitales y equipos"></div>
         <div class="legend">
@@ -1931,7 +1955,7 @@ function falla(err,pre="Error inesperado"){const msg=String(err&&err.message||er
 addEventListener("error",e=>{if(e.error||e.message)falla(e.error||e.message)});
 addEventListener("unhandledrejection",e=>falla(e.reason,"Error en segundo plano"));
 // Avisos: máximo tres a la vista; cada uno se retira solo a los 6 s
-function aviso(l){const box=$("toasts");const el=document.createElement("div");el.className="toast";
+function aviso(l){const box=$("toasts");const el=document.createElement("div");el.className="toast k-"+(l.kind||"alerta");
   el.innerHTML=`<i></i><div><time>${hhmm(l.t)}</time><div>${l.text}</div></div><button aria-label="Cerrar aviso">×</button>`;
   const quitar=()=>{if(el.classList.contains("out"))return;el.classList.add("out");setTimeout(()=>el.remove(),300)};
   el.querySelector("button").onclick=quitar;box.append(el);setTimeout(quitar,6000);
@@ -2098,6 +2122,44 @@ document.querySelectorAll("#mbar button").forEach(b=>b.onclick=()=>{const id=b.d
 if("IntersectionObserver" in window){const io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting)
     marcarBarra(e.target.classList.contains("mapcard")?"mapa":(document.querySelector('.tabs button[aria-selected="true"]')?.dataset.tab||"prio"))},{threshold:.35});
   io.observe(document.querySelector(".mapcard"));io.observe(document.querySelector(".side"))}
+// ---------- Compartir, informe y CSV ----------
+const nombreEscenario=()=>$("scen").selectedOptions[0]?.textContent||S.scen;
+function enlaceActual(){const u=new URL(location.href);u.search="";
+  u.searchParams.set("escenario",S.scen);if(S.t)u.searchParams.set("t",S.t);if(S.sel)u.searchParams.set("zona",S.sel);
+  if(document.documentElement.dataset.theme==="light")u.searchParams.set("tema","claro");return u.toString()}
+$("btnCompartir").onclick=async()=>{const url=enlaceActual();
+  try{if(navigator.share&&matchMedia("(pointer:coarse)").matches){await navigator.share({title:"TRIA · "+nombreEscenario(),url});return}
+    await navigator.clipboard.writeText(url);aviso({t:S.t,kind:"ok",text:"Enlace copiado: abre este escenario en "+hhmm(S.t)+"."})}
+  catch(e){if(e&&e.name==="AbortError")return;prompt("Copie este enlace:",url)}};
+function armarInforme(){const zs=Object.values(S.zones).map(z=>({z,...urgency(z)})).sort((a,b)=>b.U-a.U);
+  const kp=[...document.querySelectorAll("#kpis .kpi")].map(k=>`<div><b>${esc(k.querySelector("b").textContent)}</b>${esc(k.querySelector("span").textContent)}</div>`).join("");
+  const filas=zs.map((r,i)=>{const z=r.z,st=zoneState(z);const eq=S.teams.filter(t=>t.job&&t.job.zone===z.id&&!t.job.cancel).map(t=>t.name).join(", ");
+    return `<tr><td>${i+1}</td><td>${esc(NODES[z.id].name)}</td><td class="est">${STATE_LABEL[st]}</td><td>${r.U.toFixed(2)}</td><td>${z.silent?"—":z.personas}</td><td>${z.silent?"—":z.heridos}</td><td>${esc(eq||"—")}</td></tr>`}).join("");
+  const hosp=Object.entries(S.hosp).map(([id,h])=>`<tr><td>${esc(NODES[id].name)}</td><td>${h.occ}/${h.cap}</td><td>${h.energia?"Sí":"No"}</td></tr>`).join("");
+  const log=[...S.log].reverse().map(l=>`<tr><td>${hhmm(l.t)}</td><td>${esc(l.text)}</td></tr>`).join("");
+  $("informe").innerHTML=`<h1>TRIA · Informe del Puesto de Mando</h1><p class="meta">Pitalito, Huila · ${esc(nombreEscenario())} · hora del evento ${hhmm(S.t)} (T+${S.t} min) · generado ${new Date().toLocaleString("es-CO")}</p>
+    <h2>Indicadores</h2><div class="kp">${kp}</div>
+    <h2>Prioridades</h2><table><thead><tr><th>#</th><th>Zona</th><th>Estado</th><th>Índice</th><th>Personas</th><th>Heridos</th><th>Equipos asignados</th></tr></thead><tbody>${filas}</tbody></table>
+    <h2>Hospitales</h2><table><thead><tr><th>Hospital</th><th>Ocupación</th><th>Energía</th></tr></thead><tbody>${hosp}</tbody></table>
+    <h2>Bitácora</h2><table><thead><tr><th>Hora</th><th>Evento</th></tr></thead><tbody>${log}</tbody></table>
+    <p class="pie">TRIA recomienda; el Puesto de Mando decide. Datos del escenario ilustrativos (prototipo del Rally Latinoamericano de Innovación 2026).</p>`}
+addEventListener("beforeprint",()=>{try{armarInforme()}catch(e){falla(e)}});
+$("btnInforme").onclick=()=>{armarInforme();print()};
+$("btnCsv").onclick=()=>{const c=v=>`"${String(v).replace(/"/g,'""')}"`;
+  const filas=[["hora","minuto","tipo","evento"],...[...S.log].reverse().map(l=>[hhmm(l.t),l.t,l.kind||"",l.text])];
+  // BOM para que Excel abra bien las tildes; separador ; por la configuración regional de Colombia
+  const blob=new Blob(["\ufeff"+filas.map(f=>f.map(c).join(";")).join("\r\n")],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`tria-bitacora-${S.scen}-T${S.t}.csv`;document.body.append(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)};
+// Pestañas accesibles: flechas, Inicio y Fin mueven el foco entre pestañas (patrón WAI-ARIA tablist)
+{const tabs=[...document.querySelectorAll('.tabs [role="tab"]')];
+  const sync=()=>tabs.forEach(t=>t.tabIndex=t.getAttribute("aria-selected")==="true"?0:-1);sync();
+  tabs.forEach(t=>t.addEventListener("click",()=>setTimeout(sync)));
+  document.querySelector(".tabs").addEventListener("keydown",e=>{const i=tabs.indexOf(document.activeElement);if(i<0)return;
+    const j={ArrowRight:i+1,ArrowLeft:i-1,Home:0,End:tabs.length-1}[e.key];if(j===undefined)return;
+    e.preventDefault();e.stopPropagation();const n=tabs[(j+tabs.length)%tabs.length];n.focus();n.click()});
+  tabs.forEach(t=>{const id="tab-"+t.dataset.tab;t.setAttribute("aria-controls",id);t.id=t.id||"tb-"+t.dataset.tab;
+    const pnl=$(id);if(pnl){pnl.setAttribute("role","tabpanel");pnl.setAttribute("aria-labelledby",t.id)}})}
 // Atajos para presentar la demo; no actúan mientras se escribe, en el mapa enfocado ni con la pantalla de arranque
 addEventListener("keydown",e=>{if(e.ctrlKey||e.metaKey||e.altKey||!$("boot").hidden||$("resumen").open)return;
   if(e.target.closest?.("input,select,textarea,.leaflet-container"))return;
@@ -2121,6 +2183,12 @@ document.addEventListener("pointermove",e=>{const el=e.target.closest?.(".spot")
 {let t="dark";try{t=localStorage.getItem("tria-tema")||"dark"}catch(e){}tema(t)}
 initMap();
 init();
+// Enlaces compartibles: ?escenario=alud&t=90&zona=BRU&tema=claro
+(function(){try{const q=new URLSearchParams(location.search);
+  const tm=q.get("tema");if(tm==="claro")tema("light");else if(tm==="oscuro")tema("dark");
+  const e=q.get("escenario");if(e&&SCEN[e]&&e!==CUR_SCEN){$("scen").value=e;CUR_SCEN=e;$("btnReset").onclick()}
+  const t=parseInt(q.get("t"),10);if(Number.isFinite(t)&&t>0)irA(t);
+  const z=q.get("zona");if(z&&S.zones[z]){S.sel=z;render();setTimeout(()=>volarA(z),700)}}catch(err){falla(err,"Enlace no válido")}})();
 // Pantalla de arranque: solo la primera vez en la sesión y nunca con movimiento reducido
 (function boot(){
   let visto=false;try{visto=sessionStorage.getItem("tria-boot")==="1";sessionStorage.setItem("tria-boot","1")}catch(e){}
