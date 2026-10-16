@@ -40,4 +40,6 @@ En `prototipo/index.html`, dentro de `SCEN`, se copia un escenario y se cambian 
 | `atrap` | Cómo se describen las personas atrapadas: bajo escombros, en el agua, sepultadas… |
 | `script` | Línea de tiempo: reportes, balizas que dejan de latir, vías caídas y equipos que llegan. |
 
+**Casco urbano por comunas:** la cabecera de Pitalito (~76.500 habitantes) aparece dividida en sus 4 comunas: 1 Noroccidental, 2 Nororiental, 3 Centro y 4 Barrios Unidos del Sur. Las riberas de La Cascajosa y El Cedro son sectores críticos dentro de ellas. La población por comuna se estimó en proporción a su número de barrios.
+
 *Todos los escenarios son simulados con fines de demostración. Las ubicaciones son reales, pero las magnitudes, las poblaciones y los tiempos son estimados.*

@@ -1,10 +1,10 @@
 {
- "_nota": "Coordenadas reales de alcaldía, hospitales y centros poblados (las riberas urbanas son aproximadas). Poblaciones, probabilidades previas, intensidades y tiempos de viaje son ESTIMADOS para la demo; se reemplazan por el censo del DANE, el mapa de amenaza municipal y la cartografía oficial.",
+ "_nota": "Coordenadas reales de alcaldía, hospitales y centros poblados (las riberas urbanas son aproximadas). Poblaciones, probabilidades previas, intensidades y tiempos de viaje son ESTIMADOS para la demo; se reemplazan por el censo del DANE, el mapa de amenaza municipal y la cartografía oficial. La cabecera se divide en sus 4 comunas (población estimada en proporción al número de barrios sobre ~76.500 habitantes urbanos).",
  "zonas": [
   {
    "id": "CEN",
-   "nombre": "Centro (casco urbano)",
-   "poblacion": 12000,
+   "nombre": "Comuna 3 · Centro",
+   "poblacion": 8600,
    "vulnerabilidad": 0.35,
    "previa": 0.35,
    "medio": "ninguno",
@@ -98,6 +98,33 @@
    "vulnerabilidad": 0.8,
    "previa": 0.35,
    "medio": "baliza",
+   "intensidad": 8
+  },
+  {
+   "id": "C1",
+   "nombre": "Comuna 1 · Noroccidental",
+   "poblacion": 27500,
+   "vulnerabilidad": 0.5,
+   "previa": 0.4,
+   "medio": "ninguno",
+   "intensidad": 7
+  },
+  {
+   "id": "C2",
+   "nombre": "Comuna 2 · Nororiental",
+   "poblacion": 23200,
+   "vulnerabilidad": 0.45,
+   "previa": 0.3,
+   "medio": "ninguno",
+   "intensidad": 7
+  },
+  {
+   "id": "C4",
+   "nombre": "Comuna 4 · Barrios Unidos del Sur",
+   "poblacion": 17200,
+   "vulnerabilidad": 0.55,
+   "previa": 0.4,
+   "medio": "ninguno",
    "intensidad": 8
   }
  ],
@@ -297,6 +324,56 @@
    "a": "CHA",
    "b": "PAL",
    "minutos": 8
+  },
+  {
+   "a": "PMU",
+   "b": "C1",
+   "minutos": 4
+  },
+  {
+   "a": "C1",
+   "b": "CAS",
+   "minutos": 3
+  },
+  {
+   "a": "C1",
+   "b": "J1",
+   "minutos": 7
+  },
+  {
+   "a": "PMU",
+   "b": "C2",
+   "minutos": 4
+  },
+  {
+   "a": "CEN",
+   "b": "C2",
+   "minutos": 3
+  },
+  {
+   "a": "C2",
+   "b": "J2",
+   "minutos": 5
+  },
+  {
+   "a": "PMU",
+   "b": "C4",
+   "minutos": 4
+  },
+  {
+   "a": "C4",
+   "b": "H1",
+   "minutos": 2
+  },
+  {
+   "a": "C4",
+   "b": "CED",
+   "minutos": 3
+  },
+  {
+   "a": "C4",
+   "b": "J3",
+   "minutos": 5
   }
  ],
  "coordenadas": {
@@ -370,6 +447,18 @@
   ],
   "J3": [
    1.82,
+   -76.056
+  ],
+  "C1": [
+   1.86,
+   -76.0505
+  ],
+  "C2": [
+   1.8587,
+   -76.0405
+  ],
+  "C4": [
+   1.8462,
    -76.056
   ]
  }

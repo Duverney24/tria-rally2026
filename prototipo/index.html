@@ -1313,7 +1313,10 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
 // x, y: posición en el esquema antiguo (solo de respaldo).
 const NODES = {
   PMU:{name:"PMU – Alcaldía",lat:1.85039,lng:-76.04623,x:520,y:330,kind:"pmu"},
-  CEN:{name:"Centro (casco urbano)",lat:1.85165,lng:-76.04681,x:600,y:290,kind:"zona",pop:12000,vuln:.35,prior:.35},
+  CEN:{name:"Comuna 3 · Centro",lat:1.85165,lng:-76.04681,x:600,y:290,kind:"zona",pop:8600,vuln:.35,prior:.35},
+  C1:{name:"Comuna 1 · Noroccidental",lat:1.86000,lng:-76.05050,x:560,y:270,kind:"zona",pop:27500,vuln:.5,prior:.4},
+  C2:{name:"Comuna 2 · Nororiental",lat:1.85870,lng:-76.04050,x:630,y:270,kind:"zona",pop:23200,vuln:.45,prior:.3},
+  C4:{name:"Comuna 4 · Barrios Unidos del Sur",lat:1.84620,lng:-76.05600,x:560,y:360,kind:"zona",pop:17200,vuln:.55,prior:.4},
   CAS:{name:"Ribera La Cascajosa",lat:1.86044,lng:-76.05950,x:455,y:265,kind:"zona",pop:3000,vuln:.6,prior:.45},
   CED:{name:"Ribera El Cedro",lat:1.84411,lng:-76.04811,x:615,y:385,kind:"zona",pop:3000,vuln:.6,prior:.4},
   H1:{name:"Hospital San Antonio",lat:1.84501,lng:-76.05027,x:565,y:425,kind:"hosp"},
@@ -1333,7 +1336,7 @@ const NODES = {
 };
 // [origen, destino, minutos estimados, nombre]
 const EDGES0 = [
-  ["PMU","CEN",2],["PMU","H1",4],["PMU","H2",3],["PMU","CAS",5],["PMU","CED",4],["CED","H1",2],["H1","J3",5],
+  ["PMU","CEN",2],["PMU","C1",4],["C1","CAS",3],["C1","J1",7],["PMU","C2",4],["CEN","C2",3],["C2","J2",5],["PMU","C4",4],["C4","H1",2],["C4","CED",3],["C4","J3",5],["PMU","H1",4],["PMU","H2",3],["PMU","CAS",5],["PMU","CED",4],["CED","H1",2],["H1","J3",5],
   ["PMU","J3",7],["PMU","J1",9,"Vía a San Agustín"],["CAS","J1",6],["CEN","J2",6,"Salida norte"],
   ["J2","REG",5,"Vía a Regueros"],["J2","GUA",8,"Puente de la vía a Guacacallo"],["REG","GUA",5],
   ["GUA","H3",75,"Ruta 45 hacia Garzón"],["J2","LAG",20,"Vía a La Laguna"],["LAG","CHI",25,"Trocha La Laguna–Chillurco"],
@@ -1492,6 +1495,34 @@ const SCEN={
     {t:40,ev:s=>{s.edges.find(e=>(e.a==="J1"&&e.b==="CRI")).blocked=false;log(s,"Bomberos despejaron la vía a Criollo.","ok");onNetworkChange();}},
    ]},
 };
+
+// ---------- Comunas urbanas de Pitalito ----------
+// La cabecera (~76.500 hab.) tiene 4 comunas: 1 Noroccidental (32 barrios), 2 Nororiental (27), 3 Central (10) y
+// 4 Barrios Unidos del Sur (20). Población por comuna estimada en proporción al número de barrios.
+// La comuna 3 es la zona "CEN"; las riberas de La Cascajosa y El Cedro son sectores críticos dentro de las comunas 1 y 4.
+const COMUNAS={
+ total:{medio:"ninguno",niv:{C1:7,C2:7,C4:8},
+   truth:{C1:T("rojo",70,6,2,true,"Viviendas de dos pisos colapsadas en varios barrios."),C2:T("amarillo",45,3,0,false,"Grietas y fachadas caídas."),C4:T("rojo",50,4,1,true,"Viviendas colapsadas cerca del coliseo.")}},
+ parcial:{medio:"celular",niv:{C1:7,C2:7,C4:8},
+   truth:{C1:T("rojo",70,6,2,true,"Viviendas de dos pisos colapsadas en varios barrios."),C2:T("amarillo",45,3,0,false,"Grietas y fachadas caídas."),C4:T("rojo",50,4,1,true,"Viviendas colapsadas cerca del coliseo.")},
+   ev:[{t:5,ev:s=>report(s,"C1","SMS")},{t:10,ev:s=>report(s,"C2","WhatsApp (red parcial)")},{t:15,ev:s=>report(s,"C4","SMS")}]},
+ avenida:{medio:"celular",prior:{C1:.3,C2:.15,C4:.35},niv:{C1:7,C2:6,C4:7},
+   truth:{C1:T("amarillo",40,2,0,false,"Calles inundadas cerca de la quebrada La Cascajosa."),C2:VERDE("Lluvia fuerte sin daños graves.",0),C4:T("amarillo",35,2,0,false,"Barrios bajos inundados cerca de El Cedro.")},
+   ev:[{t:5,ev:s=>report(s,"C2","SMS")},{t:10,ev:s=>report(s,"C1","SMS")},{t:20,ev:s=>report(s,"C4","SMS")}]},
+ alud:{medio:"celular",prior:{C1:.1,C2:.1,C4:.1},niv:{C1:6,C2:6,C4:6},
+   truth:{C1:VERDE("Sin daños.",0),C2:VERDE("Sin daños.",0),C4:VERDE("Sin daños.",0)},
+   ev:[{t:20,ev:s=>{report(s,"C1","SMS");report(s,"C2","SMS");report(s,"C4","SMS")}}]},
+ inundacion:{medio:"celular",prior:{C1:.15,C2:.2,C4:.15},niv:{C1:6,C2:6,C4:6},
+   truth:{C1:VERDE("Sin afectación.",0),C2:T("amarillo",20,0,0,false,"Calles bajas y sótanos con agua."),C4:VERDE("Sin afectación.",0)},
+   ev:[{t:5,ev:s=>{report(s,"C1","SMS");report(s,"C2","SMS");report(s,"C4","SMS")}}]},
+ tormenta:{medio:"celular",prior:{C1:.3,C2:.3,C4:.3},niv:{C1:7,C2:7,C4:7},
+   truth:{C1:T("amarillo",30,1,0,false,"Techos levantados y árboles caídos."),C2:T("rojo",25,2,1,true,"Una cubierta metálica cayó sobre viviendas."),C4:T("amarillo",20,1,0,false,"Postes y árboles caídos.")},
+   ev:[{t:5,ev:s=>report(s,"C2","SMS")},{t:10,ev:s=>{report(s,"C1","SMS");report(s,"C4","SMS")}}]},
+};
+for(const [k,c] of Object.entries(COMUNAS)){const sc=SCEN[k];const m0=sc.medio;
+  sc.medio=id=>["C1","C2","C4"].includes(id)?c.medio:m0(id);
+  sc.prior=Object.assign({},sc.prior||{},c.prior||{});sc.niv=Object.assign({},sc.niv,c.niv);sc.truth=Object.assign({},sc.truth,c.truth);
+  if(c.ev)sc.script=sc.script.concat(c.ev)}
 const SC=()=>SCEN[S?S.scen:CUR_SCEN];
 let TRUTH=TRUTH_SISMO, MMI=NIV_SISMO, ROMAN={6:"VI",7:"VII",8:"VIII"};
 (()=>{const sel=document.getElementById("scen");const grupos={};for(const [k,v] of Object.entries(SCEN))(grupos[v.grupo]=grupos[v.grupo]||[]).push([k,v.label]);
@@ -1525,7 +1556,7 @@ function init(){
 }
 function log(s,text,kind=""){s.log.unshift({t:s.t,text,kind})}
 function hbLost(s,id){s.zones[id].hb=false;log(s,`${NODES[id].name}: la baliza dejó de emitir su latido. Probable destrucción; TRIA eleva la urgencia de la zona.`,"alerta")}
-function report(s,id,via,who){const z=s.zones[id];if(!z.silent)return;const tr=TRUTH[id];Object.assign(z,{silent:false,color:tr.color,personas:tr.personas,senales:tr.senales,heridos:tr.heridos,colapso:tr.colapso,via,nota:tr.nota});
+function report(s,id,via,who){const z=s.zones[id];if(!z.silent)return;const tr=TRUTH[id]||VERDE();Object.assign(z,{silent:false,color:tr.color,personas:tr.personas,senales:tr.senales,heridos:tr.heridos,colapso:tr.colapso,via,nota:tr.nota});
   if(z.firstReport===null)z.firstReport=s.t;log(s,`${NODES[id].name}: reporte ${tr.color.toUpperCase()} por ${via} — ${pl(tr.personas,"persona")}, ${pl(tr.heridos,"herido")}${tr.senales?`, ${pl(tr.senales,"persona")} ${SC().atrap}`:""}.`,tr.color==="rojo"?"alerta":"");
   const ns=needs(z);
   for(const t of s.teams) if(t!==who&&t.job&&t.job.zone===id&&!t.job.cancel&&(t.job.phase==="ida"||t.job.phase==="servicio")&&!ns.includes(t.job.need)){const nd=t.job.need;
@@ -1550,7 +1581,7 @@ function evidence(z){const t=S.t-z.since;
   if(z.medio==="ninguno")return {lr:1,txt:"la zona no tiene ningún medio para reportar, así que su silencio no aporta información; manda la amenaza"};
   if(!z.hb)return {lr:5,txt:"la baliza dejó de emitir su latido automático, señal fuerte de destrucción (×5)"};
   const b=0.9*Math.exp(-t/40)+0.05;return {lr:A_SIL/b,txt:`${z.medio==="baliza"?"la baliza sigue viva":"hay red"} pero nadie reporta, y una zona sin daños suele avisar pronto (×${(A_SIL/b).toFixed(1)})`}}
-function shakeLR(z){return S.shake?MMI_LR[MMI[z.id]]:1}
+function shakeLR(z){return S.shake?(MMI_LR[MMI[z.id]]||1):1}
 function posterior(z){const p0=prior0(z.id);const o=p0/(1-p0)*shakeLR(z)*evidence(z).lr;return o/(1+o)}
 function features(z){
   if(z.silent){const p=posterior(z);const est=NODES[z.id].pop*p*0.05;
@@ -1642,7 +1673,7 @@ for(const [id,n] of Object.entries(NODES)){
   n.lat=f?f[0]:+(1.85039-(n.y-GEO_ORIGEN.y)*GEO_GRADOS).toFixed(5);
   n.lng=f?f[1]:+(-76.04623+(n.x-GEO_ORIGEN.x)*GEO_GRADOS).toFixed(5);
 }
-const URB=new Set(["CEN","CAS","CED"]);
+const URB=new Set(["CEN","CAS","CED","C1","C2","C4"]);
 const ll=id=>[NODES[id].lat,NODES[id].lng];
 
 let MAP=null,LY={},TM={},EDIT=false,edgesKey="",BASE=null,CAPAS=null,BASE_AUTO=false,mmiKey="",hcapKey="";
