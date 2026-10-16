@@ -1011,9 +1011,26 @@ button:active{transform:translateY(1px) scale(.98)}
 .tabpanel::-webkit-scrollbar{width:8px} .tabpanel::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px;border:2px solid var(--surface)}
 
 @media (prefers-reduced-motion:reduce){body::before,.brand svg,.brand b,.status i,.play,.npmu i,.nzone::after,.pitem::after{animation:none!important}}
+
+/* Pantalla de arranque (una vez por sesión; se omite con clic o tecla) */
+.boot{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;background:radial-gradient(60% 50% at 50% 40%,color-mix(in srgb,var(--accent) 12%,var(--bg)),var(--bg) 70%);transition:opacity .5s,visibility .5s}
+.boot.out{opacity:0;visibility:hidden}
+.boot-box{display:grid;justify-items:center;gap:14px;width:min(360px,calc(100vw - 32px));animation:pageIn .6s var(--ease-out) both}
+.boot-box svg{filter:drop-shadow(0 0 18px var(--glow-accent));animation:iconPulse 2s ease-in-out infinite}
+.boot-box b{font-family:var(--display);font-size:34px;letter-spacing:.14em;line-height:1}
+.boot ol{list-style:none;margin:0;padding:0;width:100%;display:grid;gap:6px;font-family:var(--mono);font-size:12px;color:var(--muted);min-height:96px}
+.boot li{display:flex;justify-content:space-between;gap:8px;animation:logIn .35s var(--ease-out) both}
+.boot li em{font-style:normal;color:var(--verde);text-shadow:0 0 8px color-mix(in srgb,var(--verde) 60%,transparent)}
+.boot-bar{width:100%;height:3px;border-radius:2px;background:var(--surface3);overflow:hidden}
+.boot-bar i{display:block;height:100%;width:0;background:var(--accent);box-shadow:0 0 10px var(--glow-accent);transition:width .35s var(--ease-out)}
+.boot-skip{font-size:11px;color:var(--faint)}
 </style>
 </head>
 <body>
+<div id="boot" class="boot" hidden aria-hidden="true"><div class="boot-box">
+  <svg width="56" height="56" viewBox="0 0 38 38"><rect width="38" height="38" rx="9" fill="#5aaee6"/><path d="M19 7 L31 29 H7 Z" fill="none" stroke="#06121c" stroke-width="2.6" stroke-linejoin="round"/><path d="M19 15v7M15.5 18.5h7" stroke="#06121c" stroke-width="2.6" stroke-linecap="round"/></svg>
+  <b>TRIA</b><ol id="bootLines"></ol><div class="boot-bar"><i id="bootBar"></i></div><span class="boot-skip">Clic o cualquier tecla para omitir</span>
+</div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 
 <header class="appbar spot">
@@ -1524,6 +1541,18 @@ document.addEventListener("pointermove",e=>{const el=e.target.closest?.(".spot")
   el.style.setProperty("--spot-x",(e.clientX-r.left)+"px");el.style.setProperty("--spot-y",(e.clientY-r.top)+"px")},{passive:true});
 initMap();
 init();
+// Pantalla de arranque: solo la primera vez en la sesión y nunca con movimiento reducido
+(function boot(){
+  let visto=false;try{visto=sessionStorage.getItem("tria-boot")==="1";sessionStorage.setItem("tria-boot","1")}catch(e){}
+  if(visto||matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  const el=$("boot"),ol=$("bootLines"),bar=$("bootBar");el.hidden=false;
+  const pasos=["Enlace satelital del PMU","Escuchando balizas LoRa","Amenaza SGC · censo DANE","Prioridades (AHP + Bayes)"];
+  let i=0,tm=null;
+  const fin=()=>{clearTimeout(tm);el.classList.add("out");removeEventListener("keydown",fin);setTimeout(()=>el.hidden=true,500)};
+  const paso=()=>{if(i>=pasos.length){tm=setTimeout(fin,350);return}
+    ol.insertAdjacentHTML("beforeend",`<li><span>${pasos[i]}</span><em>OK</em></li>`);i++;bar.style.width=(i/pasos.length*100)+"%";tm=setTimeout(paso,380)};
+  el.addEventListener("click",fin);addEventListener("keydown",fin);tm=setTimeout(paso,250);
+})();
 // Versión desplegada (solo cuando lo sirve la API de TRIA, por ejemplo en Render)
 fetch("version").then(r=>r.ok?r.json():null).then(v=>{if(v&&v.commit){$("footer").insertAdjacentHTML("beforeend",` · Versión ${v.version} (${v.commit})`)}}).catch(()=>{});
 </script>
