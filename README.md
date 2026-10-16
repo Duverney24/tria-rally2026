@@ -104,6 +104,8 @@ print(pmu.asignacion())                # envía rescate a Bruselas rodeando por 
 
 **En línea (Render):** el archivo `render.yaml` despliega la API y el prototipo en un solo servicio. Cada push a `main` publica una versión nueva automáticamente; el pie del prototipo muestra el commit desplegado. Rutas: `/` prototipo · `/docs` API · `/version` versión desplegada.
 
+**Prototipo en Vercel:** `vercel.json` publica `prototipo/` como sitio estático, sin build. Basta importar el repositorio en https://vercel.com/new y pulsar *Deploy* (sin cambiar ajustes); cada push a `main` se despliega solo. La API sigue en Render.
+
 **Prototipo en GitHub Pages:** cada push a `main` que toque `prototipo/` lo publica en https://duverney24.github.io/tria-rally2026/ (flujo `.github/workflows/pages.yml`, rama `gh-pages`). Es el mismo prototipo, servido como sitio estático: la simulación, el modo sin conexión y la instalación como app funcionan; la pestaña *En vivo* necesita la API, que sigue en Render.
 
 **Hardware:** ver `firmware/baliza/baliza.ino` y `firmware/receptor/receptor.ino` (Arduino IDE, librería *LoRa* de Sandeep Mistry, banda de 915 MHz; verificar la regulación vigente de la ANE).
