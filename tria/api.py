@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -21,7 +21,7 @@ pmu = PuestoDeMando()
 
 class Reporte(BaseModel):
     zona: str
-    color: str  # rojo | amarillo | verde
+    color: Literal["rojo", "amarillo", "verde"]
     personas: int = 0
     heridos: int = 0
     senales_vida: int = 0

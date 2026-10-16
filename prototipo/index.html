@@ -1096,6 +1096,20 @@ button:active{transform:translateY(1px) scale(.98)}
 .narra.done span::after{display:none}
 @keyframes caret{50%{opacity:0}}
 @media (max-width:640px){.narra{font-size:12.5px;bottom:24px}}
+/* Pestaña En vivo */
+.livedot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;vertical-align:1px;background:var(--faint)}
+.livedot.ok{background:var(--verde);box-shadow:0 0 8px var(--verde);animation:pulseRingV 2.2s var(--ease-out) infinite}
+@keyframes pulseRingV{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--verde) 55%,transparent)}70%,100%{box-shadow:0 0 0 6px transparent}}
+.livenota{margin:0 14px 8px;font-size:12px;color:var(--faint)} .livenota code{font-family:var(--mono);color:var(--muted)}
+.lapor{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:6px}
+.lapor div{display:grid;gap:2px;font-size:10.5px;color:var(--faint)}
+.lapor i{display:block;height:3px;border-radius:2px;background:var(--accent);box-shadow:0 0 6px var(--glow-accent)}
+.pitem.flash{animation:flash 1.4s ease-out}
+.livedemo{margin:6px 8px 14px;padding:10px 12px;border:1px solid var(--line2);border-radius:8px;background:var(--surface2)}
+.livedemo summary{cursor:pointer;font-weight:600;font-size:13px}
+.livegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.livegrid label{display:grid;gap:3px;font-size:11.5px;color:var(--muted)}
+.livegrid input{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line2);border-radius:6px;padding:6px 8px}
 /* Zona señalada desde la lista */
 .nzone.hl{transform:scale(1.28);box-shadow:0 0 0 6px color-mix(in srgb,var(--st,var(--silencio)) 35%,transparent),0 0 30px 8px color-mix(in srgb,var(--st,var(--silencio)) 60%,transparent)!important;transition:transform .2s var(--ease-out),box-shadow .2s}
 .leaflet-marker-icon:has(.hl){z-index:9000!important}
@@ -1201,6 +1215,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
       <button role="tab" data-tab="rec" aria-selected="false">Recursos</button>
       <button role="tab" data-tab="log" aria-selected="false">Bitácora<span class="badge" id="logCount">0</span></button>
       <button role="tab" data-tab="model" aria-selected="false">Modelo</button>
+      <button role="tab" data-tab="live" aria-selected="false">En vivo<i class="livedot" id="liveDot"></i></button>
     </nav>
     <div class="tabpanel" id="tab-prio">
       <div class="listhead"><span>Ordenadas por índice de urgencia</span><label class="toggle"><input type="checkbox" id="fifo"> Comparar con orden de llegada</label></div>
@@ -1213,6 +1228,20 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
     </div>
     <div class="tabpanel" id="tab-log" hidden><div class="log" id="log"></div></div>
     <div class="tabpanel" id="tab-model" hidden><div class="model" id="model"></div></div>
+    <div class="tabpanel" id="tab-live" hidden>
+      <div class="listhead"><span id="liveEstado">Buscando la API de TRIA…</span><button id="liveSync" title="Pone el reloj del motor en el minuto de la simulación">Sincronizar reloj</button></div>
+      <p class="livenota">Prioridades calculadas por el motor en Python (AHP + Bayes) con los reportes que recibe la API: balizas por el puente LoRa (<code>herramientas/puente_serial.py</code>) u otros canales. Se actualiza cada 5 s.</p>
+      <ol class="prio" id="livePrio"></ol>
+      <details class="livedemo" id="liveDemo"><summary>Probar sin hardware</summary>
+        <div class="livegrid">
+          <label>Zona<select id="lvZona"></select></label>
+          <label>Color<select id="lvColor"><option value="rojo">Rojo</option><option value="amarillo">Amarillo</option><option value="verde">Verde</option></select></label>
+          <label>Personas<input id="lvPers" type="number" min="0" value="20"></label>
+          <label>Heridos<input id="lvHer" type="number" min="0" value="2"></label>
+        </div>
+        <div class="maptools"><button id="lvReporte">Enviar reporte</button><button id="lvLatido">Baliza destruida</button><span id="lvMsg" class="livenota"></span></div>
+      </details>
+    </div>
   </aside>
 </main>
 
@@ -1571,6 +1600,40 @@ function resumen(){const zs=Object.values(S.zones),d=$("resumen");
 $("resCerrar").onclick=()=>$("resumen").close();
 $("resLog").onclick=()=>{$("resumen").close();document.querySelector('.tabs button[data-tab="log"]').click()};
 $("resOtra").onclick=()=>{$("resumen").close();$("btnReset").click()};
+// ---------- En vivo: prioridades del motor real vía API ----------
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LIVE={ok:false,prev:null,timer:null,t:0};
+const API_CRIT=[["severidad","Severidad"],["personas","Personas"],["vulnerabilidad","Vulnerab."],["tiempo","Tiempo"]];
+async function api(ruta,opts){const r=await fetch(ruta,{headers:{"Content-Type":"application/json"},...opts});if(!r.ok)throw new Error(r.status);return r.json()}
+async function liveCargar(){
+  try{const [est,filas]=await Promise.all([api("estado"),api("prioridades")]);LIVE.ok=true;LIVE.t=est.minuto;$("liveDot").classList.add("ok");
+    $("liveEstado").textContent=`Conectado al motor · minuto ${Math.round(est.minuto)} · consistencia AHP ${est.consistencia}`;
+    if(!$("lvZona").options.length)$("lvZona").innerHTML=filas.map(f=>`<option value="${esc(f.zona)}">${esc(f.nombre)}</option>`).join("");
+    liveRender(filas)}
+  catch(e){LIVE.ok=false;$("liveDot").classList.remove("ok");
+    $("liveEstado").textContent="Sin API: abra el prototipo con uvicorn (uvicorn tria.api:app) o en Render para ver el motor en vivo.";$("livePrio").innerHTML=""}}
+function liveRender(filas){
+  const antes=LIVE.prev||{};const cambios=[];
+  $("livePrio").innerHTML=filas.map((f,i)=>{const st=f.en_silencio?"silencio":["rojo","amarillo","verde"].includes(f.color)?f.color:"atendida";
+    const firma=[f.en_silencio,f.color,f.personas,f.heridos,f.latido].join("|");const nuevo=antes[f.zona]!==undefined&&antes[f.zona]!==firma;
+    if(nuevo)cambios.push(f);
+    const sub=f.en_silencio?`Sin contacto · ${f.medio==="ninguno"?"sin medio de reporte":f.latido?"baliza sin reporte":"baliza destruida"}`:`${f.personas} personas · ${pl(f.heridos,"herido")}`;
+    const nec=f.necesidades.length?`<div class="pasg"><span>Necesita: ${f.necesidades.map(n=>esc(TYPE_LABEL[n]||n)).join(", ")}</span></div>`:"";
+    return `<li class="pitem s-${st}${nuevo?" flash":""}" data-z="${esc(f.zona)}" tabindex="0"><span class="rank">${i+1}</span><div style="min-width:0">
+      <div class="prow1"><b>${esc(f.nombre)}</b><span class="chip">${STATE_LABEL[st]}</span><span class="score">${Number(f.indice).toFixed(2)}</span></div>
+      <div class="pbar"><i style="width:${Math.round(f.indice*100)}%"></i></div><div class="psub">${esc(sub)}</div>
+      <div class="lapor">${API_CRIT.map(([k,n])=>`<div><span>${n} +${Number(f.aportes[k]||0).toFixed(2)}</span><i style="width:${Math.min(100,Math.round((f.aportes[k]||0)*250))}%"></i></div>`).join("")}</div>${nec}</div></li>`}).join("");
+  $("livePrio").querySelectorAll(".pitem").forEach(li=>li.onclick=()=>{if(S.zones[li.dataset.z]){S.sel=li.dataset.z;render()}volarA(li.dataset.z)});
+  // El texto del aviso va como HTML: todo lo que viene de la API se escapa
+  cambios.forEach(f=>aviso({t:S.t,kind:"alerta",text:`Motor en vivo: ${esc(f.nombre)} ${f.en_silencio?(f.latido?"sin contacto":"perdió el latido de su baliza"):`reportó ${esc(f.color)} · ${Number(f.personas)||0} personas`}.`}));
+  LIVE.prev=Object.fromEntries(filas.map(f=>[f.zona,[f.en_silencio,f.color,f.personas,f.heridos,f.latido].join("|")]))}
+function liveCiclo(){clearInterval(LIVE.timer);LIVE.timer=null;if($("tab-live").hidden||document.hidden)return;liveCargar();LIVE.timer=setInterval(liveCargar,5000)}
+document.addEventListener("visibilitychange",liveCiclo);
+$("liveSync").onclick=async()=>{try{await api(`reloj/${S.t}`,{method:"POST"});liveCargar()}catch(e){$("liveEstado").textContent="No se pudo sincronizar el reloj."}};
+$("lvReporte").onclick=async()=>{const z=$("lvZona").value;try{await api("reportes",{method:"POST",body:JSON.stringify({zona:z,color:$("lvColor").value,personas:+$("lvPers").value||0,heridos:+$("lvHer").value||0,canal:"baliza"})});
+  $("lvMsg").textContent="Reporte enviado.";liveCargar()}catch(e){$("lvMsg").textContent="No se pudo enviar ("+e.message+")."}};
+$("lvLatido").onclick=async()=>{const z=$("lvZona").value;try{await api("latidos",{method:"POST",body:JSON.stringify({zona:z,vivo:false})});
+  $("lvMsg").textContent="Baliza marcada como destruida.";liveCargar()}catch(e){$("lvMsg").textContent="No se pudo marcar ("+e.message+")."}};
 // Al pasar por una zona de la lista se ilumina su marcador en el mapa
 let HOVER=null;
 function senalar(id){if(HOVER===id)return;document.querySelectorAll(".nzone.hl").forEach(x=>x.classList.remove("hl"));HOVER=id;
@@ -1731,7 +1794,7 @@ function tema(t){const claro=t==="light";document.documentElement.toggleAttribut
 $("btnTema").onclick=()=>tema(document.documentElement.dataset.theme==="light"?"dark":"light");
 $("fifo").onchange=e=>{S.fifo=e.target.checked;render()};
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>{x.setAttribute("aria-selected",String(x===b));$("tab-"+x.dataset.tab).hidden=x!==b});
-  if(b.dataset.tab==="log")$("logCount").classList.remove("hot")});
+  if(b.dataset.tab==="log")$("logCount").classList.remove("hot");liveCiclo()});
 $("scen").onchange=e=>{CUR_SCEN=e.target.value;$("btnReset").onclick()};
 $("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;prevRank={};movs={};prevW={};prevShake=false;$("toasts").innerHTML="";$("logCount").classList.remove("hot");resetTeams();init();sacudir()};
 document.addEventListener("pointermove",e=>{const el=e.target.closest?.(".spot");if(!el)return;const r=el.getBoundingClientRect();
