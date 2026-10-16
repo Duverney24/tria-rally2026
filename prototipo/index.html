@@ -491,4 +491,6 @@ $("btnFifo").onclick=()=>{S.fifo=!S.fifo;$("btnFifo").setAttribute("aria-pressed
 $("scen").onchange=e=>{S.scen=e.target.value;$("btnReset").onclick()};
 $("btnReset").onclick=()=>{playing=false;stepLeft=0;$("btnPlay").setAttribute("aria-pressed","false");$("btnPlay").textContent="Reproducir";S=null;init()};
 init();
+// Versión desplegada (solo cuando lo sirve la API de TRIA, por ejemplo en Render)
+fetch("version").then(r=>r.ok?r.json():null).then(v=>{if(v&&v.commit){const f=document.querySelector("footer");f.insertAdjacentHTML("beforeend",` · Versión ${v.version} (${v.commit})`)}}).catch(()=>{});
 </script>

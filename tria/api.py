@@ -5,9 +5,12 @@ Documentación interactiva:  http://localhost:8000/docs
 """
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .escenario import PuestoDeMando
@@ -29,6 +32,13 @@ class Reporte(BaseModel):
 class Latido(BaseModel):
     zona: str
     vivo: bool = True
+
+
+@app.get("/version")
+def version():
+    """Versión desplegada. En Render, RENDER_GIT_COMMIT trae el commit de GitHub."""
+    commit = os.getenv("RENDER_GIT_COMMIT", "local")
+    return {"version": app.version, "commit": commit[:7]}
 
 
 @app.get("/estado")
@@ -92,3 +102,10 @@ def hospital(origen: str, heridos: int = 1, zona: Optional[str] = None):
     if not h:
         raise HTTPException(409, "Ningún hospital con cupo y energía alcanzable")
     return h
+
+
+# El prototipo (y futuras páginas) se sirven desde la raíz: https://<servicio>.onrender.com/
+# Se monta al final para que no tape las rutas de la API.
+_PROTOTIPO = Path(__file__).resolve().parent.parent / "prototipo"
+if _PROTOTIPO.is_dir():
+    app.mount("/", StaticFiles(directory=_PROTOTIPO, html=True), name="prototipo")

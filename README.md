@@ -69,6 +69,8 @@ print(pmu.prioridades()[:3])
 print(pmu.asignacion())                # envía rescate a Bruselas rodeando por Chillurco
 ```
 
+**En línea (Render):** el archivo `render.yaml` despliega la API y el prototipo en un solo servicio. Cada push a `main` publica una versión nueva automáticamente; el pie del prototipo muestra el commit desplegado. Rutas: `/` prototipo · `/docs` API · `/version` versión desplegada.
+
 **Hardware:** ver `firmware/baliza/baliza.ino` y `firmware/receptor/receptor.ino` (Arduino IDE, librería *LoRa* de Sandeep Mistry, banda de 915 MHz; verificar la regulación vigente de la ANE).
 
 ## Estado

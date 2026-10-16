@@ -1,0 +1,15 @@
+# Despliegue en Render (https://render.com) como Blueprint.
+# Cada push a la rama main vuelve a desplegar automáticamente.
+services:
+  - type: web
+    name: tria-rally2026
+    runtime: python
+    plan: free
+    branch: main
+    autoDeploy: true
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn tria.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /version
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
