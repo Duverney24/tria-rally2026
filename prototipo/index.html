@@ -1446,6 +1446,11 @@ function zoneState(z){if(z.silent)return "silencio";if(z.attended)return "atendi
 function medioTxt(z){return z.medio==="ninguno"?"sin medio de reporte":!z.hb?"baliza destruida":"baliza sin reporte"}
 
 let prevKpi=null,prevLog=-1,prevSel=null;
+// Cuenta del valor anterior al nuevo; dura menos que un tick para terminar antes del siguiente render
+function contar(nodo,de,a){if(!nodo||matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  const dur=Math.min(450,tickMs*.8),t0=performance.now();
+  const f=now=>{const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);nodo.nodeValue=String(Math.round(de+(a-de)*e));if(p<1&&nodo.isConnected)requestAnimationFrame(f)};
+  nodo.nodeValue=String(de);requestAnimationFrame(f)}
 function render(){
   $("scenTag").textContent=S.scen==="total"?"Operando sin conexión · peor caso":"Operando con red parcial";
   $("scen").value=S.scen;
@@ -1459,6 +1464,8 @@ function render(){
   const k=[[`${zs.length-sil}<small> / ${zs.length}</small>`,"Zonas con reporte",""],[sil,"Zonas sin contacto",sil?"warn":""],[pers,"Personas reportadas",""],
            [S.stats.trasladados,"Heridos trasladados",""],[`${free}<small> / ${S.teams.length}</small>`,"Equipos libres",""],[caidas,"Vías caídas",caidas?"alert":""]];
   $("kpis").innerHTML=k.map(([b,s,c],i)=>`<div class="kpi spot ${c}${prevKpi&&prevKpi[i]!==String(b)?" bump":""}"><b>${b}</b><span>${s}</span></div>`).join("");
+  if(prevKpi)$("kpis").querySelectorAll(".kpi").forEach((el,i)=>{const de=parseInt(prevKpi[i]),a=parseInt(String(k[i][0]));
+    if(de!==a&&isFinite(de)&&isFinite(a))contar(el.querySelector("b").firstChild,de,a)});
   prevKpi=k.map(x=>String(x[0]));
   renderMap();renderTimeline();renderPrio();renderRec();renderModel();
   const nuevas=prevLog<0?0:Math.max(0,S.log.length-prevLog);prevLog=S.log.length;
