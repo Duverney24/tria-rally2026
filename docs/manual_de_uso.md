@@ -59,19 +59,32 @@ El prototipo simula la consola del **Puesto de Mando Unificado (PMU)** de Pitali
 2. Arrastre cada zona, hospital o cruce a su sitio real (use la capa *Satélite* o *Calles*).
 3. Pulse **Copiar coordenadas** y pegue el resultado en `GEO_FIJO` dentro de `prototipo/index.html`.
 
-## 6. API (para desarrolladores)
+## 6. Pestaña En vivo (motor real)
+
+Solo funciona cuando el prototipo se abre desde la API (Render o `uvicorn tria.api:app`). Al abrirla, el punto junto a **En vivo** se pone verde.
+
+1. La lista muestra las prioridades que calcula el **motor en Python** (AHP + Bayes) con los reportes que recibe la API, con el aporte de cada criterio. Se actualiza cada 5 s; cuando una zona cambia, parpadea y aparece un aviso.
+2. **Sincronizar reloj** pone el motor en el minuto de la simulación, para comparar ambas listas.
+3. **Probar sin hardware**: envía un reporte (zona, color, personas, heridos) como si llegara de una baliza, o marca una baliza como destruida.
+4. Con el receptor LoRa conectado, `herramientas/puente_serial.py` envía los reportes reales a la misma API y aparecen aquí.
+
+Nota: la API no tiene usuarios ni contraseñas; en Render cualquiera con la dirección puede enviar reportes de prueba. Para operación real se usa en la red local del PMU.
+
+## 7. API (para desarrolladores)
 
 En la ruta `/docs` de la dirección de Render (o `http://localhost:8000/docs` en local) se pueden probar:
 
 | Ruta | Uso |
 |---|---|
-| `POST /reportes` | Registrar un reporte (zona, color, personas, heridos, canal). |
+| `POST /reportes` | Registrar un reporte (zona, color `rojo`/`amarillo`/`verde`, personas, heridos, canal). |
 | `POST /latidos` | Registrar si la baliza de una zona sigue viva. |
 | `POST /vias/{a}/{b}?caida=true` | Marcar una vía como caída o habilitada. |
 | `POST /intensidad/{zona}/{mmi}` | Cargar la intensidad sísmica del SGC. |
-| `GET /prioridades` | Cola de prioridades con el aporte de cada criterio. |
+| `GET /prioridades` | Cola de prioridades con el aporte de cada criterio y el estado de cada zona. |
 | `GET /asignacion` | Asignación óptima (programación lineal entera). |
 | `GET /hospital?origen=BRU&heridos=4` | Hospital recomendado. |
+| `GET /estado` | Minuto del motor, pesos AHP y razón de consistencia. |
+| `POST /reloj/{minuto}` | Fijar el minuto del motor. |
 | `GET /version` | Versión desplegada. |
 
 ---
