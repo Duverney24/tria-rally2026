@@ -28,6 +28,10 @@ El prototipo simula la consola del **Puesto de Mando Unificado (PMU)** de Pitali
 
 > **Instalable y sin conexión:** abierto desde Render, el navegador ofrece **instalarlo como app**. Después de la primera visita abre aunque no haya internet y conserva las partes del mapa que ya se vieron.
 
+**Línea de tiempo:** arrástrela (o haga clic) para ir a cualquier minuto; con el foco en ella, las flechas avanzan o retroceden 5 min, *Re Pág/Av Pág* 15 min, *Inicio* y *Fin* van al principio y al final. Para retroceder, TRIA vuelve a reproducir el escenario desde el inicio (las vías marcadas a mano se pierden).
+
+**Panel lateral:** en pantallas grandes, *Ocultar panel* deja el mapa a todo el ancho; la elección se recuerda. En el celular, la **barra inferior** lleva a Mapa, Prioridades, Recursos, Bitácora y En vivo, y marca en rojo la Bitácora si hay alertas sin leer.
+
 ## 3. Cómo leer el mapa
 
 | Símbolo | Significado |
