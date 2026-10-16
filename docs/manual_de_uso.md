@@ -23,6 +23,10 @@ El prototipo simula la consola del **Puesto de Mando Unificado (PMU)** de Pitali
 2. Pulse **▶** para reproducir o **+15 min** para avanzar un ciclo de recálculo.
 3. Ajuste la velocidad: **Lenta** (ideal para grabar video), **Normal** o **Rápida**.
 4. **Reiniciar** vuelve al minuto 0.
+5. **Atajos de teclado** para presentar: <kbd>Espacio</kbd> reproduce o pausa, <kbd>→</kbd> avanza 15 min, <kbd>R</kbd> reinicia.
+6. El botón de **tema claro u oscuro** cambia la apariencia (el claro se ve mejor con proyector).
+
+> **Instalable y sin conexión:** abierto desde Render, el navegador ofrece **instalarlo como app**. Después de la primera visita abre aunque no haya internet y conserva las partes del mapa que ya se vieron.
 
 ## 3. Cómo leer el mapa
 
