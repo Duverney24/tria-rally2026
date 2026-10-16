@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: sala de crisis — barra de mando arriba; mapa operativo con línea de tiempo a la izquierda; panel con pestañas (prioridades, recursos, bitácora, modelo) a la derecha.
-   Tema oscuro deliberado (consola de operación nocturna), única apariencia. */
+   Tema oscuro por defecto (consola de operación nocturna); tema claro opcional para proyectar en salas iluminadas. */
 :root{
   --bg:#0a1118; --surface:#101a24; --surface2:#15212e; --surface3:#1b2939; --line:#213041; --line2:#2b3d52;
   --ink:#e7eef5; --muted:#91a2b6; --faint:#5f7186;
@@ -1049,6 +1049,42 @@ button:active{transform:translateY(1px) scale(.98)}
 .qring i+i{animation-delay:.45s}
 @keyframes qring{from{transform:scale(.1);opacity:.9}to{transform:scale(1);opacity:0}}
 .tabs button .badge{display:inline-block}
+/* Tema claro: para proyector o sala con mucha luz */
+:root[data-theme="light"]{
+  --bg:#eaf0f5; --surface:#ffffff; --surface2:#f3f6f9; --surface3:#e3e9ef; --line:#d4dde6; --line2:#bfccd8;
+  --ink:#0f1b27; --muted:#465a6e; --faint:#738497;
+  --accent:#1c78b8; --accent-ink:#ffffff;
+  --rojo:#d63a2c; --ambar:#c27f00; --verde:#1b9454; --silencio:#7457dc;
+  --map:#dfe7ee; --road:#8396a9; --grid:#dde5ed; --edge:#5f7286;
+  --shadow-1:0 1px 0 rgba(255,255,255,.8) inset,0 1px 2px rgba(15,27,39,.08),0 8px 24px -14px rgba(15,27,39,.25);
+  --shadow-2:0 1px 0 rgba(255,255,255,.8) inset,0 2px 4px rgba(15,27,39,.08),0 18px 40px -20px rgba(15,27,39,.35);
+  color-scheme:light}
+[data-theme="light"] .tiles-dark{filter:saturate(.75) contrast(.95)}
+[data-theme="light"] .nlbl,[data-theme="light"] .nsub{text-shadow:0 0 3px #fff,0 0 7px #fff,0 0 2px #fff}
+[data-theme="light"] .nzone.s-silencio{background:rgba(255,255,255,.92)}
+[data-theme="light"] .nzone.sel{outline-color:var(--ink)}
+[data-theme="light"] .leaflet-control-attribution{background:rgba(255,255,255,.8)!important}
+[data-theme="light"] .leaflet-control-scale-line{background:rgba(255,255,255,.75)}
+[data-theme="light"] .mapwrap{box-shadow:inset 0 0 40px rgba(15,27,39,.12)}
+[data-theme="light"] .brand b{background-image:linear-gradient(100deg,var(--ink) 40%,var(--accent) 50%,var(--ink) 60%)}
+[data-theme="light"] .resumen::backdrop{background:rgba(15,27,39,.35)}
+/* Narración: subtítulo del último evento sobre el mapa */
+.narra{position:absolute;left:50%;bottom:30px;z-index:850;transform:translate(-50%,8px);width:min(640px,calc(100% - 24px));pointer-events:none;opacity:0;transition:opacity .35s,transform .35s var(--ease-out);
+  display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:baseline;padding:10px 14px;border-radius:10px;font-family:var(--body);font-size:14px;line-height:1.4;color:var(--ink);
+  background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line2);box-shadow:0 14px 34px -14px rgba(0,0,0,.6)}
+.narra.on{opacity:1;transform:translate(-50%,0)}
+.narra time{font-family:var(--mono);font-size:12px;color:var(--faint)}
+.narra.k-alerta{border-color:color-mix(in srgb,var(--rojo) 55%,var(--line2))} .narra.k-alerta time{color:var(--rojo)}
+.narra.k-ok time{color:var(--verde)} .narra.k-asig time{color:var(--accent)}
+.narra span::after{content:"";display:inline-block;width:7px;height:1em;margin-left:2px;vertical-align:-2px;background:var(--accent);animation:caret 1s steps(1) infinite}
+.narra.done span::after{display:none}
+@keyframes caret{50%{opacity:0}}
+@media (max-width:640px){.narra{font-size:12.5px;bottom:24px}}
+/* Zona señalada desde la lista */
+.nzone.hl{transform:scale(1.28);box-shadow:0 0 0 6px color-mix(in srgb,var(--st,var(--silencio)) 35%,transparent),0 0 30px 8px color-mix(in srgb,var(--st,var(--silencio)) 60%,transparent)!important;transition:transform .2s var(--ease-out),box-shadow .2s}
+.leaflet-marker-icon:has(.hl){z-index:9000!important}
+.tema svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.tema{padding:7px 9px;display:grid;place-items:center}
 /* Cambio de puesto en la lista de prioridades */
 .rank .mv{display:block;font-size:9px;line-height:1;margin-top:3px;animation:mvIn 1.6s ease-out both}
 .rank .mv.up{color:var(--rojo);text-shadow:0 0 6px var(--rojo)} .rank .mv.down{color:var(--faint)}
@@ -1096,6 +1132,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
     <strong>Pitalito, Huila</strong>
   </div>
   <div class="status"><i></i><span id="scenTag">Operando sin conexión</span></div>
+  <button id="btnTema" class="tema" aria-pressed="false" aria-label="Tema claro" title="Tema claro u oscuro"></button>
   <label><span class="eyebrow" style="display:block;margin-bottom:3px">Escenario</span>
     <select id="scen"><option value="total">Peor caso: apagón total</option><option value="parcial">Apagón parcial</option></select></label>
   <div class="clockbox"><span class="eyebrow">Hora del evento</span><b id="clock">02:10</b><span id="tplus">T+0 min</span></div>
@@ -1106,7 +1143,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
     <section class="kpis" id="kpis" aria-label="Indicadores"></section>
     <section class="card mapcard">
       <div class="cardhead"><div><h2>Mapa operativo</h2><span id="recalcInfo">Recalcula cada 15 min</span></div>
-        <div class="maptools"><button id="btnCentrar">Centrar</button><button id="btnFull">Pantalla completa</button><button id="btnEdit" aria-pressed="false">Ajustar ubicaciones</button></div></div>
+        <div class="maptools"><button id="btnCentrar">Centrar</button><button id="btnFull">Pantalla completa</button><button id="btnNarra" aria-pressed="false">Narrar</button><button id="btnEdit" aria-pressed="false">Ajustar ubicaciones</button></div></div>
       <div class="mapwrap" id="mapwrap">
         <div id="map" role="region" aria-label="Mapa de Pitalito con zonas, vías, hospitales y equipos"></div>
         <div class="legend">
@@ -1440,7 +1477,7 @@ function renderMap(){
   const key=S.edges.map(e=>e.blocked?1:0).join("")+"|"+Math.floor(z)+"|"+EDIT+"|"+Object.values(NODES).map(n=>n.lat+n.lng).join();
   if(key!==edgesKey){edgesKey=key;LY.edges.clearLayers();
     S.edges.forEach((e,i)=>{const p=[ll(e.a),ll(e.b)];
-      L.polyline(p,{color:e.blocked?"#f0584a":"#9fb3c8",weight:e.blocked?3:3.5,opacity:e.blocked?.95:.55,dashArray:e.blocked?"8 7":null,interactive:false}).addTo(LY.edges);
+      L.polyline(p,{color:e.blocked?css("--rojo"):css("--edge")||"#9fb3c8",weight:e.blocked?3:3.5,opacity:e.blocked?.95:.55,dashArray:e.blocked?"8 7":null,interactive:false}).addTo(LY.edges);
       const hit=L.polyline(p,{opacity:0,weight:20}).addTo(LY.edges);
       hit.bindTooltip(`<b>${e.label||NODES[e.a].name+" – "+NODES[e.b].name}</b><br>${e.w} min${e.blocked?" · <span style='color:#f0584a'>CAÍDA</span>":""}<br><span class="tt-hint">Clic para ${e.blocked?"habilitar":"marcar como caída"}</span>`,{sticky:true,className:"tt"});
       hit.on("click",()=>toggleEdge(i));
@@ -1465,8 +1502,8 @@ function renderMap(){
     if(n.kind==="hosp"){const h=S.hosp[id];const st=!h.energia?"off":h.occ>=h.cap?"full":"ok";
       addNode(id,`<div class="nhosp h-${st}"><i>✚</i><span class="nlbl sm">${n.name}${h.energia?` · ${h.cap-h.occ} camas`:" · sin energía"}</span></div>`,[26,26]);continue}
     const zz=S.zones[id];const st=zoneState(zz);const sel=S.sel===id?" sel":"";
-    if(st==="silencio")addNode(id,`<div class="nzone s-silencio${sel}"><b>${Math.round(posterior(zz)*100)}%</b><span class="nlbl${URB.has(id)?" urb":""}">${n.name}</span><span class="nsub">${medioTxt(zz)}</span></div>`,[34,34]);
-    else addNode(id,`<div class="nzone s-${st} solid${sel}"><b>${zz.personas}</b><span class="nlbl${URB.has(id)?" urb":""}">${n.name}</span></div>`,[34,34]);
+    if(st==="silencio")addNode(id,`<div class="nzone s-silencio${sel}${HOVER===id?" hl":""}" data-z="${id}"><b>${Math.round(posterior(zz)*100)}%</b><span class="nlbl${URB.has(id)?" urb":""}">${n.name}</span><span class="nsub">${medioTxt(zz)}</span></div>`,[34,34]);
+    else addNode(id,`<div class="nzone s-${st} solid${sel}${HOVER===id?" hl":""}" data-z="${id}"><b>${zz.personas}</b><span class="nlbl${URB.has(id)?" urb":""}">${n.name}</span></div>`,[34,34]);
   }
   // Equipos: marcadores persistentes que se desplazan con transición
   const stack={};
@@ -1491,6 +1528,7 @@ function resetTeams(){for(const id of Object.keys(TM)){LY.teams.removeLayer(TM[i
 
 // ---------- Render ----------
 const $=id=>document.getElementById(id);
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const hhmm=m=>{const tot=2*60+10+m;return String(Math.floor(tot/60)%24).padStart(2,"0")+":"+String(tot%60).padStart(2,"0")};
 const T_MAX=240;
 const STATE_LABEL={rojo:"Roja",amarillo:"Amarilla",verde:"Verde",silencio:"Sin contacto",atendida:"Atendida"};
@@ -1514,6 +1552,25 @@ function resumen(){const zs=Object.values(S.zones),d=$("resumen");
 $("resCerrar").onclick=()=>$("resumen").close();
 $("resLog").onclick=()=>{$("resumen").close();document.querySelector('.tabs button[data-tab="log"]').click()};
 $("resOtra").onclick=()=>{$("resumen").close();$("btnReset").click()};
+// Al pasar por una zona de la lista se ilumina su marcador en el mapa
+let HOVER=null;
+function senalar(id){if(HOVER===id)return;document.querySelectorAll(".nzone.hl").forEach(x=>x.classList.remove("hl"));HOVER=id;
+  if(id)document.querySelector(`.nzone[data-z="${id}"]`)?.classList.add("hl")}
+$("prio").addEventListener("pointerover",e=>{const li=e.target.closest(".pitem");senalar(li?li.dataset.z:null)});
+$("prio").addEventListener("pointerleave",()=>senalar(null));
+$("prio").addEventListener("focusin",e=>{const li=e.target.closest(".pitem");if(li)senalar(li.dataset.z)});
+$("prio").addEventListener("focusout",()=>senalar(null));
+// Narración: escribe el evento letra a letra como subtítulo del mapa
+let NARRA=false,narraTm=null,narraOff=null;
+function narrar(l){if(!NARRA)return;let el=$("narra");if(!el){el=document.createElement("div");el.id="narra";el.className="narra";el.setAttribute("aria-hidden","true");$("map").append(el)}
+  clearInterval(narraTm);clearTimeout(narraOff);el.className="narra on k-"+l.kind;el.innerHTML=`<time>${hhmm(l.t)}</time><span></span>`;
+  const sp=el.querySelector("span"),txt=l.text;
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches){sp.textContent=txt;el.classList.add("done")}
+  else{let i=0;narraTm=setInterval(()=>{i+=2;sp.textContent=txt.slice(0,i);if(i>=txt.length){clearInterval(narraTm);el.classList.add("done")}},18)}
+  narraOff=setTimeout(()=>el.classList.remove("on"),Math.max(5000,txt.length*45))}
+$("btnNarra").onclick=()=>{NARRA=!NARRA;$("btnNarra").setAttribute("aria-pressed",String(NARRA));try{localStorage.setItem("tria-narra",NARRA?"1":"0")}catch(e){}
+  if(NARRA&&S&&S.log.length)narrar(S.log[0]);else if(!NARRA)$("narra")?.classList.remove("on")};
+try{if(localStorage.getItem("tria-narra")==="1"){NARRA=true;$("btnNarra").setAttribute("aria-pressed","true")}}catch(e){}
 // Avisos: máximo tres a la vista; cada uno se retira solo a los 6 s
 function aviso(l){const box=$("toasts");const el=document.createElement("div");el.className="toast";
   el.innerHTML=`<i></i><div><time>${hhmm(l.t)}</time><div>${l.text}</div></div><button aria-label="Cerrar aviso">×</button>`;
@@ -1550,7 +1607,8 @@ function render(){
   if($("tab-log").hidden){if(S.log.slice(0,nuevas).some(l=>l.kind==="alerta"))bc.classList.add("hot")}else bc.classList.remove("hot");
   if(S.shake&&!prevShake)ondasSGC();prevShake=S.shake;
   if(S.t>=T_MAX&&!S.resumido){S.resumido=true;resumen()}
-  S.log.slice(0,nuevas).reverse().filter(l=>l.kind==="alerta").forEach(aviso);
+  if(!NARRA)S.log.slice(0,nuevas).reverse().filter(l=>l.kind==="alerta").forEach(aviso); // con narración, el subtítulo reemplaza los avisos
+  if(nuevas)narrar(S.log.slice(0,nuevas).find(l=>l.kind==="alerta")||S.log[0]);
 }
 
 function renderTimeline(){
@@ -1644,6 +1702,13 @@ addEventListener("keydown",e=>{if(e.ctrlKey||e.metaKey||e.altKey||!$("boot").hid
   if(e.target.closest?.("input,select,textarea,.leaflet-container"))return;
   if(e.key===" "&&e.target.closest?.("button,[tabindex]"))return; // Espacio sobre un botón o zona enfocada lo activa a él
   if(e.key===" "){e.preventDefault();$("btnPlay").click()}else if(e.key==="ArrowRight")$("btnStep").click();else if(e.key==="r"||e.key==="R")$("btnReset").click()});
+// Tema: oscuro por defecto; la elección se recuerda en este navegador
+const SOL='<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/></svg>',
+      LUNA='<svg viewBox="0 0 16 16"><path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z"/></svg>';
+function tema(t){const claro=t==="light";document.documentElement.toggleAttribute("data-theme",claro);if(claro)document.documentElement.dataset.theme="light";
+  const b=$("btnTema");b.innerHTML=claro?LUNA:SOL;b.setAttribute("aria-pressed",String(claro));b.setAttribute("aria-label",claro?"Tema oscuro":"Tema claro");
+  try{localStorage.setItem("tria-tema",t)}catch(e){}if(S){edgesKey="";renderMap()}}
+$("btnTema").onclick=()=>tema(document.documentElement.dataset.theme==="light"?"dark":"light");
 $("fifo").onchange=e=>{S.fifo=e.target.checked;render()};
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>{x.setAttribute("aria-selected",String(x===b));$("tab-"+x.dataset.tab).hidden=x!==b});
   if(b.dataset.tab==="log")$("logCount").classList.remove("hot")});
@@ -1651,6 +1716,7 @@ $("scen").onchange=e=>{CUR_SCEN=e.target.value;$("btnReset").onclick()};
 $("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;prevRank={};movs={};prevW={};prevShake=false;$("toasts").innerHTML="";$("logCount").classList.remove("hot");resetTeams();init();sacudir()};
 document.addEventListener("pointermove",e=>{const el=e.target.closest?.(".spot");if(!el)return;const r=el.getBoundingClientRect();
   el.style.setProperty("--spot-x",(e.clientX-r.left)+"px");el.style.setProperty("--spot-y",(e.clientY-r.top)+"px")},{passive:true});
+{let t="dark";try{t=localStorage.getItem("tria-tema")||"dark"}catch(e){}tema(t)}
 initMap();
 init();
 // Pantalla de arranque: solo la primera vez en la sesión y nunca con movimiento reducido
