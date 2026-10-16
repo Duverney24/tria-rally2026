@@ -6,7 +6,7 @@ TRIA es un sistema de apoyo a la decisión para el **Puesto de Mando Unificado (
 
 > TRIA recomienda; la autoridad decide. Cada recomendación muestra sus criterios.
 
-**📖 [Manual de uso del prototipo](docs/manual_de_uso.md)** · **🏗️ [Arquitectura](docs/arquitectura.md)** · **🎤 [Preguntas del jurado](docs/temas_por_integrante.md)**
+**📖 [Manual de uso del prototipo](docs/manual_de_uso.md)** · **🏗️ [Arquitectura](docs/arquitectura.md)** · **🌋 [Escenarios](docs/escenarios.md)** · **🎤 [Preguntas del jurado](docs/temas_por_integrante.md)**
 
 ---
 
@@ -26,7 +26,7 @@ TRIA es un sistema de apoyo a la decisión para el **Puesto de Mando Unificado (
 | **Mapa operativo real** | Pitalito con zoom; capas oscura, satelital, de calles y de relieve; áreas probables de afectación; equipos en movimiento. |
 | **Bitácora** | Registro con hora de cada reporte, asignación, re-enrutamiento y entrega de heridos. |
 | **Comparación con "quien reporta primero"** | Muestra que atender por orden de llegada deja por fuera a las zonas incomunicadas. |
-| **Escenarios** | Peor caso (apagón total) y apagón parcial, con línea de tiempo y velocidad ajustable. |
+| **Escenarios multiamenaza** | Sismo (apagón total o red parcial), avenida torrencial, alud o deslizamiento, inundación lenta y tormenta con vendaval, cada uno con su mapa de amenaza y su fuente oficial (SGC, IDEAM). Ver [escenarios](docs/escenarios.md). |
 
 ### Para la comunidad (quien reporta)
 

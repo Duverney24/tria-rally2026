@@ -1222,7 +1222,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
   <button id="btnInstalar" class="instalar" hidden title="Instalar TRIA en este equipo">Instalar app</button>
   <button id="btnTema" class="tema" aria-pressed="false" aria-label="Tema claro" title="Tema claro u oscuro"></button>
   <label><span class="eyebrow" style="display:block;margin-bottom:3px">Escenario</span>
-    <select id="scen"><option value="total">Peor caso: apagón total</option><option value="parcial">Apagón parcial</option></select></label>
+    <select id="scen"></select></label>
   <div class="clockbox"><span class="eyebrow">Hora del evento</span><b id="clock">02:10</b><span id="tplus">T+0 min</span></div>
 </header>
 
@@ -1341,25 +1341,30 @@ const EDGES0 = [
   ["CRI","BRU",30,"Vía a Bruselas"],["PAL","BRU",45,"Trocha Palmarito–Bruselas"],
   ["J3","CHA",10,"Vía a Charguayaco"],["J3","PAL",12,"Vía a Palmarito"],["CHA","PAL",8]
 ];
-const TRUTH = { // lo que encuentra el equipo EDAN al llegar a una zona sin contacto
-  BRU:{color:"rojo",personas:120,senales:4,heridos:12,colapso:true,nota:"Viviendas colapsadas, antena y energía caídas."},
-  CHI:{color:"verde",personas:8,senales:0,heridos:0,colapso:false,nota:"Sin daños graves; solo cayó la antena celular."},
-  CRI:{color:"amarillo",personas:25,senales:0,heridos:2,colapso:false,nota:"Daños moderados."},
-  LAG:{color:"verde",personas:15,senales:0,heridos:0,colapso:false,nota:"Sin daños graves."},
-  REG:{color:"rojo",personas:40,senales:2,heridos:6,colapso:true,nota:"Escuela colapsada."},
-  CHA:{color:"amarillo",personas:30,senales:0,heridos:1,colapso:false,nota:"Daños moderados."},
-  GUA:{color:"verde",personas:10,senales:0,heridos:0,colapso:false,nota:"Sin daños graves."},
-  PAL:{color:"rojo",personas:20,senales:1,heridos:2,colapso:true,nota:"Deslizamiento sobre viviendas."},
-  CED:{color:"rojo",personas:80,senales:0,heridos:3,colapso:false,nota:"Creciente de la quebrada."},
-  CAS:{color:"rojo",personas:35,senales:3,heridos:5,colapso:true,nota:"Edificio colapsado."},
-  CEN:{color:"amarillo",personas:60,senales:0,heridos:4,colapso:false,nota:"Fachadas caídas."},
+// ---------- Escenarios multiamenaza ----------
+// Cada escenario define: probabilidades previas por zona (mapa de amenaza de ESE fenómeno), lo que de verdad
+// pasó en cada zona (lo que se descubre al reportar), qué medios de reporte quedan y la línea de tiempo.
+const T=(color,personas,heridos,senales,colapso,nota)=>({color,personas,heridos,senales,colapso,nota});
+const VERDE=(nota="Sin daños graves.",p=10)=>T("verde",p,0,0,false,nota);
+const TRUTH_SISMO = {
+  BRU:T("rojo",120,12,4,true,"Viviendas colapsadas, antena y energía caídas."),
+  CHI:T("verde",8,0,0,false,"Sin daños graves; solo cayó la antena celular."),
+  CRI:T("amarillo",25,2,0,false,"Daños moderados."),
+  LAG:VERDE("Sin daños graves.",15),
+  REG:T("rojo",40,6,2,true,"Escuela colapsada."),
+  CHA:T("amarillo",30,1,0,false,"Daños moderados."),
+  GUA:VERDE(),
+  PAL:T("rojo",20,2,1,true,"Deslizamiento sobre viviendas."),
+  CED:T("rojo",80,3,0,false,"Creciente de la quebrada."),
+  CAS:T("rojo",35,5,3,true,"Edificio colapsado."),
+  CEN:T("amarillo",60,4,0,false,"Fachadas caídas."),
 };
 const MEDIO_TOTAL={CEN:"ninguno",CAS:"ninguno",CED:"ninguno",CHI:"ninguno",BRU:"baliza",CRI:"baliza",LAG:"baliza",REG:"baliza",CHA:"baliza",GUA:"baliza",PAL:"baliza"};
-const MMI={BRU:8,PAL:8,CAS:8,REG:7,CEN:7,CED:7,CRI:6,CHI:6,LAG:6,CHA:6,GUA:6};
+const NIV_SISMO={BRU:8,PAL:8,CAS:8,REG:7,CEN:7,CED:7,CRI:6,CHI:6,LAG:6,CHA:6,GUA:6};
 const MMI_LR={6:0.7,7:1.5,8:2.5};
-const ROMAN={6:"VI",7:"VII",8:"VIII"};
-const SCEN={
- total:{label:"Peor caso: apagón total",medio:id=>MEDIO_TOTAL[id],script:[
+const T7=(s,nombre,nodo,txt)=>{s.teams.push(team("T7",nombre,"rescate",nodo));log(s,txt,"ok")};
+const SIN_ENERGIA=s=>{s.hosp.H2.energia=false;log(s,`${NODES.H2.name} sin energía: TRIA deja de enviarle heridos.`,"alerta")};
+const SCRIPT_SISMO_TOTAL=[
   {t:0,ev:s=>{log(s,"Sismo nocturno en la falla de Algeciras con lluvias fuertes (escenario). Red celular, internet y energía caídas en todo el municipio.","alerta");
               log(s,"TRIA opera sin conexión en el PMU (portátil con batería y panel solar) con el mapa de amenaza y el censo DANE precargados. Primera asignación con cero reportes.","asig");
               hbLost(s,"BRU");}},
@@ -1368,12 +1373,12 @@ const SCEN={
   {t:15,ev:s=>{block(s,"CRI","BRU","Derrumbe en la vía a Bruselas");report(s,"REG","baliza LoRa (salto por la malla)");}},
   {t:20,ev:s=>{s.shake=true;log(s,"Mapa de intensidad sísmica del SGC recibido por el enlace satelital del PMU: probabilidades previas actualizadas por zona.","asig");}},
   {t:25,ev:s=>report(s,"CHA","baliza LoRa")},
-  {t:30,ev:s=>{s.hosp.H2.energia=false;log(s,`${NODES.H2.name} sin energía: TRIA deja de enviarle heridos.`,"alerta");report(s,"LAG","baliza LoRa");}},
+  {t:30,ev:s=>{SIN_ENERGIA(s);report(s,"LAG","baliza LoRa");}},
   {t:40,ev:s=>report(s,"GUA","baliza LoRa")},
   {t:45,ev:s=>block(s,"J2","GUA","Puente de la vía a Guacacallo afectado")},
-  {t:90,ev:s=>{s.teams.push(team("T7","USAR internacional","rescate","PMU"));log(s,"Llega un grupo USAR internacional y se integra al tablero común.","ok");}},
- ]},
- parcial:{label:"Apagón parcial",medio:()=>"celular",script:[
+  {t:90,ev:s=>T7(s,"USAR internacional","PMU","Llega un grupo USAR internacional y se integra al tablero común.")},
+];
+const SCRIPT_SISMO_PARCIAL=[
   {t:0,ev:s=>{log(s,"Sismo nocturno en la falla de Algeciras (escenario). Energía y señal celular caídas en la zona rural.","alerta");
               report(s,"CAS","SMS");report(s,"CEN","WhatsApp (red parcial)");}},
   {t:5,ev:s=>report(s,"CED","SMS")},
@@ -1381,12 +1386,117 @@ const SCEN={
   {t:15,ev:s=>{block(s,"CRI","BRU","Derrumbe en la vía a Bruselas");report(s,"REG","baliza LoRa");}},
   {t:20,ev:s=>report(s,"LAG","baliza LoRa")},
   {t:25,ev:s=>report(s,"CHA","baliza LoRa")},
-  {t:30,ev:s=>{s.hosp.H2.energia=false;log(s,`${NODES.H2.name} sin energía: TRIA deja de enviarle heridos.`,"alerta");report(s,"GUA","baliza LoRa");}},
+  {t:30,ev:s=>{SIN_ENERGIA(s);report(s,"GUA","baliza LoRa");}},
   {t:40,ev:s=>report(s,"PAL","baliza LoRa")},
   {t:45,ev:s=>block(s,"J2","GUA","Puente de la vía a Guacacallo afectado")},
-  {t:90,ev:s=>{s.teams.push(team("T7","USAR internacional","rescate","PMU"));log(s,"Llega un grupo USAR internacional y se integra al tablero común.","ok");}},
-]}
+  {t:90,ev:s=>T7(s,"USAR internacional","PMU","Llega un grupo USAR internacional y se integra al tablero común.")},
+];
+const NIV_AGUA={6:"amarilla",7:"naranja",8:"roja"};
+const SCEN={
+ total:{tipo:"sismo",grupo:"Sismo",label:"Sismo · peor caso: apagón total",tag:"Operando sin conexión · peor caso",
+   truth:TRUTH_SISMO,niv:NIV_SISMO,nivName:"Intensidad sísmica del SGC",nivTxt:{6:"VI",7:"VII",8:"VIII"},atrap:"con señales de vida bajo escombros",
+   medio:id=>MEDIO_TOTAL[id],script:SCRIPT_SISMO_TOTAL},
+ parcial:{tipo:"sismo",grupo:"Sismo",label:"Sismo · red celular parcial",tag:"Operando con red parcial",
+   truth:TRUTH_SISMO,niv:NIV_SISMO,nivName:"Intensidad sísmica del SGC",nivTxt:{6:"VI",7:"VII",8:"VIII"},atrap:"con señales de vida bajo escombros",
+   medio:()=>"celular",script:SCRIPT_SISMO_PARCIAL},
+ avenida:{tipo:"agua",grupo:"Agua",label:"Avenida torrencial (avalancha) · quebradas urbanas",tag:"Lluvia extrema · riberas sin energía",
+   prior:{CAS:.6,CED:.6,PAL:.45,CHA:.4,CEN:.25,BRU:.2,CRI:.15,LAG:.15,REG:.2,GUA:.2,CHI:.15},
+   niv:{CAS:8,CED:8,PAL:8,CHA:7,CEN:7,REG:6,GUA:6,LAG:6,BRU:6,CRI:6,CHI:6},nivName:"Alerta hidrológica (IDEAM y alerta temprana comunitaria)",nivTxt:NIV_AGUA,
+   atrap:"atrapadas por el agua o el lodo",
+   medio:id=>({CEN:"celular",CAS:"ninguno",CED:"ninguno"}[id]||"baliza"),
+   truth:{CAS:T("rojo",90,8,3,true,"La creciente arrastró viviendas de la ribera; hay personas atrapadas en el lodo."),
+          CED:T("rojo",120,6,2,true,"Desbordamiento de la quebrada; familias en los techos."),
+          PAL:T("rojo",30,4,2,true,"Flujo de lodo sobre el centro poblado."),
+          CHA:T("amarillo",40,2,0,false,"Viviendas y cultivos inundados."),
+          CEN:T("amarillo",50,3,0,false,"Calles inundadas y sin energía."),
+          BRU:VERDE(),CRI:VERDE(),LAG:VERDE("Lluvia fuerte sin daños.",15),REG:VERDE(),GUA:VERDE(),CHI:VERDE()},
+   script:[
+    {t:0,ev:s=>{log(s,"Lluvia extrema nocturna: más de 100 mm en tres horas (escenario). Las quebradas La Cascajosa y El Cedro se desbordan sobre el casco urbano, como en Mocoa en 2017.","alerta");
+                log(s,"Energía caída en las riberas. TRIA prioriza con el mapa de amenaza por avenidas torrenciales e inundación.","asig");report(s,"CEN","WhatsApp (red parcial)");}},
+    {t:5,ev:s=>{block(s,"PMU","CED","La creciente arrastró el puente sobre la quebrada El Cedro");hbLost(s,"PAL");}},
+    {t:10,ev:s=>{s.shake=true;log(s,"Niveles del IDEAM y de la alerta temprana comunitaria cargados: las riberas pasan a alerta roja.","asig");}},
+    {t:15,ev:s=>{block(s,"J3","PAL","Vía a Palmarito cubierta por lodo");report(s,"CHA","baliza LoRa");}},
+    {t:20,ev:s=>report(s,"LAG","baliza LoRa")},
+    {t:25,ev:s=>{report(s,"REG","baliza LoRa");report(s,"GUA","baliza LoRa");}},
+    {t:30,ev:s=>SIN_ENERGIA(s)},
+    {t:35,ev:s=>{report(s,"CRI","baliza LoRa");report(s,"BRU","baliza LoRa");}},
+    {t:60,ev:s=>T7(s,"Rescate acuático (Bomberos de Timaná)","J2","Llega un equipo de rescate acuático de un municipio vecino y se integra al tablero común.")},
+   ]},
+ alud:{tipo:"ladera",grupo:"Ladera",label:"Alud o deslizamiento · ladera occidental",tag:"72 h de lluvia · ladera inestable",
+   prior:{CHI:.55,BRU:.5,CRI:.45,LAG:.3,PAL:.25,CHA:.2,CAS:.2,CED:.15,CEN:.1,REG:.15,GUA:.15},
+   niv:{CHI:8,BRU:8,CRI:7,LAG:7,PAL:6,CHA:6,CAS:6,CED:6,CEN:6,REG:6,GUA:6},nivName:"Amenaza por movimientos en masa con lluvia acumulada (SGC e IDEAM)",nivTxt:{6:"baja",7:"alta",8:"muy alta"},
+   atrap:"sepultadas o atrapadas",
+   medio:id=>({CEN:"celular",CAS:"celular",CED:"celular",CHI:"ninguno"}[id]||"baliza"),
+   truth:{CHI:T("rojo",25,6,5,true,"Un alud sepultó viviendas de la vereda; la antena cayó."),
+          BRU:T("rojo",60,7,2,true,"Deslizamiento sobre la vía y varias viviendas."),
+          CRI:T("amarillo",30,2,0,false,"Grietas en las viviendas; familias evacuadas."),
+          LAG:T("amarillo",15,1,0,false,"Movimiento de tierra cerca de la escuela."),
+          PAL:VERDE(),CHA:VERDE(),CAS:VERDE(),CED:VERDE(),CEN:VERDE("Sin daños.",0),REG:VERDE(),GUA:VERDE()},
+   script:[
+    {t:0,ev:s=>{log(s,"Tras 72 horas de lluvia se desprende un alud en la ladera occidental (escenario). Se pierden las comunicaciones rurales.","alerta");
+                log(s,"TRIA prioriza con el mapa de amenaza por movimientos en masa. Chillurco no tiene ningún medio de reporte.","asig");hbLost(s,"BRU");}},
+    {t:5,ev:s=>block(s,"J1","CHI","Alud sobre la vía a Chillurco")},
+    {t:10,ev:s=>{s.shake=true;log(s,"Mapa de lluvia acumulada y amenaza por movimientos en masa cargado: la ladera occidental queda en nivel muy alto.","asig");}},
+    {t:15,ev:s=>{block(s,"CRI","BRU","Deslizamiento en la vía a Bruselas");report(s,"CRI","baliza LoRa");}},
+    {t:20,ev:s=>{report(s,"CAS","SMS");report(s,"CED","SMS");report(s,"CEN","WhatsApp");}},
+    {t:25,ev:s=>report(s,"LAG","baliza LoRa (salto por la malla)")},
+    {t:30,ev:s=>{report(s,"PAL","baliza LoRa");report(s,"CHA","baliza LoRa");}},
+    {t:35,ev:s=>{report(s,"REG","baliza LoRa");report(s,"GUA","baliza LoRa");}},
+    {t:45,ev:s=>block(s,"CRI","CHI","Nuevo deslizamiento entre Criollo y Chillurco")},
+    {t:75,ev:s=>T7(s,"Grupo USAR departamental","PMU","Llega un grupo USAR del departamento y se integra al tablero común.")},
+   ]},
+ inundacion:{tipo:"agua",grupo:"Agua",label:"Inundación lenta · zona norte",tag:"Río en ascenso · hay tiempo para anticiparse",
+   prior:{GUA:.5,REG:.45,LAG:.45,CEN:.15,CAS:.2,CED:.2,BRU:.1,CRI:.1,CHA:.15,PAL:.15,CHI:.1},
+   niv:{GUA:8,REG:8,LAG:7,CEN:6,CAS:6,CED:6,BRU:6,CRI:6,CHA:6,PAL:6,CHI:6},nivName:"Nivel del río (IDEAM)",nivTxt:NIV_AGUA,
+   atrap:"aisladas en techos o zonas altas",
+   medio:id=>({CEN:"celular",CAS:"celular",CED:"celular"}[id]||"baliza"),
+   truth:{GUA:T("rojo",45,2,6,false,"El agua cubre las viviendas; hay familias en los techos."),
+          REG:T("rojo",60,1,4,false,"Barrio ribereño inundado; adultos mayores sin poder salir."),
+          LAG:T("amarillo",35,0,0,false,"Centro poblado aislado por el agua; necesitan víveres."),
+          CEN:VERDE("Sin afectación.",0),CAS:VERDE(),CED:VERDE(),BRU:VERDE(),CRI:VERDE(),CHA:VERDE(),PAL:VERDE(),CHI:VERDE()},
+   script:[
+    {t:0,ev:s=>{log(s,"Después de varios días de lluvia, el río sube unos 30 cm por hora en la zona norte (escenario). A diferencia de un sismo, hay tiempo para anticiparse.","alerta");
+                log(s,"TRIA ordena reconocimientos y evacuaciones por prioridad antes de que el agua llegue a su máximo.","asig");}},
+    {t:5,ev:s=>{report(s,"CEN","SMS");report(s,"CAS","SMS");report(s,"CED","SMS");}},
+    {t:10,ev:s=>{s.shake=true;log(s,"Nivel del río del IDEAM cargado: Guacacallo y Regueros en alerta roja.","asig");}},
+    {t:15,ev:s=>report(s,"REG","baliza LoRa")},
+    {t:20,ev:s=>block(s,"J2","GUA","El puente de la vía a Guacacallo quedó bajo el agua")},
+    {t:25,ev:s=>hbLost(s,"GUA")},
+    {t:30,ev:s=>{report(s,"CRI","baliza LoRa");report(s,"CHA","baliza LoRa");report(s,"PAL","baliza LoRa");}},
+    {t:40,ev:s=>{block(s,"J2","LAG","Vía a La Laguna inundada");report(s,"BRU","baliza LoRa");}},
+    {t:50,ev:s=>report(s,"LAG","baliza LoRa (salto por la malla)")},
+    {t:60,ev:s=>T7(s,"Rescate acuático (Defensa Civil Huila)","PMU","Llegan botes de rescate acuático de la Defensa Civil del Huila.")},
+   ]},
+ tormenta:{tipo:"tormenta",grupo:"Tormenta",label:"Tormenta y vendaval · todo el municipio",tag:"Vendaval · energía caída en todo el municipio",
+   prior:{CEN:.3,CAS:.3,CED:.3,CRI:.35,GUA:.3,REG:.3,LAG:.3,BRU:.35,CHA:.3,PAL:.3,CHI:.35},
+   niv:{CRI:8,CHI:8,BRU:7,CEN:7,CAS:7,CED:7,LAG:7,GUA:6,REG:6,CHA:6,PAL:6},nivName:"Ráfagas y descargas eléctricas (IDEAM)",nivTxt:{6:"fuertes",7:"muy fuertes",8:"extremas"},
+   atrap:"atrapadas bajo techos o árboles caídos",
+   medio:id=>({CEN:"celular",CAS:"celular",CED:"celular",CHI:"ninguno"}[id]||"baliza"),
+   truth:{CRI:T("rojo",20,3,1,true,"Un árbol cayó sobre una vivienda."),
+          CHI:T("rojo",15,2,1,true,"El vendaval destechó la escuela y varias casas."),
+          CEN:T("amarillo",40,3,0,false,"Techos levantados y árboles caídos."),
+          CAS:T("amarillo",25,1,0,false,"Postes caídos y techos dañados."),
+          CED:T("amarillo",20,1,0,false,"Postes caídos y techos dañados."),
+          BRU:T("amarillo",35,2,0,false,"Techos levantados; cultivos dañados."),
+          LAG:T("amarillo",15,1,0,false,"Árboles caídos sobre la vía."),
+          GUA:VERDE(),REG:VERDE(),CHA:VERDE(),PAL:VERDE()},
+   script:[
+    {t:0,ev:s=>{log(s,"Tormenta eléctrica con vendaval (escenario). Se cae la energía en todo el municipio y hay árboles sobre varias vías.","alerta");
+                block(s,"J1","CRI","Árbol caído en la vía a Criollo");}},
+    {t:5,ev:s=>{report(s,"CEN","SMS");report(s,"CAS","SMS");}},
+    {t:10,ev:s=>{s.shake=true;log(s,"Reporte de ráfagas y descargas del IDEAM cargado: el occidente tuvo los vientos más fuertes.","asig");report(s,"CED","SMS");}},
+    {t:15,ev:s=>{block(s,"J3","CHA","Poste caído en la vía a Charguayaco");report(s,"BRU","baliza LoRa");}},
+    {t:20,ev:s=>{SIN_ENERGIA(s);report(s,"LAG","baliza LoRa");}},
+    {t:25,ev:s=>{report(s,"GUA","baliza LoRa");report(s,"REG","baliza LoRa");}},
+    {t:30,ev:s=>{report(s,"CHA","baliza LoRa");report(s,"PAL","baliza LoRa");}},
+    {t:40,ev:s=>{s.edges.find(e=>(e.a==="J1"&&e.b==="CRI")).blocked=false;log(s,"Bomberos despejaron la vía a Criollo.","ok");onNetworkChange();}},
+   ]},
 };
+const SC=()=>SCEN[S?S.scen:CUR_SCEN];
+let TRUTH=TRUTH_SISMO, MMI=NIV_SISMO, ROMAN={6:"VI",7:"VII",8:"VIII"};
+(()=>{const sel=document.getElementById("scen");const grupos={};for(const [k,v] of Object.entries(SCEN))(grupos[v.grupo]=grupos[v.grupo]||[]).push([k,v.label]);
+  sel.innerHTML=Object.entries(grupos).map(([g,ops])=>`<optgroup label="${g}">${ops.map(([k,l])=>`<option value="${k}">${l}</option>`).join("")}</optgroup>`).join("")})();
+function prior0(id){const p=SC().prior;return p&&p[id]!=null?p[id]:NODES[id].prior}
 const SERVICE = {rescate:45,aph:15,edan:10};
 const LOW={rescate:"rescate",aph:"atención y traslado",edan:"reconocimiento EDAN"};
 const TYPE_LABEL = {rescate:"Rescate",aph:"Atención y traslado",edan:"Reconocimiento EDAN"};
@@ -1402,6 +1512,7 @@ const CR = (()=>{const n=4;const Aw=PAIR.map(r=>r.reduce((a,v,j)=>a+v*W[j],0));c
 let S;
 let CUR_SCEN="total";
 function init(){
+  TRUTH=SCEN[CUR_SCEN].truth;MMI=SCEN[CUR_SCEN].niv;ROMAN=SCEN[CUR_SCEN].nivTxt;
   S={t:0,edges:EDGES0.map(e=>({a:e[0],b:e[1],w:e[2],label:e[3]||"",blocked:false})),log:[],zones:{},
      hosp:{H1:{cap:30,occ:18,energia:true},H2:{cap:15,occ:6,energia:true},H3:{cap:60,occ:30,energia:true}},
      teams:[team("T1","Bomberos Pitalito (USAR)","rescate","PMU"),team("T2","Defensa Civil – rescate","rescate","CEN"),
@@ -1414,8 +1525,8 @@ function init(){
 }
 function log(s,text,kind=""){s.log.unshift({t:s.t,text,kind})}
 function hbLost(s,id){s.zones[id].hb=false;log(s,`${NODES[id].name}: la baliza dejó de emitir su latido. Probable destrucción; TRIA eleva la urgencia de la zona.`,"alerta")}
-function report(s,id,via,who){const z=s.zones[id];const tr=TRUTH[id];Object.assign(z,{silent:false,color:tr.color,personas:tr.personas,senales:tr.senales,heridos:tr.heridos,colapso:tr.colapso,via,nota:tr.nota});
-  if(z.firstReport===null)z.firstReport=s.t;log(s,`${NODES[id].name}: reporte ${tr.color.toUpperCase()} por ${via} — ${pl(tr.personas,"persona")}, ${pl(tr.heridos,"herido")}${tr.senales?`, ${pl(tr.senales,"persona")} con señales de vida bajo escombros`:""}.`,tr.color==="rojo"?"alerta":"");
+function report(s,id,via,who){const z=s.zones[id];if(!z.silent)return;const tr=TRUTH[id];Object.assign(z,{silent:false,color:tr.color,personas:tr.personas,senales:tr.senales,heridos:tr.heridos,colapso:tr.colapso,via,nota:tr.nota});
+  if(z.firstReport===null)z.firstReport=s.t;log(s,`${NODES[id].name}: reporte ${tr.color.toUpperCase()} por ${via} — ${pl(tr.personas,"persona")}, ${pl(tr.heridos,"herido")}${tr.senales?`, ${pl(tr.senales,"persona")} ${SC().atrap}`:""}.`,tr.color==="rojo"?"alerta":"");
   const ns=needs(z);
   for(const t of s.teams) if(t!==who&&t.job&&t.job.zone===id&&!t.job.cancel&&(t.job.phase==="ida"||t.job.phase==="servicio")&&!ns.includes(t.job.need)){const nd=t.job.need;
     if(t.job.phase==="ida")truncateToNext(t);t.job.cancel=true;if(t.job.phase==="servicio")t.job=null;log(s,`${t.name}: ${NODES[id].name} ya tiene reporte y no necesita ${LOW[nd]}; equipo liberado.`,"asig")}}
@@ -1440,7 +1551,7 @@ function evidence(z){const t=S.t-z.since;
   if(!z.hb)return {lr:5,txt:"la baliza dejó de emitir su latido automático, señal fuerte de destrucción (×5)"};
   const b=0.9*Math.exp(-t/40)+0.05;return {lr:A_SIL/b,txt:`${z.medio==="baliza"?"la baliza sigue viva":"hay red"} pero nadie reporta, y una zona sin daños suele avisar pronto (×${(A_SIL/b).toFixed(1)})`}}
 function shakeLR(z){return S.shake?MMI_LR[MMI[z.id]]:1}
-function posterior(z){const p0=NODES[z.id].prior;const o=p0/(1-p0)*shakeLR(z)*evidence(z).lr;return o/(1+o)}
+function posterior(z){const p0=prior0(z.id);const o=p0/(1-p0)*shakeLR(z)*evidence(z).lr;return o/(1+o)}
 function features(z){
   if(z.silent){const p=posterior(z);const est=NODES[z.id].pop*p*0.05;
     return {sev:p,pers:Math.min(1,est/200),vuln:NODES[z.id].vuln,tiempo:Math.min(1,(S.t-z.since)/180),est:Math.round(est),post:p}}
@@ -1678,7 +1789,7 @@ function zoneState(z){if(z.silent)return "silencio";if(z.attended)return "atendi
 function medioTxt(z){return z.medio==="ninguno"?"sin medio de reporte":!z.hb?"baliza destruida":"baliza sin reporte"}
 
 let prevKpi=null,prevLog=-1,prevSel=null,prevShake=false;
-function sacudir(){const w=$("mapwrap");w.classList.remove("quake");void w.offsetWidth;w.classList.add("quake");setTimeout(()=>w.classList.remove("quake"),1700)}
+function sacudir(){if(SC().tipo!=="sismo")return;const w=$("mapwrap");w.classList.remove("quake");void w.offsetWidth;w.classList.add("quake");setTimeout(()=>w.classList.remove("quake"),1700)}
 // Ondas en cada zona según la intensidad del SGC (VI pequeña, VIII grande)
 function ondasSGC(){if(!MAP)return;for(const [id,m] of Object.entries(MMI)){const d=40+(m-6)*45;
   const mk=L.marker(ll(id),{interactive:false,icon:L.divIcon({className:"qring",iconSize:[0,0],html:`<i style="--d:${d}px"></i><i style="--d:${d}px"></i>`})}).addTo(MAP);
@@ -1687,7 +1798,7 @@ function resumen(){const zs=Object.values(S.zones),d=$("resumen");
   const datos=[[zs.filter(z=>z.attended).length+" / "+zs.length,"Zonas atendidas"],[zs.filter(z=>!z.silent).length+" / "+zs.length,"Zonas con reporte"],
     [zs.filter(z=>z.silent).length,"Siguen sin contacto"],[zs.filter(z=>!z.silent).reduce((a,z)=>a+z.personas,0),"Personas reportadas"],
     [S.stats.trasladados,"Heridos trasladados"],[S.edges.filter(e=>e.blocked).length,"Vías caídas"]];
-  $("resTxt").textContent=`${S.scen==="total"?"Peor caso: apagón total":"Apagón parcial"} · ${S.log.length} eventos registrados en la bitácora. TRIA recomendó; el Puesto de Mando decidió.`;
+  $("resTxt").textContent=`${SC().label} · ${S.log.length} eventos registrados en la bitácora. TRIA recomendó; el Puesto de Mando decidió.`;
   $("resGrid").innerHTML=datos.map(([b,t],i)=>`<div style="animation-delay:${.1+i*.06}s"><b>${b}</b><span>${t}</span></div>`).join("");
   if(d.showModal&&!d.open)d.showModal()}
 $("resCerrar").onclick=()=>$("resumen").close();
@@ -1786,7 +1897,7 @@ function contar(nodo,de,a){if(!nodo||matchMedia("(prefers-reduced-motion:reduce)
   const f=now=>{const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);nodo.nodeValue=String(Math.round(de+(a-de)*e));if(p<1&&nodo.isConnected)requestAnimationFrame(f)};
   nodo.nodeValue=String(de);requestAnimationFrame(f)}
 function render(){
-  $("scenTag").textContent=S.scen==="total"?"Operando sin conexión · peor caso":"Operando con red parcial";
+  $("scenTag").textContent=SC().tag;
   $("scen").value=S.scen;
   $("clock").textContent=hhmm(S.t);$("tplus").textContent=`T+${S.t} min`;
   $("recalcInfo").textContent=`Último cálculo ${hhmm(S.lastRecalc)} · próximo ${hhmm(S.lastRecalc+15)}`;
@@ -1859,7 +1970,7 @@ function renderPrio(){
   $("prio").querySelectorAll(".pitem").forEach(li=>{const f=()=>{S.sel=li.dataset.z;render();volarA(li.dataset.z)};li.addEventListener("click",f);li.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}})});
   const z=S.zones[S.sel];const {U,f,v}=urgency(z);
   let txt;
-  if(z.silent){const ev=evidence(z);txt=`Sin contacto desde hace ${S.t-z.since} min. Probabilidad previa de afectación grave: ${Math.round(NODES[z.id].prior*100)} % según el mapa de amenaza. ${S.shake?`Intensidad sísmica del SGC: ${ROMAN[MMI[z.id]]} (×${MMI_LR[MMI[z.id]]}). `:""}Evidencia: ${ev.txt}. Probabilidad actual: <b>${Math.round(f.post*100)} %</b>. Personas posiblemente afectadas: ~${f.est} de ${NODES[z.id].pop.toLocaleString("es-CO")} habitantes.`}
+  if(z.silent){const ev=evidence(z);txt=`Sin contacto desde hace ${S.t-z.since} min. Probabilidad previa de afectación grave: ${Math.round(prior0(z.id)*100)} % según el mapa de amenaza de este fenómeno. ${S.shake?`${SC().nivName}: ${ROMAN[MMI[z.id]]} (×${MMI_LR[MMI[z.id]]}). `:""}Evidencia: ${ev.txt}. Probabilidad actual: <b>${Math.round(f.post*100)} %</b>. Personas posiblemente afectadas: ~${f.est} de ${NODES[z.id].pop.toLocaleString("es-CO")} habitantes.`}
   else txt=`${z.nota} Reporte por ${z.via}: ${z.personas} personas, ${pl(z.heridos,"herido")} pendientes${z.senales?`, ${z.senales} con señales de vida`:""}.`;
   $("explain").innerHTML=`<div><span class="eyebrow">Por qué esta prioridad</span><h3>${NODES[z.id].name} · índice ${U.toFixed(2)}</h3></div><p>${txt}</p>
    <div class="contrib">${CRIT.map((cr,i)=>`<span>${cr}</span><div class="bar"><i style="width:${Math.round(v[i]*100)}%"></i></div><span class="num">+${(v[i]*W[i]).toFixed(2)}</span>`).join("")}</div>
@@ -1885,7 +1996,7 @@ function renderModel(){
    <p>Razón de consistencia: <b>${CR.toFixed(3)}</b> (menor a 0,10: comparaciones coherentes).</p>
    <p><b>2. Zonas en silencio (Bayes).</b> Se parte del mapa de amenaza y se multiplican las chances por cada evidencia disponible:</p>
    <div class="formula">chances = previa × intensidad SGC × evidencia del silencio</div>
-   <p>Intensidad VI ×0,7 · VII ×1,5 · VIII ×2,5. Silencio con baliza viva: ×${A_SIL}/b(t), con b(t) = 0,9·e^(−t/40) + 0,05. Baliza sin latido: ×5. Sin ningún medio de reporte: ×1, porque en un apagón total callar no dice nada y manda la amenaza.</p>
+   <p>Nivel del fenómeno (intensidad sísmica, alerta hidrológica, lluvia o viento): bajo ×0,7 · medio ×1,5 · alto ×2,5. Silencio con baliza viva: ×${A_SIL}/b(t), con b(t) = 0,9·e^(−t/40) + 0,05. Baliza sin latido: ×5. Sin ningún medio de reporte: ×1, porque en un apagón total callar no dice nada y manda la amenaza.</p>
    <p>Cada equipo en terreno es también un mensajero: al llegar o pasar por una zona en silencio, la reporta.</p>
    <p><b>3. Rutas y asignación.</b> Rutas con Dijkstra sobre el grafo vial sin las vías caídas. Cada necesidad recibe un solo equipo del tipo correcto. Los heridos van al hospital más cercano con cupo y energía.</p>`;
 }

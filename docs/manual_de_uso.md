@@ -19,7 +19,7 @@ El prototipo simula la consola del **Puesto de Mando Unificado (PMU)** de Pitali
 
 ## 2. Cómo reproducir la simulación
 
-1. Elija el escenario arriba: **Peor caso: apagón total** (recomendado) o **Apagón parcial**.
+1. Elija el escenario arriba: **sismo** (apagón total o red parcial), **avenida torrencial**, **alud o deslizamiento**, **inundación lenta** o **tormenta y vendaval**. Ver [escenarios](escenarios.md).
 2. Pulse **▶** para reproducir o **+15 min** para avanzar un ciclo de recálculo.
 3. Ajuste la velocidad: **Lenta** (ideal para grabar video), **Normal** o **Rápida**.
 4. **Reiniciar** vuelve al minuto 0.
