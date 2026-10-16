@@ -1447,7 +1447,7 @@ function initMap(){
     "Satélite":L.layerGroup([
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imágenes © Esri, Maxar, Earthstar Geographics"}),
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,opacity:.9}),
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19})]),
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,})]),
     "Calles":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}),
     "Relieve":L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,attribution:"© OpenStreetMap · SRTM · © OpenTopoMap"}),
   };
@@ -1740,6 +1740,9 @@ init();
     ol.insertAdjacentHTML("beforeend",`<li><span>${pasos[i]}</span><em>OK</em></li>`);i++;bar.style.width=(i/pasos.length*100)+"%";tm=setTimeout(paso,380)};
   el.addEventListener("click",fin);addEventListener("keydown",fin);tm=setTimeout(paso,250);
 })();
+// Sin internet: guarda la app y las teselas vistas (solo funciona servido por http/https, no con file://)
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))
+  navigator.serviceWorker.register("sw.js").then(()=>$("footer").insertAdjacentHTML("beforeend"," · Disponible sin conexión: el mapa ya recorrido queda guardado en este navegador"),()=>{});
 // Versión desplegada (solo cuando lo sirve la API de TRIA, por ejemplo en Render)
 fetch("version").then(r=>r.ok?r.json():null).then(v=>{if(v&&v.commit){$("footer").insertAdjacentHTML("beforeend",` · Versión ${v.version} (${v.commit})`)}}).catch(()=>{});
 </script>
