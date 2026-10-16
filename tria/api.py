@@ -11,12 +11,25 @@ from pathlib import Path
 from typing import Literal, Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .escenario import PuestoDeMando
 
 app = FastAPI(title="TRIA – Triaje Territorial Inteligente", version="0.1.0")
+
+# CORS: permite que el prototipo publicado en otro dominio (Vercel, GitHub Pages) consulte esta API.
+# TRIA_ORIGENES es una expresión regular de orígenes; por defecto Vercel, GitHub Pages y localhost.
+# No reemplaza la clave: las rutas que cambian el estado siguen exigiendo X-TRIA-Clave si está definida.
+ORIGENES_DEFECTO = (r"https://([a-z0-9-]+\.)*vercel\.app|https://[a-z0-9-]+\.github\.io"
+                    r"|http://(localhost|127\.0\.0\.1)(:\d+)?")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=os.getenv("TRIA_ORIGENES", ORIGENES_DEFECTO),
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "X-TRIA-Clave"],
+)
 
 
 def exigir_clave(x_tria_clave: Optional[str] = Header(default=None)) -> None:
@@ -54,6 +67,12 @@ def version():
     """Versión desplegada. En Render, RENDER_GIT_COMMIT trae el commit de GitHub."""
     commit = os.getenv("RENDER_GIT_COMMIT", "local")
     return {"version": app.version, "commit": commit[:7]}
+
+
+@app.get("/salud")
+def salud():
+    """Comprobación de vida para Docker, Render y monitores externos."""
+    return {"ok": True, "zonas": len(pmu.zonas), "minuto": pmu.t}
 
 
 @app.get("/estado")
