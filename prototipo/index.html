@@ -1105,6 +1105,8 @@ button:active{transform:translateY(1px) scale(.98)}
 .lapor div{display:grid;gap:2px;font-size:10.5px;color:var(--faint)}
 .lapor i{display:block;height:3px;border-radius:2px;background:var(--accent);box-shadow:0 0 6px var(--glow-accent)}
 .pitem.flash{animation:flash 1.4s ease-out}
+.liveasig-ruta{display:block;margin-top:2px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.live-route{animation:dash 1.1s linear infinite}
 .livedemo{margin:6px 8px 14px;padding:10px 12px;border:1px solid var(--line2);border-radius:8px;background:var(--surface2)}
 .livedemo summary{cursor:pointer;font-weight:600;font-size:13px}
 .livegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
@@ -1233,6 +1235,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
       <div class="listhead"><span id="liveEstado">Buscando la API de TRIA…</span><button id="liveSync" title="Pone el reloj del motor en el minuto de la simulación">Sincronizar reloj</button></div>
       <p class="livenota">Prioridades calculadas por el motor en Python (AHP + Bayes) con los reportes que recibe la API: balizas por el puente LoRa (<code>herramientas/puente_serial.py</code>) u otros canales. Se actualiza cada 5 s.</p>
       <ol class="prio" id="livePrio"></ol>
+      <div class="section" id="liveAsigBox" hidden><h3>Asignación del motor (programación lineal entera)</h3><div id="liveAsig"></div></div>
       <details class="livedemo" id="liveDemo"><summary>Probar sin hardware</summary>
         <div class="livegrid">
           <label>Zona<select id="lvZona"></select></label>
@@ -1611,13 +1614,26 @@ const claveGet=()=>{try{return localStorage.getItem("tria-clave")||""}catch(e){r
 async function api(ruta,opts){const h={"Content-Type":"application/json"};const k=claveGet();if(k)h["X-TRIA-Clave"]=k;
   const r=await fetch(ruta,{headers:h,...opts});if(!r.ok)throw new Error(r.status===401?"falta la clave o no es correcta":r.status);return r.json()}
 async function liveCargar(){
-  try{const [est,filas]=await Promise.all([api("estado"),api("prioridades")]);LIVE.ok=true;LIVE.t=est.minuto;$("liveDot").classList.add("ok");
+  try{const [est,filas,asig]=await Promise.all([api("estado"),api("prioridades"),api("asignacion").catch(()=>null)]);LIVE.ok=true;LIVE.t=est.minuto;$("liveDot").classList.add("ok");
     $("liveEstado").textContent=`Conectado al motor · minuto ${Math.round(est.minuto)} · consistencia AHP ${est.consistencia}${est.requiere_clave?" · requiere clave":""}`;
     $("lvClaveBox").hidden=!est.requiere_clave;
     if(!$("lvZona").options.length)$("lvZona").innerHTML=filas.map(f=>`<option value="${esc(f.zona)}">${esc(f.nombre)}</option>`).join("");
-    liveRender(filas)}
+    liveRender(filas);liveAsig(asig)}
   catch(e){LIVE.ok=false;$("liveDot").classList.remove("ok");
-    $("liveEstado").textContent="Sin API: abra el prototipo con uvicorn (uvicorn tria.api:app) o en Render para ver el motor en vivo.";$("livePrio").innerHTML=""}}
+    $("liveEstado").textContent="Sin API: abra el prototipo con uvicorn (uvicorn tria.api:app) o en Render para ver el motor en vivo.";$("livePrio").innerHTML="";liveAsig(null)}}
+// Asignación óptima del motor (PuLP): lista equipo → zona y dibuja sus rutas en el mapa mientras la pestaña está abierta
+function liveAsig(asig){
+  if(!LY.live&&MAP)LY.live=L.layerGroup().addTo(MAP);LY.live?.clearLayers();
+  const box=$("liveAsigBox");if(!asig||!asig.length){box.hidden=true;return}box.hidden=false;
+  const nom=id=>NODES[id]?.name||id;
+  $("liveAsig").innerHTML=asig.map(a=>{const t=S.teams.find(x=>x.id===a.equipo);const col=TEAM_COLOR[a.tipo]||"var(--accent)";
+    return `<div class="trow"><span class="tbadge" style="background:${col}">${esc(String(a.equipo).slice(1))}</span><div><b>${esc(t?t.name:a.equipo)} → ${esc(nom(a.zona))}</b>
+      <span>${esc(TYPE_LABEL[a.tipo]||a.tipo)} · ${Number(a.minutos)||0} min · urgencia ${Number(a.urgencia).toFixed(2)}</span>
+      <span class="liveasig-ruta">${(a.ruta||[]).map(r=>esc(nom(r))).join(" › ")}</span></div></div>`}).join("");
+  if(!LY.live)return;
+  for(const a of asig){const pts=(a.ruta||[]).filter(id=>NODES[id]).map(ll);if(pts.length<2)continue;
+    const col=css(a.tipo==="rescate"?"--rojo":a.tipo==="aph"?"--verde":"--silencio");
+    L.polyline(pts,{color:col,weight:3,opacity:.9,dashArray:"10 8",className:"live-route",interactive:false}).addTo(LY.live)}}
 function liveRender(filas){
   const antes=LIVE.prev||{};const cambios=[];
   $("livePrio").innerHTML=filas.map((f,i)=>{const st=f.en_silencio?"silencio":["rojo","amarillo","verde"].includes(f.color)?f.color:"atendida";
@@ -1633,7 +1649,7 @@ function liveRender(filas){
   // El texto del aviso va como HTML: todo lo que viene de la API se escapa
   cambios.forEach(f=>aviso({t:S.t,kind:"alerta",text:`Motor en vivo: ${esc(f.nombre)} ${f.en_silencio?(f.latido?"sin contacto":"perdió el latido de su baliza"):`reportó ${esc(f.color)} · ${Number(f.personas)||0} personas`}.`}));
   LIVE.prev=Object.fromEntries(filas.map(f=>[f.zona,[f.en_silencio,f.color,f.personas,f.heridos,f.latido].join("|")]))}
-function liveCiclo(){clearInterval(LIVE.timer);LIVE.timer=null;if($("tab-live").hidden||document.hidden)return;liveCargar();LIVE.timer=setInterval(liveCargar,5000)}
+function liveCiclo(){clearInterval(LIVE.timer);LIVE.timer=null;if($("tab-live").hidden)LY.live?.clearLayers();if($("tab-live").hidden||document.hidden)return;liveCargar();LIVE.timer=setInterval(liveCargar,5000)}
 document.addEventListener("visibilitychange",liveCiclo);
 $("lvClave").value=claveGet();
 $("lvClave").onchange=e=>{try{localStorage.setItem("tria-clave",e.target.value.trim())}catch(err){}};

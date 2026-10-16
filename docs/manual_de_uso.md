@@ -65,6 +65,7 @@ Solo funciona cuando el prototipo se abre desde la API (Render o `uvicorn tria.a
 
 1. La lista muestra las prioridades que calcula el **motor en Python** (AHP + Bayes) con los reportes que recibe la API, con el aporte de cada criterio. Se actualiza cada 5 s; cuando una zona cambia, parpadea y aparece un aviso.
 2. **Sincronizar reloj** pone el motor en el minuto de la simulación, para comparar ambas listas.
+   Debajo aparece la **asignación del motor** (programación lineal entera con PuLP): qué equipo va a cada zona, por qué ruta y en cuántos minutos. Mientras la pestaña está abierta, esas rutas se dibujan en el mapa con líneas punteadas.
 3. **Probar sin hardware**: envía un reporte (zona, color, personas, heridos) como si llegara de una baliza, o marca una baliza como destruida.
 4. Con el receptor LoRa conectado, `herramientas/puente_serial.py` envía los reportes reales a la misma API y aparecen aquí.
 
