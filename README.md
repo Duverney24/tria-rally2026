@@ -104,6 +104,15 @@ print(pmu.asignacion())                # envía rescate a Bruselas rodeando por 
 
 **En línea (Render):** el archivo `render.yaml` despliega la API y el prototipo en un solo servicio. Cada push a `main` publica una versión nueva automáticamente; el pie del prototipo muestra el commit desplegado. Rutas: `/` prototipo · `/docs` API · `/version` versión desplegada.
 
+**Con Docker (PMU en una laptop o mini-PC, sin internet):**
+
+```bash
+docker compose up -d            # http://localhost:8000  (o http://<ip-del-equipo>:8000 en la red local)
+TRIA_CLAVE=... docker compose up -d   # exige clave en las rutas que cambian el estado
+```
+
+La imagen trae la API y el prototipo, corre con un usuario sin privilegios y Docker comprueba su salud con `/version`.
+
 **Prototipo en Vercel:** `vercel.json` publica `prototipo/` como sitio estático, sin build. Basta importar el repositorio en https://vercel.com/new y pulsar *Deploy* (sin cambiar ajustes); cada push a `main` se despliega solo. La API sigue en Render.
 
 **Prototipo en GitHub Pages:** cada push a `main` que toque `prototipo/` lo publica en https://duverney24.github.io/tria-rally2026/ (flujo `.github/workflows/pages.yml`, rama `gh-pages`). Es el mismo prototipo, servido como sitio estático: la simulación, el modo sin conexión y la instalación como app funcionan; la pestaña *En vivo* necesita la API, que sigue en Render.
