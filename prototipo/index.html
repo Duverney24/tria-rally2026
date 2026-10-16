@@ -1080,6 +1080,9 @@ button:active{transform:translateY(1px) scale(.98)}
 .narra.done span::after{display:none}
 @keyframes caret{50%{opacity:0}}
 @media (max-width:640px){.narra{font-size:12.5px;bottom:24px}}
+/* Zona señalada desde la lista */
+.nzone.hl{transform:scale(1.28);box-shadow:0 0 0 6px color-mix(in srgb,var(--st,var(--silencio)) 35%,transparent),0 0 30px 8px color-mix(in srgb,var(--st,var(--silencio)) 60%,transparent)!important;transition:transform .2s var(--ease-out),box-shadow .2s}
+.leaflet-marker-icon:has(.hl){z-index:9000!important}
 .tema svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .tema{padding:7px 9px;display:grid;place-items:center}
 /* Cambio de puesto en la lista de prioridades */
@@ -1499,8 +1502,8 @@ function renderMap(){
     if(n.kind==="hosp"){const h=S.hosp[id];const st=!h.energia?"off":h.occ>=h.cap?"full":"ok";
       addNode(id,`<div class="nhosp h-${st}"><i>✚</i><span class="nlbl sm">${n.name}${h.energia?` · ${h.cap-h.occ} camas`:" · sin energía"}</span></div>`,[26,26]);continue}
     const zz=S.zones[id];const st=zoneState(zz);const sel=S.sel===id?" sel":"";
-    if(st==="silencio")addNode(id,`<div class="nzone s-silencio${sel}"><b>${Math.round(posterior(zz)*100)}%</b><span class="nlbl${URB.has(id)?" urb":""}">${n.name}</span><span class="nsub">${medioTxt(zz)}</span></div>`,[34,34]);
-    else addNode(id,`<div class="nzone s-${st} solid${sel}"><b>${zz.personas}</b><span class="nlbl${URB.has(id)?" urb":""}">${n.name}</span></div>`,[34,34]);
+    if(st==="silencio")addNode(id,`<div class="nzone s-silencio${sel}${HOVER===id?" hl":""}" data-z="${id}"><b>${Math.round(posterior(zz)*100)}%</b><span class="nlbl${URB.has(id)?" urb":""}">${n.name}</span><span class="nsub">${medioTxt(zz)}</span></div>`,[34,34]);
+    else addNode(id,`<div class="nzone s-${st} solid${sel}${HOVER===id?" hl":""}" data-z="${id}"><b>${zz.personas}</b><span class="nlbl${URB.has(id)?" urb":""}">${n.name}</span></div>`,[34,34]);
   }
   // Equipos: marcadores persistentes que se desplazan con transición
   const stack={};
@@ -1549,6 +1552,14 @@ function resumen(){const zs=Object.values(S.zones),d=$("resumen");
 $("resCerrar").onclick=()=>$("resumen").close();
 $("resLog").onclick=()=>{$("resumen").close();document.querySelector('.tabs button[data-tab="log"]').click()};
 $("resOtra").onclick=()=>{$("resumen").close();$("btnReset").click()};
+// Al pasar por una zona de la lista se ilumina su marcador en el mapa
+let HOVER=null;
+function senalar(id){if(HOVER===id)return;document.querySelectorAll(".nzone.hl").forEach(x=>x.classList.remove("hl"));HOVER=id;
+  if(id)document.querySelector(`.nzone[data-z="${id}"]`)?.classList.add("hl")}
+$("prio").addEventListener("pointerover",e=>{const li=e.target.closest(".pitem");senalar(li?li.dataset.z:null)});
+$("prio").addEventListener("pointerleave",()=>senalar(null));
+$("prio").addEventListener("focusin",e=>{const li=e.target.closest(".pitem");if(li)senalar(li.dataset.z)});
+$("prio").addEventListener("focusout",()=>senalar(null));
 // Narración: escribe el evento letra a letra como subtítulo del mapa
 let NARRA=false,narraTm=null,narraOff=null;
 function narrar(l){if(!NARRA)return;let el=$("narra");if(!el){el=document.createElement("div");el.id="narra";el.className="narra";el.setAttribute("aria-hidden","true");$("map").append(el)}
