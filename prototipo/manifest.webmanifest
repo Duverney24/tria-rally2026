@@ -1,0 +1,19 @@
+{
+  "name": "TRIA – Triaje Territorial Inteligente",
+  "short_name": "TRIA",
+  "description": "Apoyo a la decisión del Puesto de Mando Unificado: a quién atender primero, por qué ruta y con qué recurso, incluso sin red.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a1118",
+  "theme_color": "#0a1118",
+  "categories": ["utilities", "navigation"],
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
