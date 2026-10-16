@@ -51,7 +51,7 @@ El prototipo simula la consola del **Puesto de Mando Unificado (PMU)** de Pitali
 **Capas del mapa** (botón arriba a la derecha):
 
 - *Bases:* Oscuro y Claro (CARTO) cambian solas con el tema; también hay OSM oscurecido, Satélite, Calles y Relieve. Si elige una base a mano, se recuerda.
-- *Intensidad sísmica (SGC):* desde que llega el mapa del SGC (T+20), un círculo por zona con su intensidad (VI amarilla, VII naranja, VIII roja).
+- *Nivel de amenaza del fenómeno:* cuando llega el mapa del fenómeno activo (intensidad del SGC en el sismo; alerta hidrológica, lluvia acumulada o ráfagas del IDEAM en los demás), un círculo por zona con su nivel (amarillo, naranja, rojo de menor a mayor).
 - *Cupo de hospitales:* el círculo punteado crece con las camas libres y cambia de color con la ocupación (verde, ámbar, rojo; gris sin energía).
 - **◎ Mi ubicación** (bajo el zoom) centra el mapa donde está el equipo; necesita permiso del navegador y conexión segura (https).
 

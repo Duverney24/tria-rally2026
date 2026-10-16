@@ -1260,7 +1260,7 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
         </div>
         <button id="btnReset">Reiniciar</button>
       </div>
-      <p class="hint">Acerque o aleje con la rueda del mouse o con los dedos; cambie entre mapa oscuro o claro, satélite, calles y relieve, y active la intensidad sísmica o el cupo de hospitales en "Capas del mapa"; ◎ centra el mapa en su ubicación. Toque una vía para marcarla como caída o habilitada; TRIA recalcula rutas y asignaciones al instante. Atajos: <kbd>Espacio</kbd> reproduce o pausa, <kbd>→</kbd> avanza 15 min, <kbd>R</kbd> reinicia.</p>
+      <p class="hint">Acerque o aleje con la rueda del mouse o con los dedos; cambie entre mapa oscuro o claro, satélite, calles y relieve, y active el nivel de amenaza o el cupo de hospitales en "Capas del mapa"; ◎ centra el mapa en su ubicación. Toque una vía para marcarla como caída o habilitada; TRIA recalcula rutas y asignaciones al instante. Atajos: <kbd>Espacio</kbd> reproduce o pausa, <kbd>→</kbd> avanza 15 min, <kbd>R</kbd> reinicia.</p>
     </section>
   </div>
 
@@ -1676,7 +1676,7 @@ function initMap(){
   LY.nodes=L.layerGroup().addTo(MAP);LY.teams=L.layerGroup().addTo(MAP);
   LY.mmi=L.layerGroup();LY.hcap=L.layerGroup().addTo(MAP);
   CAPAS=L.control.layers(base,{"Vías":LY.edges,"Rutas de equipos":LY.routes,"Área probable de afectación":LY.areas,"Equipos":LY.teams,
-    "Intensidad sísmica (SGC)":LY.mmi,"Cupo de hospitales":LY.hcap},{position:"topright",collapsed:true}).addTo(MAP);
+    "Nivel de amenaza del fenómeno":LY.mmi,"Cupo de hospitales":LY.hcap},{position:"topright",collapsed:true}).addTo(MAP);
   // Botón "Mi ubicación" (necesita https y permiso del navegador)
   const Ubic=L.Control.extend({options:{position:"topleft"},onAdd(){const d=L.DomUtil.create("div","leaflet-bar");
     const a=L.DomUtil.create("a","ubic",d);a.href="#";a.title="Mi ubicación";a.setAttribute("role","button");a.setAttribute("aria-label","Mi ubicación");
@@ -1736,11 +1736,11 @@ function renderMap(){
   LY.areas.clearLayers();
   for(const z0 of Object.values(S.zones))if(z0.silent){const p=posterior(z0);
     L.circle(ll(z0.id),{radius:URB.has(z0.id)?250+p*600:500+p*2500,color:"#a690f2",weight:1,dashArray:"4 4",fillColor:"#a690f2",fillOpacity:.06+p*.12,interactive:false}).addTo(LY.areas)}
-  // Intensidad sísmica del SGC (llega por el enlace satelital en T+20)
-  const mk=S.shake+"|"+Math.floor(z);if(LY.mmi&&mk!==mmiKey){mmiKey=mk;LY.mmi.clearLayers();
+  // Nivel de amenaza del fenómeno activo (intensidad SGC, alerta hidrológica, lluvia, ráfagas…), cuando llega su mapa
+  const mk=S.scen+"|"+S.shake+"|"+Math.floor(z);if(LY.mmi&&mk!==mmiKey){mmiKey=mk;LY.mmi.clearLayers();
     if(S.shake)for(const [id,m] of Object.entries(MMI)){if(!NODES[id])continue;const col=m>=8?css("--rojo"):m>=7?"#f08a3c":css("--ambar");
       L.circle(ll(id),{radius:URB.has(id)?450:1500,color:col,weight:1.5,fillColor:col,fillOpacity:.16,interactive:false}).addTo(LY.mmi);
-      L.marker(ll(id),{interactive:false,icon:L.divIcon({className:"mmi",html:`<span style="--c:${col}">${ROMAN[m]}</span>`,iconSize:null})}).addTo(LY.mmi)}}
+      L.marker(ll(id),{interactive:false,icon:L.divIcon({className:"mmi",html:`<span style="--c:${col}" title="${SC().nivName}">${ROMAN[m]}</span>`,iconSize:null})}).addTo(LY.mmi)}}
   // Cupo de hospitales: el círculo crece con las camas libres y cambia de color con la ocupación
   const hk=Object.values(S.hosp).map(h=>h.occ+"/"+h.cap+(h.energia?"":"x")).join(",");if(LY.hcap&&hk!==hcapKey){hcapKey=hk;LY.hcap.clearLayers();
     for(const [id,h] of Object.entries(S.hosp)){if(!NODES[id])continue;const libres=Math.max(0,h.cap-h.occ),oc=h.occ/h.cap;
