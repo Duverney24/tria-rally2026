@@ -27,7 +27,10 @@ class PuestoDeMando:
             u, aportes = indice_urgencia(z, self.t, self.pesos)
             filas.append({"zona": z.id, "nombre": z.nombre, "en_silencio": z.en_silencio,
                           "indice": round(u, 3), "aportes": {k: round(v, 3) for k, v in aportes.items()},
-                          "necesidades": necesidades(z, self.t)})
+                          "necesidades": necesidades(z, self.t),
+                          # Estado de la zona, para pintarla en el prototipo
+                          "color": z.color, "personas": z.personas, "heridos": z.heridos,
+                          "latido": z.latido, "medio": z.medio})
         return sorted(filas, key=lambda f: -f["indice"])
 
     def asignacion(self) -> list[dict]:
