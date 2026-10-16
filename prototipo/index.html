@@ -1,0 +1,494 @@
+<title>TRIA Pitalito</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Puesto de Mando — cabecera de estado, mapa operativo a la izquierda, cola de prioridades a la derecha, bitácora y modelo abajo */
+:root{
+  --bg:#e9eef2; --panel:#ffffff; --panel2:#f4f7f9; --ink:#15202b; --muted:#566676; --line:#cdd6de;
+  --accent:#1d5fa8; --accent-ink:#ffffff; --map:#dfe7ec; --road:#7f909f; --contour:#cfd9e0;
+  --rojo:#c3302a; --ambar:#b97f00; --verde:#2c8546; --silencio:#6b5bb0; --bloq:#c3302a;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow","Segoe UI",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e141a; --panel:#151e27; --panel2:#1a2530; --ink:#e4ebf1; --muted:#90a1b1; --line:#2a3846;
+  --accent:#6aa6ff; --accent-ink:#0b1420; --map:#111a22; --road:#5d6f80; --contour:#18232d;
+  --rojo:#ff6b5e; --ambar:#f0b429; --verde:#4cc274; --silencio:#a596f0; --bloq:#ff6b5e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e141a; --panel:#151e27; --panel2:#1a2530; --ink:#e4ebf1; --muted:#90a1b1; --line:#2a3846;
+  --accent:#6aa6ff; --accent-ink:#0b1420; --map:#111a22; --road:#5d6f80; --contour:#18232d;
+  --rojo:#ff6b5e; --ambar:#f0b429; --verde:#4cc274; --silencio:#a596f0; --bloq:#ff6b5e; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 28px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:.01em}
+.wrap{max-width:1440px;margin:0 auto;display:grid;gap:14px}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-size:34px;font-weight:700;line-height:1}
+.brand .sub{color:var(--muted);font-size:13px}
+.tag{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);padding:2px 7px;border-radius:3px;color:var(--muted);background:var(--panel)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.clock{font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums;padding:4px 12px;border-radius:4px;background:var(--panel);border:1px solid var(--line)}
+.clock small{font-size:12px;color:var(--muted);margin-left:6px}
+button{font-family:var(--body);font-weight:600;font-size:13px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,.prow:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select{font-family:var(--body);font-weight:600;font-size:13px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 10px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 12px;display:grid;gap:2px}
+.kpi b{font-family:var(--mono);font-size:22px;font-weight:500;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:1050px){.main{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;min-width:0}
+.phead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line)}
+.phead h2{font-size:20px;font-weight:600}
+.phead .hint{font-size:12px;color:var(--muted)}
+.mapbox{padding:8px}
+svg#map{width:100%;height:auto;display:block;background:var(--map);border-radius:3px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 14px 12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.tablebox{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-family:var(--mono);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.prow{cursor:pointer}
+.prow:hover td{background:var(--panel2)}
+.prow.sel td{background:var(--panel2)}
+.chip{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;white-space:nowrap;border:1px solid currentColor}
+.c-rojo{color:var(--rojo)}.c-amarillo{color:var(--ambar)}.c-verde{color:var(--verde)}.c-silencio{color:var(--silencio)}.c-atendida{color:var(--muted)}
+.bar{height:6px;background:var(--panel2);border-radius:3px;overflow:hidden;min-width:60px;margin-top:4px}
+.bar>div{height:100%;background:var(--accent)}
+.zn{font-weight:600}
+.small{font-size:12px;color:var(--muted)}
+.fifo{font-family:var(--mono);color:var(--muted)}
+.explain{padding:12px 14px;border-top:1px solid var(--line);display:grid;gap:8px;background:var(--panel2)}
+.explain h3{font-size:18px}
+.contrib{display:grid;grid-template-columns:150px minmax(0,1fr) 54px;gap:6px 10px;align-items:center;font-size:12.5px}
+.contrib .bar{margin:0}
+.lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:1050px){.lower{grid-template-columns:minmax(0,1fr)}}
+.log{max-height:300px;overflow:auto;padding:6px 14px 10px;display:grid;gap:4px;font-size:13px}
+.log div{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px}
+.log time{font-family:var(--mono);color:var(--muted);font-size:12px}
+.log .k-alerta{color:var(--rojo)}
+.log .k-ok{color:var(--verde)}
+.log .k-asig{color:var(--accent)}
+.hosp{padding:10px 14px;display:grid;gap:10px}
+.hrow{display:grid;gap:3px}
+.hrow .top{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.hbar{height:10px;border-radius:3px;background:var(--panel2);overflow:hidden;border:1px solid var(--line)}
+.hbar>div{height:100%;background:var(--verde)}
+.teams{padding:4px 14px 12px;display:grid;gap:4px;font-size:13px}
+.teams div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding:4px 0}
+.model{padding:10px 14px 14px;display:grid;gap:10px;font-size:13px}
+.model table td,.model table th{padding:4px 6px;text-align:center}
+.model p{margin:0;color:var(--muted)}
+.formula{font-family:var(--mono);font-size:12px;background:var(--panel2);border:1px solid var(--line);padding:8px 10px;border-radius:3px;overflow-x:auto;white-space:nowrap}
+footer{color:var(--muted);font-size:12px;max-width:110ch}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:.9}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>TRIA · Puesto de Mando Unificado</h1>
+      <span class="sub">Triaje Territorial Inteligente — Pitalito, Huila</span>
+      <span class="tag" id="scenTag">Escenario simulado</span>
+    </div>
+    <div class="controls">
+      <div class="clock" id="clock">02:10<small>T+0 min</small></div>
+      <button id="btnStep" class="primary">Avanzar 15 min</button>
+      <button id="btnPlay" aria-pressed="false">Reproducir</button>
+      <button id="btnFifo" aria-pressed="false">Comparar con "quien reporta primero"</button>
+      <label class="scen"><span class="sr">Escenario</span><select id="scen"><option value="total">Peor caso: apagón total</option><option value="parcial">Apagón parcial</option></select></label>
+      <button id="btnReset">Reiniciar</button>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="main">
+    <div class="panel">
+      <div class="phead"><h2>Mapa operativo</h2><span class="hint">Toque una vía para marcarla como caída o habilitada. TRIA recalcula las rutas al instante.</span></div>
+      <div class="mapbox"><svg id="map" viewBox="0 0 1000 640" role="img" aria-label="Mapa esquemático de Pitalito con zonas, vías, hospitales y equipos"></svg></div>
+      <div class="legend">
+        <span><i style="background:var(--rojo)"></i>Baliza roja</span>
+        <span><i style="background:var(--ambar)"></i>Amarilla</span>
+        <span><i style="background:var(--verde)"></i>Verde</span>
+        <span><i style="background:none;border:2px dashed var(--silencio)"></i>Sin contacto (estimación bayesiana)</span>
+        <span><i style="background:var(--muted)"></i>Atendida</span>
+        <span>▪ Equipo · ✚ Hospital · ★ PMU</span>
+        <span style="color:var(--bloq)">— — Vía caída</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="phead"><h2>Cola de prioridades</h2><span class="hint" id="recalcInfo">Recalcula cada 15 min</span></div>
+      <div class="tablebox">
+        <table>
+          <thead><tr><th>#</th><th>Zona</th><th>Estado</th><th>Índice de urgencia</th><th>Necesidad → asignación</th><th class="fifoCol" hidden>Por llegada</th></tr></thead>
+          <tbody id="prio"></tbody>
+        </table>
+      </div>
+      <div class="explain" id="explain"></div>
+    </div>
+  </section>
+
+  <section class="lower">
+    <div class="panel">
+      <div class="phead"><h2>Bitácora del PMU</h2><span class="hint">Más reciente arriba</span></div>
+      <div class="log" id="log"></div>
+    </div>
+    <div class="panel">
+      <div class="phead"><h2>Hospitales y equipos</h2><span class="hint">Cupo y energía en tiempo real</span></div>
+      <div class="hosp" id="hosp"></div>
+      <div class="teams" id="teams"></div>
+    </div>
+    <div class="panel">
+      <div class="phead"><h2>Modelo</h2><span class="hint">Cada recomendación muestra sus criterios</span></div>
+      <div class="model" id="model"></div>
+    </div>
+  </section>
+
+  <footer>
+    Prototipo del equipo CHIVAS DE RESCATE · Rally Latinoamericano de Innovación 2026 · Reto 9. El escenario, las poblaciones, las ubicaciones y los tiempos de viaje son ilustrativos y se reemplazan por la cartografía y el censo del DANE en una implementación real. El mapa es esquemático y funciona sin conexión a internet. El escenario por defecto es el peor caso: sin red celular, sin internet ni energía; solo sobreviven algunas balizas LoRa y el enlace satelital del PMU. TRIA recomienda; el Puesto de Mando decide. En esta demo la asignación es voraz (de mayor a menor urgencia, equipo libre más cercano); la versión completa resuelve la asignación con programación lineal entera (PuLP).
+  </footer>
+</div>
+
+<script>
+// ---------- Datos del escenario (ilustrativos) ----------
+const NODES = {
+  PMU:{name:"PMU – Alcaldía",x:520,y:330,kind:"pmu"},
+  CEN:{name:"Centro (casco urbano)",x:600,y:290,kind:"zona",pop:12000,vuln:.35,prior:.35},
+  CAS:{name:"Ribera La Cascajosa",x:455,y:265,kind:"zona",pop:3000,vuln:.6,prior:.45},
+  CED:{name:"Ribera El Cedro",x:615,y:385,kind:"zona",pop:3000,vuln:.6,prior:.4},
+  H1:{name:"Hospital San Antonio",x:565,y:425,kind:"hosp"},
+  H2:{name:"Clínica urbana",x:440,y:395,kind:"hosp"},
+  H3:{name:"Hospital de Garzón",x:930,y:70,kind:"hosp"},
+  BRU:{name:"Bruselas",x:120,y:540,kind:"zona",pop:4800,vuln:.8,prior:.55},
+  CRI:{name:"Criollo",x:300,y:150,kind:"zona",pop:1500,vuln:.7,prior:.3},
+  LAG:{name:"La Laguna",x:740,y:545,kind:"zona",pop:2200,vuln:.7,prior:.35},
+  REG:{name:"Regueros",x:720,y:150,kind:"zona",pop:1800,vuln:.7,prior:.4},
+  CHA:{name:"Charguayaco",x:400,y:575,kind:"zona",pop:1600,vuln:.75,prior:.3},
+  GUA:{name:"Guacacallo",x:840,y:290,kind:"zona",pop:1400,vuln:.7,prior:.3},
+  CHI:{name:"Chillurco",x:160,y:320,kind:"zona",pop:1100,vuln:.75,prior:.2},
+  PAL:{name:"Palmarito",x:880,y:470,kind:"zona",pop:900,vuln:.8,prior:.35},
+  J1:{name:"Cruce occidental",x:340,y:340,kind:"cruce"},
+  J2:{name:"Cruce suroriental",x:660,y:465,kind:"cruce"},
+  J3:{name:"Cruce sur",x:420,y:460,kind:"cruce"},
+};
+const EDGES0 = [
+  ["PMU","CEN",4],["PMU","CAS",6],["PMU","CED",6],["PMU","H1",4],["PMU","H2",4],["CEN","CED",5],["H1","CED",3],
+  ["CEN","REG",25,"Vía a Regueros"],["REG","H3",70,"Vía al norte (Garzón)"],["CEN","GUA",22,"Puente vía Guacacallo"],["GUA","PAL",18],
+  ["GUA","H3",75],["PMU","J1",10],["J1","CHI",20],["J1","CRI",22],["CRI","REG",35,"Trocha Criollo–Regueros"],
+  ["J1","J3",12],["J3","CHA",18],["J3","BRU",35,"Vía Pitalito–Mocoa"],["CHI","BRU",40,"Trocha Chillurco–Bruselas"],
+  ["CED","J2",10],["J2","LAG",15],["J2","PAL",20],["J2","J3",15],["CAS","J1",9]
+];
+const TRUTH = { // lo que encuentra el equipo EDAN al llegar a una zona sin contacto
+  BRU:{color:"rojo",personas:120,senales:4,heridos:12,colapso:true,nota:"Viviendas colapsadas, antena y energía caídas."},
+  CHI:{color:"verde",personas:8,senales:0,heridos:0,colapso:false,nota:"Sin daños graves; solo cayó la antena celular."},
+  CRI:{color:"amarillo",personas:25,senales:0,heridos:2,colapso:false,nota:"Daños moderados."},
+  LAG:{color:"verde",personas:15,senales:0,heridos:0,colapso:false,nota:"Sin daños graves."},
+  REG:{color:"rojo",personas:40,senales:2,heridos:6,colapso:true,nota:"Escuela colapsada."},
+  CHA:{color:"amarillo",personas:30,senales:0,heridos:1,colapso:false,nota:"Daños moderados."},
+  GUA:{color:"verde",personas:10,senales:0,heridos:0,colapso:false,nota:"Sin daños graves."},
+  PAL:{color:"rojo",personas:20,senales:1,heridos:2,colapso:true,nota:"Deslizamiento sobre viviendas."},
+  CED:{color:"rojo",personas:80,senales:0,heridos:3,colapso:false,nota:"Creciente de la quebrada."},
+  CAS:{color:"rojo",personas:35,senales:3,heridos:5,colapso:true,nota:"Edificio colapsado."},
+  CEN:{color:"amarillo",personas:60,senales:0,heridos:4,colapso:false,nota:"Fachadas caídas."},
+};
+const MEDIO_TOTAL={CEN:"ninguno",CAS:"ninguno",CED:"ninguno",CHI:"ninguno",BRU:"baliza",CRI:"baliza",LAG:"baliza",REG:"baliza",CHA:"baliza",GUA:"baliza",PAL:"baliza"};
+const MMI={BRU:8,PAL:8,CAS:8,REG:7,CEN:7,CED:7,CRI:6,CHI:6,LAG:6,CHA:6,GUA:6};
+const MMI_LR={6:0.7,7:1.5,8:2.5};
+const ROMAN={6:"VI",7:"VII",8:"VIII"};
+const SCEN={
+ total:{label:"Peor caso: apagón total",medio:id=>MEDIO_TOTAL[id],script:[
+  {t:0,ev:s=>{log(s,"Sismo nocturno en la falla de Algeciras con lluvias fuertes (escenario). Red celular, internet y energía caídas en todo el municipio.","alerta");
+              log(s,"TRIA opera sin conexión en el PMU (portátil con batería y panel solar) con el mapa de amenaza y el censo DANE precargados. Primera asignación con cero reportes.","asig");
+              hbLost(s,"BRU");}},
+  {t:5,ev:s=>hbLost(s,"PAL")},
+  {t:10,ev:s=>report(s,"CRI","baliza LoRa (salto por la malla)")},
+  {t:15,ev:s=>{block(s,"J3","BRU","Derrumbe en la vía Pitalito–Mocoa");report(s,"REG","baliza LoRa (salto por la malla)");}},
+  {t:20,ev:s=>{s.shake=true;log(s,"Mapa de intensidad sísmica del SGC recibido por el enlace satelital del PMU: probabilidades previas actualizadas por zona.","asig");}},
+  {t:25,ev:s=>report(s,"CHA","baliza LoRa")},
+  {t:30,ev:s=>{s.hosp.H2.energia=false;log(s,"Clínica urbana sin energía: TRIA deja de enviarle heridos.","alerta");report(s,"LAG","baliza LoRa");}},
+  {t:40,ev:s=>report(s,"GUA","baliza LoRa")},
+  {t:45,ev:s=>block(s,"CEN","GUA","Puente de la vía a Guacacallo afectado")},
+  {t:90,ev:s=>{s.teams.push(team("T7","USAR internacional","rescate","PMU"));log(s,"Llega un grupo USAR internacional y se integra al tablero común.","ok");}},
+ ]},
+ parcial:{label:"Apagón parcial",medio:()=>"celular",script:[
+  {t:0,ev:s=>{log(s,"Sismo nocturno en la falla de Algeciras (escenario). Energía y señal celular caídas en la zona rural.","alerta");
+              report(s,"CAS","SMS");report(s,"CEN","WhatsApp (red parcial)");}},
+  {t:5,ev:s=>report(s,"CED","SMS")},
+  {t:10,ev:s=>report(s,"CRI","baliza LoRa")},
+  {t:15,ev:s=>{block(s,"J3","BRU","Derrumbe en la vía Pitalito–Mocoa");report(s,"REG","baliza LoRa");}},
+  {t:20,ev:s=>report(s,"LAG","baliza LoRa")},
+  {t:25,ev:s=>report(s,"CHA","baliza LoRa")},
+  {t:30,ev:s=>{s.hosp.H2.energia=false;log(s,"Clínica urbana sin energía: TRIA deja de enviarle heridos.","alerta");report(s,"GUA","baliza LoRa");}},
+  {t:40,ev:s=>report(s,"PAL","baliza LoRa")},
+  {t:45,ev:s=>block(s,"CEN","GUA","Puente de la vía a Guacacallo afectado")},
+  {t:90,ev:s=>{s.teams.push(team("T7","USAR internacional","rescate","PMU"));log(s,"Llega un grupo USAR internacional y se integra al tablero común.","ok");}},
+]}
+};
+const SERVICE = {rescate:45,aph:15,edan:10};
+const LOW={rescate:"rescate",aph:"atención y traslado",edan:"reconocimiento EDAN"};
+const TYPE_LABEL = {rescate:"Rescate",aph:"Atención y traslado",edan:"Reconocimiento EDAN"};
+function team(id,name,type,node){return {id,name,type,node,job:null,carrying:0}}
+
+// ---------- AHP ----------
+const CRIT = ["Severidad","Personas afectadas","Vulnerabilidad (DANE)","Tiempo sin atención"];
+const PAIR = [[1,2,3,4],[1/2,1,2,3],[1/3,1/2,1,2],[1/4,1/3,1/2,1]];
+const W = (()=>{const g=PAIR.map(r=>Math.pow(r.reduce((a,b)=>a*b,1),1/r.length));const s=g.reduce((a,b)=>a+b,0);return g.map(v=>v/s);})();
+const CR = (()=>{const n=4;const Aw=PAIR.map(r=>r.reduce((a,v,j)=>a+v*W[j],0));const lam=Aw.reduce((a,v,i)=>a+v/W[i],0)/n;const CI=(lam-n)/(n-1);return CI/0.90;})();
+
+// ---------- Estado ----------
+let S;
+function init(){
+  S={t:0,edges:EDGES0.map(e=>({a:e[0],b:e[1],w:e[2],label:e[3]||"",blocked:false})),log:[],zones:{},
+     hosp:{H1:{cap:30,occ:18,energia:true},H2:{cap:15,occ:6,energia:true},H3:{cap:60,occ:30,energia:true}},
+     teams:[team("T1","Bomberos Pitalito (USAR)","rescate","PMU"),team("T2","Defensa Civil – rescate","rescate","CEN"),
+            team("T3","Cruz Roja – APH 1","aph","H1"),team("T4","Ambulancia APH 2","aph","H2"),
+            team("T5","Brigada EDAN (CMGRD)","edan","PMU"),team("T6","Voluntarios en moto (EDAN)","edan","J1")],
+     stats:{trasladados:0},lastRecalc:0,sel:null,fifo:S?S.fifo:false,scen:S?S.scen:"total",shake:false};
+  for(const [id,n] of Object.entries(NODES)) if(n.kind==="zona")
+    S.zones[id]={id,silent:true,since:0,color:null,personas:0,senales:0,heridos:0,colapso:false,rescateHecho:false,firstReport:null,via:null,nota:"",medio:SCEN[S.scen].medio(id),hb:true};
+  runEvents(0);recalc();render();
+}
+function log(s,text,kind=""){s.log.unshift({t:s.t,text,kind})}
+function hbLost(s,id){s.zones[id].hb=false;log(s,`${NODES[id].name}: la baliza dejó de emitir su latido. Probable destrucción; TRIA eleva la urgencia de la zona.`,"alerta")}
+function report(s,id,via,who){const z=s.zones[id];const tr=TRUTH[id];Object.assign(z,{silent:false,color:tr.color,personas:tr.personas,senales:tr.senales,heridos:tr.heridos,colapso:tr.colapso,via,nota:tr.nota});
+  if(z.firstReport===null)z.firstReport=s.t;log(s,`${NODES[id].name}: reporte ${tr.color.toUpperCase()} por ${via} — ${pl(tr.personas,"persona")}, ${pl(tr.heridos,"herido")}${tr.senales?`, ${pl(tr.senales,"persona")} con señales de vida bajo escombros`:""}.`,tr.color==="rojo"?"alerta":"");
+  const ns=needs(z);
+  for(const t of s.teams) if(t!==who&&t.job&&t.job.zone===id&&!t.job.cancel&&(t.job.phase==="ida"||t.job.phase==="servicio")&&!ns.includes(t.job.need)){const nd=t.job.need;
+    if(t.job.phase==="ida")truncateToNext(t);t.job.cancel=true;if(t.job.phase==="servicio")t.job=null;log(s,`${t.name}: ${NODES[id].name} ya tiene reporte y no necesita ${LOW[nd]}; equipo liberado.`,"asig")}}
+function pl(n,w){return n+" "+(n===1?w:w+"s")}
+function via(path){return path.slice(1).map(k=>NODES[k].name).join(" › ")}
+function edgeOf(a,b){return S.edges.find(e=>(e.a===a&&e.b===b)||(e.a===b&&e.b===a))}
+function block(s,a,b,why){const e=edgeOf(a,b);e.blocked=true;log(s,`Vía caída: ${why||e.label}. Rutas recalculadas.`,"alerta");onNetworkChange()}
+
+// ---------- Rutas (Dijkstra) ----------
+function dijkstra(src){const dist={},prev={},Q=new Set(Object.keys(NODES));for(const k of Q)dist[k]=Infinity;dist[src]=0;
+  while(Q.size){let u=null;for(const k of Q)if(u===null||dist[k]<dist[u])u=k;if(dist[u]===Infinity)break;Q.delete(u);
+    for(const e of S.edges){if(e.blocked)continue;let v=null;if(e.a===u)v=e.b;else if(e.b===u)v=e.a;else continue;
+      if(dist[u]+e.w<dist[v]){dist[v]=dist[u]+e.w;prev[v]=u}}}
+  return {dist,prev}}
+function route(a,b){const {dist,prev}=dijkstra(a);if(dist[b]===Infinity)return null;const p=[b];while(p[0]!==a)p.unshift(prev[p[0]]);
+  const legs=[];for(let i=0;i<p.length-1;i++)legs.push(edgeOf(p[i],p[i+1]).w);return {path:p,legs,total:dist[b]}}
+
+// ---------- Modelo de urgencia ----------
+const A_SIL=.9;
+function evidence(z){const t=S.t-z.since;
+  if(z.medio==="ninguno")return {lr:1,txt:"la zona no tiene ningún medio para reportar, así que su silencio no aporta información; manda la amenaza"};
+  if(!z.hb)return {lr:5,txt:"la baliza dejó de emitir su latido automático, señal fuerte de destrucción (×5)"};
+  const b=0.9*Math.exp(-t/40)+0.05;return {lr:A_SIL/b,txt:`${z.medio==="baliza"?"la baliza sigue viva":"hay red"} pero nadie reporta, y una zona sin daños suele avisar pronto (×${(A_SIL/b).toFixed(1)})`}}
+function shakeLR(z){return S.shake?MMI_LR[MMI[z.id]]:1}
+function posterior(z){const p0=NODES[z.id].prior;const o=p0/(1-p0)*shakeLR(z)*evidence(z).lr;return o/(1+o)}
+function features(z){
+  if(z.silent){const p=posterior(z);const est=NODES[z.id].pop*p*0.05;
+    return {sev:p,pers:Math.min(1,est/200),vuln:NODES[z.id].vuln,tiempo:Math.min(1,(S.t-z.since)/180),est:Math.round(est),post:p}}
+  if(z.attended) return {sev:0,pers:0,vuln:NODES[z.id].vuln,tiempo:0};
+  const sevBase={rojo:1,amarillo:.6,verde:.15}[z.color];const sev=(z.senales>0||z.colapso)?1:sevBase;
+  return {sev,pers:Math.min(1,z.personas/200),vuln:NODES[z.id].vuln,tiempo:Math.min(1,(S.t-z.firstReport)/180)}}
+function urgency(z){const f=features(z);const v=[f.sev,f.pers,f.vuln,f.tiempo];return {U:v.reduce((a,x,i)=>a+x*W[i],0),f,v}}
+function needs(z){
+  if(z.silent){const p=posterior(z);return p>=.65?["rescate"]:p>=.35?["edan"]:[]}
+  const n=[];if(!z.rescateHecho&&(z.colapso||z.senales>0))n.push("rescate");if(z.heridos>0)n.push("aph");return n}
+
+// ---------- Asignación ----------
+function covered(zid,need){return S.teams.find(t=>t.job&&t.job.zone===zid&&t.job.need===need&&(t.job.phase==="ida"||t.job.phase==="servicio")&&!t.job.cancel)}
+function recalc(){
+  S.lastRecalc=S.t;
+  const items=[];for(const z of Object.values(S.zones)){const u=urgency(z).U;for(const n of needs(z)) if(!covered(z.id,n)) items.push({z,n,u})}
+  items.sort((a,b)=>b.u-a.u);
+  for(const it of items){
+    let best=null;
+    for(const t of S.teams){if(t.job||t.type!==it.n)continue;const r=route(t.node,it.z.id);if(r&&(!best||r.total<best.r.total))best={t,r}}
+    if(best){const {t,r}=best;t.job={zone:it.z.id,need:it.n,phase:"ida",path:r.path,legs:r.legs,p:0,eta:S.t+r.total};
+      log(S,`Asignado: ${t.name} → ${NODES[it.z.id].name} (${TYPE_LABEL[it.n]}), llega en ${r.total} min por ${via(r.path)}.`,"asig")}
+  }
+}
+function truncateToNext(t){const j=t.job;let acc=0,i=0;while(i<j.legs.length&&acc+j.legs[i]<=j.p){acc+=j.legs[i];i++}
+  if(i>=j.legs.length)return;j.path=j.path.slice(0,i+2);j.legs=j.legs.slice(0,i+1)}
+function onNetworkChange(){
+  for(const t of S.teams){const j=t.job;if(!j||(j.phase!=="ida"&&j.phase!=="traslado"))continue;
+    let acc=0,i=0;while(i<j.legs.length&&acc+j.legs[i]<=j.p){acc+=j.legs[i];i++}
+    let bad=-1;for(let k=i;k<j.legs.length;k++)if(edgeOf(j.path[k],j.path[k+1]).blocked){bad=k;break}
+    if(bad<0)continue;
+    if(bad===i){t.node=j.path[i];replan(t,"vía caída en su camino")}
+    else{j.path=j.path.slice(0,bad+1);j.legs=j.legs.slice(0,bad);j.reroute=true}
+  }
+}
+function replan(t,why){const j=t.job;
+  if(j.phase==="traslado"){goHospital(t,j.zone);return}
+  const r=route(t.node,j.zone);
+  if(!r){log(S,`${t.name}: sin ruta terrestre a ${NODES[j.zone].name}. Solicitar apoyo aéreo.`,"alerta");t.job=null;return}
+  Object.assign(j,{path:r.path,legs:r.legs,p:0,eta:S.t+r.total,reroute:false});
+  log(S,`${t.name} re-enrutado (${why}): nueva ruta por ${via(r.path)}, llega en ${r.total} min.`,"asig")}
+function goHospital(t,from){
+  let best=null;for(const [hid,h] of Object.entries(S.hosp)){if(!h.energia||h.cap-h.occ<t.carrying)continue;const r=route(t.node,hid);if(r&&(!best||r.total<best.r.total))best={hid,r}}
+  if(!best){log(S,`${t.name}: ningún hospital con cupo y energía alcanzable.`,"alerta");t.job=null;return}
+  t.job={zone:from,need:"aph",phase:"traslado",path:best.r.path,legs:best.r.legs,p:0,hosp:best.hid,eta:S.t+best.r.total};
+  const near=nearestHospital(from);
+  log(S,`${t.name} traslada ${pl(t.carrying,"herido")} de ${NODES[from].name} a ${NODES[best.hid].name} (${best.r.total} min)${near&&near!==best.hid?`; no a ${NODES[near].name}, que ${S.hosp[near].energia?"no tiene cupo":"no tiene energía"}`:""}.`,"asig")}
+function nearestHospital(from){let b=null,d=Infinity;const {dist}=dijkstra(from);for(const h of Object.keys(S.hosp))if(dist[h]<d){d=dist[h];b=h}return b}
+
+// ---------- Simulación ----------
+function runEvents(t){for(const e of SCEN[S.scen].script)if(e.t===t)e.ev(S)}
+function tickMinute(){
+  S.t++;
+  for(const t of S.teams){const j=t.job;if(!j)continue;
+    if(j.phase==="ida"||j.phase==="traslado"){
+      const done=p=>{let acc=0,i=0;while(i<j.legs.length&&acc+j.legs[i]<=p){acc+=j.legs[i];i++}return i};
+      const before=done(j.p);j.p++;const after=done(j.p);const total=j.legs.reduce((a,b)=>a+b,0);
+      for(let k=before+1;k<=after&&k<j.path.length-1;k++){const nid=j.path[k];if(S.zones[nid]&&S.zones[nid].silent)report(S,nid,`${t.name} (de paso)`,t)}
+      if(j.p>=total){t.node=j.path[j.path.length-1];
+        if(j.cancel){t.job=null;continue}
+        if(j.reroute){replan(t,"vía caída más adelante");continue}
+        if(j.phase==="ida"){const z=S.zones[j.zone];
+          if(z.silent&&j.need!=="edan")report(S,z.id,`${t.name} (equipo en terreno)`,t);
+          if(!needs(z).includes(j.need)){log(S,`${t.name} llegó a ${NODES[z.id].name}: no se necesita ${LOW[j.need]}; queda libre.`,"asig");t.job=null;continue}
+          j.phase="servicio";j.rem=SERVICE[j.need]}
+        else{const h=S.hosp[j.hosp];h.occ+=t.carrying;S.stats.trasladados+=t.carrying;log(S,`${t.name} entregó ${pl(t.carrying,"herido")} en ${NODES[j.hosp].name}.`,"ok");t.carrying=0;t.job=null}}}
+    else if(j.phase==="servicio"){j.rem--;if(j.rem<=0)finishService(t)}
+  }
+  runEvents(S.t);
+  if(S.t%15===0)recalc();
+}
+function finishService(t){const j=t.job;const z=S.zones[j.zone];const name=NODES[z.id].name;
+  if(j.need==="edan"){if(!z.silent){t.job=null;return}report(S,z.id,`reconocimiento de ${t.name}`,t);log(S,`${name}: ${TRUTH[z.id].nota}`,TRUTH[z.id].color==="rojo"?"alerta":"ok");t.job=null}
+  else if(j.need==="rescate"){z.rescateHecho=true;log(S,`${t.name} terminó el rescate en ${name}: ${z.senales} ${z.senales===1?"persona rescatada":"personas rescatadas"} con vida.`,"ok");z.senales=0;z.colapso=false;t.job=null}
+  else if(j.need==="aph"){const n=Math.min(4,z.heridos);z.heridos-=n;t.carrying=n;goHospital(t,z.id)}
+  if(!z.silent&&z.heridos===0&&(z.rescateHecho||(!z.colapso&&z.senales===0)))z.attended=true;
+}
+
+// ---------- Render ----------
+const $=id=>document.getElementById(id);
+const hhmm=m=>{const tot=2*60+10+m;return String(Math.floor(tot/60)%24).padStart(2,"0")+":"+String(tot%60).padStart(2,"0")};
+function teamPos(t){const j=t.job;if(!j||!(j.phase==="ida"||j.phase==="traslado"))return NODES[t.node];
+  let acc=0;for(let i=0;i<j.legs.length;i++){if(j.p<acc+j.legs[i]){const f=(j.p-acc)/j.legs[i];const a=NODES[j.path[i]],b=NODES[j.path[i+1]];return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f}}acc+=j.legs[i]}
+  return NODES[j.path[j.path.length-1]]}
+function zoneState(z){if(z.silent)return "silencio";if(z.attended)return "atendida";return z.color}
+function render(){
+  $("scenTag").textContent="Simulado · "+SCEN[S.scen].label;$("scen").value=S.scen;
+  $("clock").innerHTML=`${hhmm(S.t)}<small>T+${S.t} min</small>`;
+  $("recalcInfo").textContent=`Último cálculo ${hhmm(S.lastRecalc)} · próximo ${hhmm(S.lastRecalc+15)}`;
+  const zs=Object.values(S.zones);
+  const sil=zs.filter(z=>z.silent).length;const rep=zs.length-sil;
+  const pers=zs.filter(z=>!z.silent).reduce((a,z)=>a+z.personas,0);
+  const free=S.teams.filter(t=>!t.job).length;
+  $("kpis").innerHTML=[[rep+" / "+zs.length,"Zonas con reporte"],[sil,"Zonas sin contacto"],[pers,"Personas reportadas"],[S.stats.trasladados,"Heridos trasladados"],[free+" / "+S.teams.length,"Equipos libres"]]
+    .map(([b,s])=>`<div class="kpi"><b>${b}</b><span>${s}</span></div>`).join("");
+  renderMap();renderPrio();renderHosp();renderModel();
+  $("log").innerHTML=S.log.map(l=>`<div><time>${hhmm(l.t)}</time><span class="k-${l.kind}">${l.text}</span></div>`).join("");
+}
+function renderMap(){
+  const css=v=>`var(--${v})`;let s="";
+  // relieve decorativo: curvas de nivel
+  for(let i=0;i<6;i++)s+=`<ellipse cx="${150+i*10}" cy="${120+i*6}" rx="${220-i*32}" ry="${120-i*18}" fill="none" stroke="${css("contour")}" stroke-width="2"/>`;
+  for(let i=0;i<5;i++)s+=`<ellipse cx="880" cy="600" rx="${200-i*35}" ry="${110-i*20}" fill="none" stroke="${css("contour")}" stroke-width="2"/>`;
+  s+=`<path d="M0,420 C200,400 300,300 455,265 S560,240 600,200 S720,120 1000,110" fill="none" stroke="${css("contour")}" stroke-width="6" opacity=".9"/>`;
+  s+=`<text x="16" y="626" font-family="IBM Plex Mono,monospace" font-size="11" fill="${css("muted")}">Esquema no a escala · tiempos de viaje en minutos</text>`;
+  // vías
+  for(const [i,e] of S.edges.entries()){const a=NODES[e.a],b=NODES[e.b];const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+    s+=`<g class="edge" data-i="${i}" style="cursor:pointer" tabindex="0" role="button" aria-label="Vía ${NODES[e.a].name} a ${NODES[e.b].name}, ${e.blocked?"caída":"habilitada"}">
+      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="transparent" stroke-width="18"/>
+      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${e.blocked?css("bloq"):css("road")}" stroke-width="${e.blocked?3:2.5}" ${e.blocked?'stroke-dasharray="8 6"':""}/>
+      ${e.w>=9?`<rect x="${mx-13}" y="${my-9}" width="26" height="16" rx="3" fill="${css("panel")}" stroke="${css("line")}"/><text x="${mx}" y="${my+3}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="${e.blocked?css("bloq"):css("muted")}">${e.blocked?"✕":e.w}</text>`:""}
+    </g>`}
+  // rutas activas
+  for(const t of S.teams){const j=t.job;if(!j||!(j.phase==="ida"||j.phase==="traslado"))continue;
+    const pts=j.path.map(k=>`${NODES[k].x},${NODES[k].y}`).join(" ");
+    s+=`<polyline points="${pts}" fill="none" stroke="${css("accent")}" stroke-width="4" opacity=".45" stroke-linecap="round" stroke-linejoin="round"/>`}
+  // nodos
+  for(const [id,n] of Object.entries(NODES)){
+    if(n.kind==="cruce"){s+=`<circle cx="${n.x}" cy="${n.y}" r="4" fill="${css("road")}"/>`;continue}
+    if(n.kind==="pmu"){s+=`<text x="${n.x}" y="${n.y+8}" text-anchor="middle" font-size="24" fill="${css("accent")}">★</text><text x="${n.x}" y="${n.y+26}" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-size="13" font-weight="600" fill="${css("ink")}">PMU</text>`;continue}
+    if(n.kind==="hosp"){const h=S.hosp[id];const col=h.energia?(h.occ>=h.cap?css("rojo"):css("verde")):css("muted");
+      s+=`<rect x="${n.x-11}" y="${n.y-11}" width="22" height="22" rx="3" fill="${css("panel")}" stroke="${col}" stroke-width="2"/><text x="${n.x}" y="${n.y+6}" text-anchor="middle" font-size="16" font-weight="700" fill="${col}">✚</text>
+        <text x="${n.x}" y="${n.y+26}" text-anchor="middle" font-family="Barlow,Arial,sans-serif" font-size="11" fill="${css("muted")}">${n.name}${h.energia?"":" (sin energía)"}</text>`;continue}
+    const z=S.zones[id];const st=zoneState(z);
+    const col={rojo:css("rojo"),amarillo:css("ambar"),verde:css("verde"),silencio:css("silencio"),atendida:css("muted")}[st];
+    const sel=S.sel===id;
+    if(st==="silencio"){const p=posterior(z);const r=12+p*16;
+      s+=`<circle class="pulse" cx="${n.x}" cy="${n.y}" r="${r}" fill="${col}" opacity=".3"/><circle cx="${n.x}" cy="${n.y}" r="12" fill="${css("panel")}" stroke="${col}" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <text x="${n.x}" y="${n.y+4}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="${col}">${Math.round(p*100)}%</text>
+        <text x="${n.x}" y="${n.y+30}" text-anchor="middle" font-family="Barlow,Arial,sans-serif" font-size="10.5" fill="${col}" paint-order="stroke" stroke="${css("map")}" stroke-width="3">${z.medio==="ninguno"?"sin medio de reporte":!z.hb?"baliza destruida":"baliza muda"}</text>`}
+    else s+=`<circle cx="${n.x}" cy="${n.y}" r="12" fill="${col}"/><text x="${n.x}" y="${n.y+4}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="${css("panel")}">${z.personas}</text>`;
+    if(sel)s+=`<circle cx="${n.x}" cy="${n.y}" r="19" fill="none" stroke="${css("ink")}" stroke-width="1.5"/>`;
+    s+=`<text x="${n.x}" y="${n.y-20}" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-size="14" font-weight="600" fill="${css("ink")}" paint-order="stroke" stroke="${css("map")}" stroke-width="3">${n.name}</text>`}
+  // equipos
+  const stack={};for(const t of S.teams){const p=teamPos(t);const key=Math.round(p.x)+","+Math.round(p.y);const k=stack[key]=(stack[key]||0)+1;
+    const x=p.x+10+(k-1)*13,y=p.y+8;const col=t.type==="rescate"?css("rojo"):t.type==="aph"?css("verde"):css("silencio");
+    s+=`<g><rect x="${x}" y="${y}" width="12" height="12" rx="2" fill="${col}" stroke="${css("panel")}" stroke-width="1.5"/><text x="${x+6}" y="${y+9.5}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" fill="${css("panel")}">${t.id.slice(1)}</text><title>${t.name}</title></g>`}
+  $("map").innerHTML=s;
+  $("map").querySelectorAll(".edge").forEach(g=>{const f=()=>{const e=S.edges[+g.dataset.i];e.blocked=!e.blocked;
+      log(S,`Operador marcó ${e.blocked?"CAÍDA":"HABILITADA"} la vía ${NODES[e.a].name} – ${NODES[e.b].name}.`,e.blocked?"alerta":"ok");onNetworkChange();recalc();render()};
+    g.addEventListener("click",f);g.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();f()}})});
+}
+function renderPrio(){
+  const zs=Object.values(S.zones).map(z=>({z,...urgency(z)})).sort((a,b)=>b.U-a.U);
+  const fifoOrder=Object.values(S.zones).filter(z=>z.firstReport!==null).sort((a,b)=>a.firstReport-b.firstReport).map(z=>z.id);
+  document.querySelectorAll(".fifoCol").forEach(e=>e.hidden=!S.fifo);
+  if(!S.sel)S.sel=zs[0].z.id;
+  $("prio").innerHTML=zs.map((r,i)=>{const z=r.z;const st=zoneState(z);
+    const lbl={rojo:"Roja",amarillo:"Amarilla",verde:"Verde",silencio:"Sin contacto",atendida:"Atendida"}[st];
+    const ns=needs(z);const asg=ns.map(n=>{const t=S.teams.find(t=>t.job&&t.job.zone===z.id&&t.job.need===n&&!t.job.cancel&&t.job.phase!=="traslado");
+      return `${TYPE_LABEL[n]} → ${t?`<b>${t.name}</b> <span class="small">${t.job.phase==="servicio"?"en sitio":"llega "+hhmm(t.job.eta)}</span>`:`<span class="small">en cola</span>`}`}).join("<br>")||`<span class="small">${z.silent?"Vigilar (probabilidad baja)":"Sin necesidad pendiente"}</span>`;
+    const fi=fifoOrder.indexOf(z.id);
+    return `<tr class="prow${S.sel===z.id?" sel":""}" data-z="${z.id}" tabindex="0"><td class="num">${i+1}</td><td><span class="zn">${NODES[z.id].name}</span><div class="small">${z.silent?`Sin contacto hace ${S.t-z.since} min`:`Vía ${z.via}`}</div></td>
+      <td><span class="chip c-${st}">${lbl}</span></td>
+      <td class="num">${r.U.toFixed(2)}<div class="bar"><div style="width:${Math.round(r.U*100)}%"></div></div></td>
+      <td>${asg}</td><td class="num fifoCol" ${S.fifo?"":"hidden"}>${fi<0?"nunca":"#"+(fi+1)}</td></tr>`}).join("");
+  $("prio").querySelectorAll(".prow").forEach(tr=>{const f=()=>{S.sel=tr.dataset.z;render()};tr.addEventListener("click",f);tr.addEventListener("keydown",e=>{if(e.key==="Enter"){f()}})});
+  // explicación
+  const z=S.zones[S.sel];const {U,f,v}=urgency(z);
+  let txt;
+  if(z.silent){const ev=evidence(z);txt=`Sin contacto desde hace ${S.t-z.since} min. Probabilidad previa de afectación grave: ${Math.round(NODES[z.id].prior*100)} %, según el mapa de amenaza. ${S.shake?`Intensidad sísmica del SGC: ${ROMAN[MMI[z.id]]} (×${MMI_LR[MMI[z.id]]}). `:""}Evidencia: ${ev.txt}. Probabilidad actual: <b>${Math.round(f.post*100)} %</b>. Personas posiblemente afectadas: ~${f.est} de ${NODES[z.id].pop.toLocaleString("es-CO")} habitantes.`}
+  else txt=`${z.nota} Reporte por ${z.via}: ${z.personas} personas, ${pl(z.heridos,"herido")} pendientes${z.senales?`, ${z.senales} con señales de vida`:""}.`;
+  $("explain").innerHTML=`<h3>¿Por qué ${NODES[z.id].name} tiene ${U.toFixed(2)}?</h3><div class="small">${txt}</div>
+   <div class="contrib">${CRIT.map((c,i)=>`<span>${c}</span><div class="bar"><div style="width:${Math.round(v[i]*100)}%"></div></div><span class="num" style="font-family:var(--mono);font-size:12px">+${(v[i]*W[i]).toFixed(2)}</span>`).join("")}</div>
+   <div class="small">Índice = suma de (valor del criterio × peso AHP). Fila seleccionada; toque otra zona para ver su explicación.</div>`;
+}
+function renderHosp(){
+  $("hosp").innerHTML=Object.entries(S.hosp).map(([id,h])=>{const pct=Math.min(100,Math.round(h.occ/h.cap*100));
+    return `<div class="hrow"><div class="top"><span><b>${NODES[id].name}</b> ${h.energia?"":'<span class="chip c-rojo">Sin energía</span>'}</span><span class="num" style="font-family:var(--mono)">${h.occ}/${h.cap} camas</span></div>
+      <div class="hbar"><div style="width:${pct}%;background:${pct>=100?"var(--rojo)":pct>80?"var(--ambar)":"var(--verde)"}"></div></div></div>`}).join("");
+  $("teams").innerHTML=S.teams.map(t=>{const j=t.job;let st="Libre en "+NODES[t.node].name;
+    if(j){st=j.phase==="ida"?`→ ${NODES[j.zone].name} (llega ${hhmm(j.eta)})`:j.phase==="servicio"?`En sitio: ${NODES[j.zone].name}`:`Trasladando ${t.carrying} → ${NODES[j.hosp].name}`;if(j.cancel)st="Regresando (cancelado)"}
+    return `<div><span><b>${t.name}</b></span><span class="small">${st}</span></div>`}).join("");
+}
+function renderModel(){
+  const f=x=>x>=1?String(Math.round(x)):"1/"+Math.round(1/x);
+  $("model").innerHTML=`<p><b style="color:var(--ink)">1. Pesos por AHP.</b> El Consejo Municipal de Gestión del Riesgo compara los criterios de a pares. TRIA calcula los pesos con la media geométrica.</p>
+   <div style="overflow-x:auto"><table><thead><tr><th></th>${CRIT.map((c,i)=>`<th title="${c}">C${i+1}</th>`).join("")}<th>Peso</th></tr></thead>
+   <tbody>${PAIR.map((r,i)=>`<tr><th style="text-align:left" title="${CRIT[i]}">C${i+1} ${CRIT[i].split(" ")[0]}</th>${r.map(x=>`<td class="num">${f(x)}</td>`).join("")}<td class="num"><b>${W[i].toFixed(2)}</b></td></tr>`).join("")}</tbody></table></div>
+   <p>Razón de consistencia: <b style="color:var(--ink)">${CR.toFixed(3)}</b> (menor a 0,10: comparaciones coherentes).</p>
+   <p><b style="color:var(--ink)">2. Zonas en silencio (Bayes).</b> Se parte del mapa de amenaza y se multiplican las chances por cada evidencia disponible:</p>
+   <div class="formula">chances = previa × intensidad SGC × evidencia del silencio</div>
+   <p>Intensidad VI ×0,7 · VII ×1,5 · VIII ×2,5. Silencio con baliza viva: ×${A_SIL}/b(t), con b(t) = 0,9·e^(−t/40) + 0,05. Baliza sin latido: ×5. Sin ningún medio de reporte: ×1, porque en un apagón total callar no dice nada y manda la amenaza.</p>
+   <p>Cada equipo en terreno es también un mensajero: al llegar o pasar por una zona en silencio, la reporta.</p>
+   <p><b style="color:var(--ink)">3. Rutas y asignación.</b> Las rutas usan Dijkstra sobre el grafo vial sin las vías caídas. Cada necesidad recibe un solo equipo del tipo correcto, el más cercano, en orden de urgencia. Los heridos van al hospital más cercano que tenga cupo y energía.</p>`;
+}
+
+// ---------- Controles ----------
+let playing=false,timer=null,stepLeft=0;
+function loop(){if(stepLeft<=0&&!playing){clearInterval(timer);timer=null;return}tickMinute();stepLeft--;render();
+  if(S.t>=240){playing=false;$("btnPlay").setAttribute("aria-pressed","false");$("btnPlay").textContent="Reproducir";stepLeft=0}}
+function start(){if(!timer)timer=setInterval(loop,matchMedia("(prefers-reduced-motion:reduce)").matches?60:160)}
+$("btnStep").onclick=()=>{stepLeft+=15;start()};
+$("btnPlay").onclick=()=>{playing=!playing;$("btnPlay").setAttribute("aria-pressed",String(playing));$("btnPlay").textContent=playing?"Pausar":"Reproducir";if(playing){stepLeft=1e9;start()}else stepLeft=0};
+$("btnFifo").onclick=()=>{S.fifo=!S.fifo;$("btnFifo").setAttribute("aria-pressed",String(S.fifo));render()};
+$("scen").onchange=e=>{S.scen=e.target.value;$("btnReset").onclick()};
+$("btnReset").onclick=()=>{playing=false;stepLeft=0;$("btnPlay").setAttribute("aria-pressed","false");$("btnPlay").textContent="Reproducir";S=null;init()};
+init();
+</script>

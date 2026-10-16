@@ -1,0 +1,8 @@
+networkx>=3.0
+pulp>=2.7,<3
+fastapi>=0.110
+uvicorn>=0.29
+pydantic>=2.0
+pytest>=8.0
+pyserial>=3.5
+requests>=2.31
