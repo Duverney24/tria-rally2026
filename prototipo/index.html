@@ -1532,6 +1532,9 @@ function renderTimeline(){
 }
 
 let prevRank={},movs={},prevW={};
+// Lleva el mapa a la zona elegida en la lista (sin vuelo si se pidió menos movimiento)
+function volarA(id){if(!MAP)return;const z=Math.max(MAP.getZoom(),12.5);
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches)MAP.setView(ll(id),z);else MAP.flyTo(ll(id),z,{duration:.9})}
 // Barras: se pintan con el ancho anterior y luego se deslizan al nuevo
 function barra(key,pct){const de=prevW[key]??pct;prevW[key]=pct;return `width:${de}%" data-w="${pct}`}
 function deslizar(root){const bs=root.querySelectorAll("[data-w]");if(!bs.length)return;root.getBoundingClientRect();bs.forEach(b=>b.style.width=b.dataset.w+"%")}
@@ -1560,7 +1563,7 @@ function renderPrio(){
   $("prio").querySelectorAll(".pitem").forEach(li=>{const y0=antes[li.dataset.z];if(!mover||y0===undefined)return;const dy=y0-li.getBoundingClientRect().top;
     if(Math.abs(dy)>2)li.animate([{transform:`translateY(${dy}px)`},{transform:"none"}],{duration:Math.min(500,tickMs*.9),easing:"cubic-bezier(.16,1,.3,1)"})});
   prevRank={};zs.forEach((r,i)=>prevRank[r.z.id]=i);
-  $("prio").querySelectorAll(".pitem").forEach(li=>{const f=()=>{S.sel=li.dataset.z;render()};li.addEventListener("click",f);li.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}})});
+  $("prio").querySelectorAll(".pitem").forEach(li=>{const f=()=>{S.sel=li.dataset.z;render();volarA(li.dataset.z)};li.addEventListener("click",f);li.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}})});
   const z=S.zones[S.sel];const {U,f,v}=urgency(z);
   let txt;
   if(z.silent){const ev=evidence(z);txt=`Sin contacto desde hace ${S.t-z.since} min. Probabilidad previa de afectación grave: ${Math.round(NODES[z.id].prior*100)} % según el mapa de amenaza. ${S.shake?`Intensidad sísmica del SGC: ${ROMAN[MMI[z.id]]} (×${MMI_LR[MMI[z.id]]}). `:""}Evidencia: ${ev.txt}. Probabilidad actual: <b>${Math.round(f.post*100)} %</b>. Personas posiblemente afectadas: ~${f.est} de ${NODES[z.id].pop.toLocaleString("es-CO")} habitantes.`}
