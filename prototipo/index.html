@@ -1054,6 +1054,21 @@ button:active{transform:translateY(1px) scale(.98)}
 @keyframes toastIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
 @keyframes toastOut{to{opacity:0;transform:translateX(24px)}}
 
+
+/* Alerta roja al llegar el primer reporte del evento */
+.alerta-roja{position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:950;display:flex;gap:12px;align-items:center;max-width:calc(100% - 120px);
+  background:rgba(110,12,8,.93);border:1px solid var(--rojo);color:#fff;border-radius:10px;padding:10px 18px;pointer-events:none;
+  box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 0 rgba(240,88,74,.7);animation:alertaIn .35s cubic-bezier(.2,.8,.2,1) both,alertaPulso 1s ease-out 4;transition:opacity .5s}
+.alerta-roja.fuera{opacity:0}
+.alerta-roja i{flex:none;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 10px #fff;animation:alertaLuz .5s steps(2,jump-none) infinite}
+.alerta-roja b{display:block;font-family:var(--display);font-size:18px;font-weight:700;letter-spacing:.1em}
+.alerta-roja span{display:block;font-size:13px;color:#ffd9d4}
+.mapwrap.alarma::after{animation:alarmaGlow .9s ease-in-out 3}
+@keyframes alertaIn{from{opacity:0;transform:translate(-50%,-12px) scale(.96)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes alertaPulso{0%{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 0 rgba(240,88,74,.7)}100%{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 22px rgba(240,88,74,0)}}
+@keyframes alertaLuz{0%{opacity:1}100%{opacity:.15}}
+@keyframes alarmaGlow{0%,100%{opacity:0}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.alerta-roja,.alerta-roja i,.mapwrap.alarma::after{animation:none!important}}
 /* Sismo: sacudida del mapa al inicio y ondas de intensidad cuando llega el mapa del SGC */
 .mapwrap::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:900;opacity:0;box-shadow:inset 0 0 120px color-mix(in srgb,var(--rojo) 55%,transparent)}
 .mapwrap.quake #map{animation:quake .9s cubic-bezier(.36,.07,.19,.97)}
@@ -1760,7 +1775,7 @@ function init(){
 }
 function log(s,text,kind=""){s.log.unshift({t:s.t,text,kind})}
 function hbLost(s,id){s.zones[id].hb=false;log(s,`${NODES[id].name}: la baliza dejó de emitir su latido. Probable destrucción; TRIA eleva la urgencia de la zona.`,"alerta")}
-function report(s,id,via,who){const z=s.zones[id];if(!z.silent)return;const tr=TRUTH[id]||VERDE();Object.assign(z,{silent:false,color:tr.color,personas:tr.personas,senales:tr.senales,heridos:tr.heridos,colapso:tr.colapso,via,nota:tr.nota});
+function report(s,id,via,who){const z=s.zones[id];if(!z.silent)return;if(!s.alertaHecha){s.alertaHecha=true;s.alertaPend=id}const tr=TRUTH[id]||VERDE();Object.assign(z,{silent:false,color:tr.color,personas:tr.personas,senales:tr.senales,heridos:tr.heridos,colapso:tr.colapso,via,nota:tr.nota});
   if(z.firstReport===null)z.firstReport=s.t;log(s,`${NODES[id].name}: reporte ${tr.color.toUpperCase()} por ${via} — ${pl(tr.personas,"persona")}, ${pl(tr.heridos,"herido")}${tr.senales?`, ${pl(tr.senales,"persona")} ${SC().atrap}`:""}.`,tr.color==="rojo"?"alerta":"");
   const ns=needs(z);
   for(const t of s.teams) if(t!==who&&t.job&&t.job.zone===id&&!t.job.cancel&&(t.job.phase==="ida"||t.job.phase==="servicio")&&!ns.includes(t.job.need)){const nd=t.job.need;
@@ -2026,6 +2041,20 @@ function zoneState(z){if(z.silent)return "silencio";if(z.attended)return "atendi
 function medioTxt(z){return z.medio==="ninguno"?"sin medio de reporte":!z.hb?"baliza destruida":"baliza sin reporte"}
 
 let prevKpi=null,prevLog=-1,prevSel=null,prevShake=false;
+
+// Alerta roja: banner, destello rojo, sacudida (si es sismo) y ondas sobre la zona del primer reporte
+function alertaRoja(id){const w=$("mapwrap");if(!w||!S||!S.zones[id])return;
+  w.querySelectorAll(".alerta-roja").forEach(x=>x.remove());
+  const z=S.zones[id],tipo=(SC().label.split("·")[0]||"Evento").trim().toUpperCase();
+  const d=document.createElement("div");d.className="alerta-roja";d.setAttribute("role","alert");
+  d.innerHTML=`<i></i><div><b>ALERTA ROJA · ${tipo}</b><span>Primer reporte: ${NODES[id].name} · ${String(z.color||"").toUpperCase()} · ${pl(z.personas,"persona")}${z.heridos?` · ${pl(z.heridos,"herido")}`:""}</span></div>`;
+  w.appendChild(d);
+  w.classList.remove("alarma");void w.offsetWidth;w.classList.add("alarma");setTimeout(()=>w.classList.remove("alarma"),2900);
+  sacudir();
+  if(MAP){const mk=L.marker(ll(id),{interactive:false,icon:L.divIcon({className:"qring",iconSize:[0,0],html:'<i style="--d:150px"></i><i style="--d:150px"></i>'})}).addTo(MAP);setTimeout(()=>MAP.removeLayer(mk),2800);
+    setTimeout(()=>{try{volarA(id)}catch(e){}},250)}
+  setTimeout(()=>d.classList.add("fuera"),5500);setTimeout(()=>d.remove(),6100)}
+function mapaVisible(){const w=$("mapwrap");return !!(w&&w.offsetParent!==null&&document.body.dataset.vista!=="inicio")}
 function sacudir(){if(SC().tipo!=="sismo")return;const w=$("mapwrap");w.classList.remove("quake");void w.offsetWidth;w.classList.add("quake");setTimeout(()=>w.classList.remove("quake"),1700)}
 // Ondas en cada zona según la intensidad del SGC (VI pequeña, VIII grande)
 function ondasSGC(){if(!MAP)return;for(const [id,m] of Object.entries(MMI)){const d=40+(m-6)*45;
@@ -2144,6 +2173,9 @@ function contar(nodo,de,a){if(!nodo||matchMedia("(prefers-reduced-motion:reduce)
   const f=now=>{const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);nodo.nodeValue=String(Math.round(de+(a-de)*e));if(p<1&&nodo.isConnected)requestAnimationFrame(f)};
   nodo.nodeValue=String(de);requestAnimationFrame(f)}
 function render(){
+  // Al ver el mapa por primera vez en el evento: sacudida si es sismo; y alerta roja con el primer reporte
+  if(S&&mapaVisible()){if(!S.sacudido){S.sacudido=true;setTimeout(sacudir,80)}
+    if(S.alertaPend){const id=S.alertaPend;S.alertaPend=null;setTimeout(()=>alertaRoja(id),120)}}
   $("scenTag").textContent=SC().tag;
   $("scen").value=S.scen;
   $("clock").textContent=hhmm(S.t);$("mClock").textContent=hhmm(S.t);$("mTplus").textContent="T+"+S.t;$("tplus").textContent=`T+${S.t} min`;
