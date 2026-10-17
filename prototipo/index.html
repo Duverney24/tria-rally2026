@@ -2051,7 +2051,6 @@ function alertaRoja(id){const w=$("mapwrap");if(!w||!S)return;if(id&&!S.zones[id
   d.innerHTML=`<i></i><div><b>ALERTA ROJA</b><span>${z?`Primer reporte: ${NODES[id].name} · ${String(z.color||"").toUpperCase()} · ${pl(z.personas,"persona")}${z.heridos?` · ${pl(z.heridos,"herido")}`:""}`:"Sin comunicaciones · TRIA prioriza con el mapa de amenaza"}</span></div>`;
   w.appendChild(d);
   w.classList.remove("alarma");void w.offsetWidth;w.classList.add("alarma");setTimeout(()=>w.classList.remove("alarma"),2900);
-  sacudir();
   if(MAP&&id){const mk=L.marker(ll(id),{interactive:false,icon:L.divIcon({className:"qring",iconSize:[0,0],html:'<i style="--d:150px"></i><i style="--d:150px"></i>'})}).addTo(MAP);setTimeout(()=>MAP.removeLayer(mk),2800);
     setTimeout(()=>{try{volarA(id)}catch(e){}},250)}
   setTimeout(()=>d.classList.add("fuera"),5500);setTimeout(()=>d.remove(),6100)}
@@ -2177,9 +2176,8 @@ function render(){
   // Al ver el mapa por primera vez en el evento: sacudida si es sismo; y alerta roja con el primer reporte
   if(S&&mapaVisible()){
     // Alerta roja inmediata al abrir el mapa del evento (con el primer reporte si ya llegó)
-    // Temblor al abrir el mapa; la alerta roja sale con el primer reporte
-    if(!S.sacudido){S.sacudido=true;setTimeout(sacudir,60)}
-    if(S.alertaPend){const id=S.alertaPend;S.alertaPend=null;setTimeout(()=>alertaRoja(id),60)}}
+    // La alerta roja del primer reporte sale solo después de iniciar la simulación y de terminar el temblor
+    if(S.alertaPend&&S.arrancado){const espera=Math.max(60,(S.tAlertaLibre||0)-Date.now());const id=S.alertaPend;S.alertaPend=null;setTimeout(()=>alertaRoja(id),espera)}}
   $("scenTag").textContent=SC().tag;
   $("scen").value=S.scen;
   $("clock").textContent=hhmm(S.t);$("mClock").textContent=hhmm(S.t);$("mTplus").textContent="T+"+S.t;$("tplus").textContent=`T+${S.t} min`;
@@ -2294,7 +2292,9 @@ function loop(){if(stepLeft<=0&&!playing){stop();return}
   try{tickMinute();stepLeft--;render()}
   catch(e){playing=false;stepLeft=0;setPlayUI();stop();falla(e,"La simulación se detuvo por un error")}}
 function stop(){clearInterval(timer);timer=null}
-function start(){stop();timer=setInterval(loop,tickMs)}
+// Al iniciar la simulación: primero el temblor (si es sismo) y después la alerta roja del primer reporte
+function arrancar(){if(!S||S.arrancado)return;S.arrancado=true;S.tAlertaLibre=Date.now()+(SC().tipo==="sismo"?1700:300);sacudir();setTimeout(()=>render(),(SC().tipo==="sismo"?1750:350))}
+function start(){arrancar();stop();timer=setInterval(loop,tickMs)}
 $("btnStep").onclick=()=>{stepLeft=Math.max(stepLeft,0)+15;if(!timer)start()};
 $("btnPlay").onclick=()=>{playing=!playing;setPlayUI();if(playing){stepLeft=1e9;start()}else{stepLeft=0;stop()}};
 document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));tickMs=+b.dataset.ms;if(timer)start()});
@@ -2410,7 +2410,7 @@ $("fifo").onchange=e=>{S.fifo=e.target.checked;render()};
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>{x.setAttribute("aria-selected",String(x===b));$("tab-"+x.dataset.tab).hidden=x!==b});
   if(b.dataset.tab==="log")$("logCount").classList.remove("hot");liveCiclo()});
 $("scen").onchange=e=>{CUR_SCEN=e.target.value;$("btnReset").onclick()};
-$("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;prevRank={};movs={};prevW={};prevShake=false;$("toasts").innerHTML="";$("logCount").classList.remove("hot");resetTeams();init();sacudir()};
+$("btnReset").onclick=()=>{playing=false;stepLeft=0;stop();setPlayUI();$("fifo").checked=false;S=null;prevKpi=null;prevLog=-1;prevRank={};movs={};prevW={};prevShake=false;$("toasts").innerHTML="";$("logCount").classList.remove("hot");resetTeams();init()};
 document.addEventListener("pointermove",e=>{const el=e.target.closest?.(".spot");if(!el)return;const r=el.getBoundingClientRect();
   el.style.setProperty("--spot-x",(e.clientX-r.left)+"px");el.style.setProperty("--spot-y",(e.clientY-r.top)+"px")},{passive:true});
 {let t="dark";try{t=localStorage.getItem("tria-tema")||"dark"}catch(e){}tema(t)}
@@ -2554,7 +2554,6 @@ function actualizarFrescura(){
       renderMap();
     });
     if(enfocar)(inicio?$("inicioTitulo"):$("vistaTitulo")).focus();
-    if(id==="mapa")setTimeout(()=>{if(S&&!S.sacudido)render()},150);
     if(sim)window.mostrarGuiaInicial?.();
   }
   document.querySelectorAll("button[data-vista]").forEach(b=>b.onclick=()=>ir(b.dataset.vista));
@@ -2582,7 +2581,7 @@ function actualizarFrescura(){
   el.hidden=false;el.classList.remove("out");ol.innerHTML="";bar.style.width="0";
   const pasos=["Enlace satelital del PMU","Escuchando balizas LoRa","Amenaza SGC · censo DANE","Prioridades (AHP + Bayes)"];
   let i=0,tm=null;
-  const fin=()=>{if(el.classList.contains("out"))return;clearTimeout(tm);el.classList.add("out");removeEventListener("keydown",fin);setTimeout(()=>el.hidden=true,500);sacudir()};
+  const fin=()=>{if(el.classList.contains("out"))return;clearTimeout(tm);el.classList.add("out");removeEventListener("keydown",fin);setTimeout(()=>el.hidden=true,500)};
   const paso=()=>{if(i>=pasos.length){tm=setTimeout(fin,350);return}
     ol.insertAdjacentHTML("beforeend",`<li><span>${pasos[i]}</span><em>OK</em></li>`);i++;bar.style.width=(i/pasos.length*100)+"%";tm=setTimeout(paso,380)};
   el.addEventListener("click",fin);addEventListener("keydown",fin);tm=setTimeout(paso,250);
