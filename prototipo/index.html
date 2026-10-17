@@ -2540,7 +2540,8 @@ function actualizarFrescura(){
   const el=$("boot"),ol=$("bootLines"),bar=$("bootBar");if(!el||!ol||!bar)return;
   let visto=false;try{visto=sessionStorage.getItem("tria-boot")==="1";sessionStorage.setItem("tria-boot","1")}catch(e){}
   const q=new URLSearchParams(location.search);
-  if(visto||q.has("escenario")||q.has("zona")||q.has("t")||matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  // ?intro fuerza la animación (útil para grabar el video), aunque ya se haya visto o el sistema reduzca el movimiento
+  if(!q.has("intro")&&(visto||q.has("escenario")||q.has("zona")||q.has("t")||matchMedia("(prefers-reduced-motion:reduce)").matches))return;
   el.hidden=false;el.classList.remove("out");ol.innerHTML="";bar.style.width="0";
   const pasos=["Enlace satelital del PMU","Escuchando balizas LoRa","Amenaza SGC · censo DANE","Prioridades (AHP + Bayes)"];
   let i=0,tm=null;
