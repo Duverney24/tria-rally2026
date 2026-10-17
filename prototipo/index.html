@@ -2533,6 +2533,22 @@ function actualizarFrescura(){
   const q=new URLSearchParams(location.search);
   ir(q.has("escenario")||q.has("zona")||q.has("t")?"mapa":"inicio",false);
 })();
+
+// Pantalla de arranque animada: una vez por sesión, antes del inicio por tareas; se omite con clic o tecla
+// y nunca aparece con movimiento reducido ni al abrir un enlace compartido.
+(function boot(){
+  const el=$("boot"),ol=$("bootLines"),bar=$("bootBar");if(!el||!ol||!bar)return;
+  let visto=false;try{visto=sessionStorage.getItem("tria-boot")==="1";sessionStorage.setItem("tria-boot","1")}catch(e){}
+  const q=new URLSearchParams(location.search);
+  if(visto||q.has("escenario")||q.has("zona")||q.has("t")||matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  el.hidden=false;el.classList.remove("out");ol.innerHTML="";bar.style.width="0";
+  const pasos=["Enlace satelital del PMU","Escuchando balizas LoRa","Amenaza SGC · censo DANE","Prioridades (AHP + Bayes)"];
+  let i=0,tm=null;
+  const fin=()=>{if(el.classList.contains("out"))return;clearTimeout(tm);el.classList.add("out");removeEventListener("keydown",fin);setTimeout(()=>el.hidden=true,500);sacudir()};
+  const paso=()=>{if(i>=pasos.length){tm=setTimeout(fin,350);return}
+    ol.insertAdjacentHTML("beforeend",`<li><span>${pasos[i]}</span><em>OK</em></li>`);i++;bar.style.width=(i/pasos.length*100)+"%";tm=setTimeout(paso,380)};
+  el.addEventListener("click",fin);addEventListener("keydown",fin);tm=setTimeout(paso,250);
+})();
 // Sin internet: guarda la app y las teselas vistas (solo funciona servido por http/https, no con file://)
 if("serviceWorker" in navigator&&location.protocol.startsWith("http"))
   navigator.serviceWorker.register("sw.js").then(()=>$("footer").insertAdjacentHTML("beforeend"," · Disponible sin conexión: el mapa ya recorrido queda guardado en este navegador"),()=>{});
