@@ -33,16 +33,20 @@ const server=http.createServer((q,r)=>{
       assert(!(await p.locator('#guia').evaluate(e=>e.open)));
       await p.screenshot({path:'/tmp/tria-inicio-'+(mobile?'movil':'desktop')+'.png',fullPage:true});
       await p.locator('#inicio [data-vista="mapa"]').click();await p.locator('#guia[open]').waitFor();await p.locator('#guiaOmitir').click();
-      assert(await p.locator('#map').isVisible());assert(!(await p.locator('.side').isVisible()));
+      assert(await p.locator('#map').isVisible());assert(await p.locator('.side').isVisible());assert(await p.locator('#tab-prio').isVisible());
+      const cajas=await p.evaluate(()=>{const m=document.querySelector('.mapcard').getBoundingClientRect(),s=document.querySelector('.side').getBoundingClientRect();return{m:{x:m.x,y:m.y,w:m.width,h:m.height},s:{x:s.x,y:s.y,w:s.width,h:s.height}}});
+      if(mobile)assert(cajas.s.y>=cajas.m.y+cajas.m.h-2,'el panel móvil debe quedar debajo del mapa');
+      else assert(cajas.s.x>=cajas.m.x+cajas.m.w-2,'el panel debe quedar a la derecha del mapa');
       await p.screenshot({path:'/tmp/tria-mapa-'+(mobile?'movil':'desktop')+'.png',fullPage:true});
-      await p.locator('#secciones [data-vista="prio"]').click();
-      assert(await p.locator('#tab-prio').isVisible());assert(!(await p.locator('#map').isVisible()));
       await p.locator('#btnStep').click();await p.waitForTimeout(1200);
       const time=await p.locator('#tplus').textContent();
-      for(const id of ['rec','log','model','mapa']){
-        await p.locator('#secciones [data-vista="'+id+'"]').click();
-        assert.equal(await p.locator('body').getAttribute('data-vista'),id);
+      for(const id of ['rec','log','prio']){
+        await p.locator('.tabs [data-tab="'+id+'"]').click();
+        assert(await p.locator('#tab-'+id).isVisible());assert(await p.locator('#map').isVisible());
+        assert.equal(await p.locator('body').getAttribute('data-vista'),'mapa');
       }
+      await p.locator('#secciones [data-vista="model"]').click();assert(await p.locator('#tab-model').isVisible());assert(!(await p.locator('#map').isVisible()));
+      await p.locator('#secciones [data-vista="mapa"]').click();assert(await p.locator('#map').isVisible());assert(await p.locator('.side').isVisible());
       await p.locator('#btnPlay').click();
       await p.locator('#secciones [data-vista="live"]').click();
       await p.waitForFunction(()=>document.querySelector('#liveEstado').textContent.includes('Conectado'));

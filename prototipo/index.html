@@ -1300,9 +1300,11 @@ body summary{cursor:pointer;padding:10px 12px}
 #selectorEscenario select{max-width:100%;width:100%;min-width:0}
 #simulacionControles .kpis{border:0;border-radius:0 0 10px 10px}
 #simulacionControles .clockbox{display:none}
-.layout{display:block}
-.layout .side{position:static;max-height:none;opacity:1!important;visibility:visible!important;max-width:1000px}
-.tabs,#mbar,#btnPanel{display:none!important}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);gap:14px;align-items:start}
+.layout .side{position:sticky;top:84px;max-height:calc(100vh - 96px);opacity:1!important;visibility:visible!important;max-width:none}
+.layout.panel-solo{display:block}
+.layout.panel-solo .side{position:static;max-height:none;max-width:1000px}
+#mbar,#btnPanel{display:none!important}
 body{padding-bottom:20px}
 body[data-vista="inicio"] .appbar .status,body[data-vista="inicio"] .appbar .clockbox,
 body[data-vista="inicio"] #selectorEscenario,body[data-vista="inicio"] #mando,body[data-vista="live"] .appbar .status,
@@ -1313,7 +1315,8 @@ body[data-vista="live"] .appbar .clockbox{display:none}
 body[data-vista="live"] #fuenteVista{color:var(--accent)}
 body[data-vista="inicio"] #footer{max-width:940px;margin:24px auto}
 body:not([data-vista="mapa"]) .mapcard{display:none}
-@media(max-width:640px){.inicio-opciones{grid-template-columns:1fr}.inicio-opciones article{padding:20px}.inicio{margin-top:24px}.secciones{gap:5px}.secciones button{flex:1 0 auto}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.appbar{gap:10px}.ctx{display:none}}
+@media(max-width:1150px){.layout{grid-template-columns:1fr}.layout .side{position:static;max-height:none}}
+@media(max-width:640px){.inicio-opciones{grid-template-columns:1fr}.inicio-opciones article{padding:20px}.inicio{margin-top:24px}.secciones{gap:5px}.secciones button{flex:1 0 auto}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.appbar{gap:10px}.ctx{display:none}.layout{gap:10px}.tabs button{flex:1}}
 @media print{#inicio,#secciones,#contextoTrabajo,#simulacionControles,.vista-herramientas{display:none!important}}
 </style>
 </head>
@@ -1353,14 +1356,14 @@ body:not([data-vista="mapa"]) .mapcard{display:none}
   <ol class="pasos">
     <li><b>Elija un escenario</b> arriba (sismo, avenida torrencial, alud, inundación, tormenta).</li>
     <li><b>Pulse ▶</b> para que pase el tiempo, o arrastre la línea de tiempo a cualquier minuto.</li>
-    <li><b>Abra Prioridades</b> en la navegación superior: la zona 1 es la más urgente y dice qué equipo va y cuándo llega. Toque una zona para ver por qué.</li>
+    <li><b>Revise Prioridades</b> en el panel derecho del mapa: la zona 1 es la más urgente y dice qué equipo va y cuándo llega. Toque una zona para ver por qué.</li>
   </ol>
   <h3>En el mapa</h3>
   <p>Los círculos de color son zonas con reporte (rojo, amarillo, verde); los punteados violeta, zonas sin contacto con su probabilidad de afectación. Los cuadrados numerados son los equipos. <b>Toque una vía</b> para marcarla como caída: TRIA recalcula rutas al instante. En <b>Capas del mapa</b> cambia la base (oscura, clara, satélite) y activa el nivel de amenaza o el cupo de hospitales. ◎ centra el mapa en su ubicación.</p>
   <h3>Atajos</h3>
   <p><kbd>Espacio</kbd> reproduce o pausa · <kbd>→</kbd> avanza 15 min · <kbd>R</kbd> reinicia · <kbd>?</kbd> esta ayuda</p>
   <h3>Más opciones</h3>
-  <p>En <b>Bitácora</b>: compartir un enlace, informe de simulación y CSV. En <b>Más</b>, sobre el mapa: narración y ajuste de ubicaciones. <b>Motor conectado</b> consulta los datos del servidor por separado; su conexión no acredita que sean reales o verificados.</p>
+  <p>En el panel derecho están <b>Prioridades, Recursos y Bitácora</b>. En Bitácora puede compartir un enlace, generar el informe y exportar CSV. En <b>Más</b>, sobre el mapa: narración y ajuste de ubicaciones. <b>Motor conectado</b> consulta los datos del servidor por separado; su conexión no acredita que sean reales o verificados.</p>
   <div class="res-acc"><button id="ayCerrar" class="pri">Entendido</button></div>
 </dialog>
 
@@ -1416,10 +1419,7 @@ body:not([data-vista="mapa"]) .mapcard{display:none}
 </section>
 <nav id="secciones" class="secciones" aria-label="Áreas de trabajo" hidden>
   <button type="button" data-vista="inicio">Inicio</button>
-  <button type="button" data-vista="mapa">Mapa</button>
-  <button type="button" data-vista="prio">Prioridades</button>
-  <button type="button" data-vista="rec">Recursos</button>
-  <button type="button" data-vista="log">Bitácora</button>
+  <button type="button" data-vista="mapa">Mapa operativo</button>
   <button type="button" data-vista="model">Modelo</button>
   <button type="button" data-vista="live">Motor conectado</button>
 </nav>
@@ -1471,8 +1471,6 @@ body:not([data-vista="mapa"]) .mapcard{display:none}
       <button role="tab" data-tab="prio" aria-selected="true">Prioridades</button>
       <button role="tab" data-tab="rec" aria-selected="false">Recursos</button>
       <button role="tab" data-tab="log" aria-selected="false">Bitácora<span class="badge" id="logCount">0</span></button>
-      <button role="tab" data-tab="model" aria-selected="false">Modelo</button>
-      <button role="tab" data-tab="live" aria-selected="false">En vivo<i class="livedot" id="liveDot"></i></button>
     </nav>
     <div class="tabpanel" id="tab-prio">
       <div class="listhead"><span>Ordenadas por índice de urgencia</span><label class="toggle"><input type="checkbox" id="fifo"> Comparar con orden de llegada</label></div>
@@ -1486,7 +1484,7 @@ body:not([data-vista="mapa"]) .mapcard{display:none}
     <div class="tabpanel" id="tab-log" hidden><div class="log" id="log"></div></div>
     <div class="tabpanel" id="tab-model" hidden><div class="model" id="model"></div></div>
     <div class="tabpanel" id="tab-live" hidden>
-      <div class="listhead"><span id="liveEstado" role="status">Sin consultar.</span></div>
+      <div class="listhead"><span id="liveEstado" role="status">Sin consultar.</span><i class="livedot" id="liveDot" aria-hidden="true"></i></div>
       <p id="liveActualizado" class="livenota" role="status">Todavía no se han recibido datos.</p>
       <details id="configConexion" class="config-conexion"><summary>Configurar conexión</summary><form class="liveapi" id="lvApiForm"><label>Servidor de la API<input id="lvApi" type="url" inputmode="url" placeholder="Este mismo sitio" autocomplete="off"></label><button>Conectar</button></form></details>
       <p class="livenota">Prioridades calculadas a partir de los reportes recibidos por el servidor. Se consultan cada 5 segundos mientras esta sección está abierta. Verifica su origen y vigencia con el Puesto de Mando.</p>
@@ -2291,7 +2289,7 @@ function panel(pleg){$("layout").classList.toggle("pleg",pleg);$("btnPanel").set
   $("btnPanel").querySelector("span").textContent=pleg?"Mostrar panel":"Ocultar panel";try{localStorage.setItem("tria-panel",pleg?"1":"0")}catch(e){}
   setTimeout(()=>MAP&&MAP.invalidateSize(),420)}
 $("btnPanel").onclick=()=>panel(!$("layout").classList.contains("pleg"));
-try{if(localStorage.getItem("tria-panel")==="1")panel(true)}catch(e){}
+panel(false);
 // ---------- Barra inferior (celular) ----------
 function marcarBarra(id){document.querySelectorAll("#mbar button").forEach(b=>b.setAttribute("aria-current",String(b.dataset.ir===id)))}
 document.querySelectorAll("#mbar button").forEach(b=>b.onclick=()=>{const id=b.dataset.ir;
@@ -2403,11 +2401,11 @@ init();
       "Selecciona una zona para ver su detalle. Rojo, amarillo y verde identifican sus reportes; violeta indica una zona sin contacto. También verás hospitales, equipos y rutas.",
       "Consejo: una zona en silencio no significa que esté a salvo. En la simulación, puedes pulsar una vía para bloquearla o habilitarla."],
     ["Revisa a quién atender primero",
-      "En Prioridades, selecciona una zona para entender su índice: severidad, personas afectadas, vulnerabilidad y tiempo sin atención.",
+      "En el panel derecho del mapa, abre Prioridades y selecciona una zona para entender su índice: severidad, personas afectadas, vulnerabilidad y tiempo sin atención.",
       "Consejo: activa Comparar con orden de llegada para ver por qué las zonas incomunicadas también necesitan atención."],
     ["Consulta recursos y resultados",
-      "Recursos muestra equipos y hospitales. Bitácora registra los eventos. En Bitácora encontrarás Compartir, Informe para imprimir o guardar un PDF y la exportación CSV.",
-      "Consejo: usa la navegación superior para abrir una sección a la vez, también desde el celular."],
+      "A la derecha del mapa, Recursos muestra equipos y hospitales, y Bitácora registra los eventos. En Bitácora encontrarás Compartir, Informe para imprimir o guardar un PDF y la exportación CSV.",
+      "Consejo: mantén el mapa a la vista y cambia solo el contenido del panel derecho según la decisión que debas tomar."],
     ["Explora En vivo cuando lo necesites",
       "Motor conectado consulta la API por separado de la simulación. Sus herramientas de prueba modifican el servidor y pueden pedir la Clave de TRIA al administrador.",
       "Consejo: puedes explorar la simulación sin clave. Abre Cómo usar cuando quieras repetir esta guía."]
@@ -2464,15 +2462,13 @@ function actualizarFrescura(){
 (function organizarVistas(){
   const vistas={
     inicio:["Inicio",""],
-    mapa:["Situación en el mapa","Explora las zonas y las vías del escenario. Las áreas violetas son estimaciones, no daños confirmados."],
-    prio:["¿A quién atender primero?","Revisa el orden sugerido y selecciona una zona para entender los criterios. El PMU valida la decisión."],
-    rec:["¿Con qué recursos contamos?","Equipos y cupos hospitalarios del escenario simulado. No representan disponibilidad confirmada en terreno."],
-    log:["¿Qué ha ocurrido?","Eventos de la simulación, con su hora. Comparte o exporta este ejercicio desde aquí."],
+    mapa:["Mapa operativo","Mantén la situación territorial a la vista y consulta Prioridades, Recursos o Bitácora en el panel derecho."],
     model:["¿Cómo se calcula la prioridad?","Consulta los criterios y supuestos del modelo. Sus estimaciones necesitan calibración y validación local."],
     live:["Consulta del motor conectado","Fuente independiente de la simulación. Revisa la conexión y la vigencia de los reportes antes de interpretar las recomendaciones."]
   };
-  const mapa=document.querySelector("#layout > div"), lado=document.querySelector(".side");
-  // Los controles siguen disponibles al revisar prioridades, recursos o bitácora.
+  const mapa=document.querySelector("#layout > div"),lado=document.querySelector(".side"),tabs=document.querySelector(".tabs");
+  let panelActual="prio";
+  // Los controles siguen disponibles mientras se consulta el tablero operativo.
   $("simulacionControles").append($("selectorEscenario"),$("mando"),$("kpis"));
   const exportar=document.createElement("div");exportar.className="vista-herramientas";
   exportar.append($("btnCompartir"),$("btnInforme"),$("btnCsv"));$("tab-log").prepend(exportar);
@@ -2482,7 +2478,19 @@ function actualizarFrescura(){
   resPie.textContent="Acerca del prototipo y alcance de los datos";contenido.textContent=pie.textContent;
   detalle.append(resPie,contenido);pie.replaceChildren(detalle);
   let vistaMapa=null;
+  function mostrarPanel(id,enfocar=false){
+    if(!["prio","rec","log"].includes(id))id="prio";
+    panelActual=id;
+    document.querySelectorAll(".tabs button").forEach(b=>{
+      const activa=b.dataset.tab===id;b.setAttribute("aria-selected",String(activa));b.tabIndex=activa?0:-1;
+    });
+    document.querySelectorAll(".tabpanel").forEach(p=>p.hidden=p.id!=="tab-"+id);
+    if(id==="log")$("logCount").classList.remove("hot");
+    if(enfocar)document.querySelector(`.tabs button[data-tab="${id}"]`)?.focus();
+  }
   function ir(id,enfocar=true){
+    const panelPedido=["prio","rec","log"].includes(id)?id:null;
+    if(panelPedido)id="mapa";
     if(!vistas[id])id="inicio";
     if(document.body.dataset.vista==="mapa"&&MAP)vistaMapa={centro:MAP.getCenter(),zoom:MAP.getZoom()};
     document.body.dataset.vista=id;
@@ -2491,18 +2499,16 @@ function actualizarFrescura(){
     $("inicio").hidden=!inicio;$("layout").hidden=inicio;
     $("secciones").hidden=inicio;$("contextoTrabajo").hidden=inicio;
     $("simulacionControles").hidden=!sim;
-    mapa.hidden=id!=="mapa";lado.hidden=inicio||id==="mapa";
+    mapa.hidden=id!=="mapa";lado.hidden=inicio;
+    $("layout").classList.toggle("panel-solo",id==="model"||live);
+    tabs.hidden=id!=="mapa";
     $("vistaTitulo").textContent=vistas[id][0];$("vistaDescripcion").textContent=vistas[id][1];
     $("fuenteVista").textContent=live?"API conectada · datos pendientes de validación":"Simulación · datos ilustrativos";
     document.querySelectorAll("#secciones [data-vista]").forEach(b=>{
       if(b.dataset.vista===id)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
     });
-    document.querySelectorAll(".tabs button").forEach(b=>{
-      const activa=b.dataset.tab===id;
-      b.setAttribute("aria-selected",String(activa));b.tabIndex=activa?0:-1;
-      $("tab-"+b.dataset.tab).hidden=!activa;
-    });
-    if(id==="log")$("logCount").classList.remove("hot");
+    if(id==="mapa")mostrarPanel(panelPedido||panelActual);
+    else document.querySelectorAll(".tabpanel").forEach(p=>p.hidden=p.id!=="tab-"+id);
     // Invalida peticiones anteriores para que no reinicien el sondeo al salir.
     LIVE.gen=(LIVE.gen||0)+1;liveCiclo();
     if(live)actualizarFrescura();
@@ -2515,9 +2521,13 @@ function actualizarFrescura(){
     if(sim)window.mostrarGuiaInicial?.();
   }
   document.querySelectorAll("button[data-vista]").forEach(b=>b.onclick=()=>ir(b.dataset.vista));
-  // Conserva los enlaces internos, incluido «Ver bitácora» al terminar un escenario.
-  document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>ir(b.dataset.tab));
-  document.querySelectorAll("#mbar button").forEach(b=>b.onclick=()=>ir(b.dataset.ir));
+  document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>mostrarPanel(b.dataset.tab));
+  // Conserva los accesos móviles e internos: el mapa permanece visible y solo cambia el panel.
+  document.querySelectorAll("#mbar button").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.ir;
+    if(["prio","rec","log"].includes(id)){ir("mapa",false);mostrarPanel(id);lado.scrollIntoView({behavior:"smooth",block:"start"})}
+    else ir(id);
+  });
   document.addEventListener("visibilitychange",actualizarFrescura);
   setInterval(()=>{if(document.body.dataset.vista==="live")actualizarFrescura()},1000);
   const q=new URLSearchParams(location.search);
