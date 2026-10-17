@@ -1200,12 +1200,6 @@ details.legend[open] summary{margin-right:8px}
 .ayudad h3{font-size:14px;margin:14px 0 4px}
 .ayudad p,.ayudad li{font-size:13px;color:var(--muted)} .ayudad b{color:var(--ink)}
 .pasos{margin:6px 0 0;padding-left:20px;display:grid;gap:6px}
-.guia{position:fixed;z-index:3000;left:0;right:0;margin:0 auto;top:96px;width:min(420px,calc(100vw - 24px));padding:14px 16px;border-radius:12px;
-  background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface) 70%);border:1px solid color-mix(in srgb,var(--accent) 50%,var(--line2));
-  box-shadow:0 24px 60px -20px rgba(0,0,0,.85),0 0 0 1px color-mix(in srgb,var(--accent) 20%,transparent);animation:pageIn .5s var(--ease-out) both}
-.guia b#guiaTit{font-family:var(--display);font-size:17px}
-.guia ol{margin:8px 0 12px;padding-left:20px;display:grid;gap:4px;font-size:13px;color:var(--muted)} .guia ol b{color:var(--ink)}
-.guia-acc{display:flex;gap:8px;flex-wrap:wrap} .guia .pri,.ayudad .pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 /* Celular: encabezado compacto, mapa más alto, controles arriba */
 @media (max-width:640px){
   .appbar{gap:8px 10px;padding:8px 12px}
@@ -1272,9 +1266,73 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
 .badge.hot{background:var(--rojo)!important;color:#fff!important;box-shadow:0 0 10px color-mix(in srgb,var(--rojo) 70%,transparent)}
 @keyframes badgePop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.mapwrap.quake #map,.mapwrap.quake::after,.qring i{animation:none!important}}
+.guia{max-height:calc(100dvh - 32px);overflow:auto}
+.guia h2{font-size:28px;margin:14px 0 12px}
+.guia p{font-size:15px;line-height:1.65}
+.guia progress{width:100%;height:6px;accent-color:var(--accent);margin:12px 0}
+.guia .consejo{padding:14px;border:1px solid var(--line2);border-radius:8px;background:var(--surface2)}
+.guia button{min-height:44px}
+.guia button:disabled{opacity:.4;cursor:default}
+@media (prefers-reduced-motion:reduce){.guia[open]{animation:none}}
+@media print{.guia,.guia::backdrop{display:none!important}}
+/* Una tarea por pantalla; las fuentes simulada y conectada nunca comparten tablero. */
+.inicio{max-width:940px;margin:clamp(28px,6vh,64px) auto;padding:0 8px}
+.inicio h1{font-size:clamp(28px,4vw,42px);margin:10px 0}
+.inicio-intro{font-size:18px;color:var(--muted);margin:0 0 28px}
+.inicio-opciones{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.inicio-opciones article{background:var(--surface);border:1px solid var(--line2);border-radius:12px;padding:26px;display:flex;flex-direction:column;align-items:start}
+.inicio-opciones h2{font-size:24px;margin:10px 0}
+.inicio-opciones p{font-size:15px;color:var(--muted);line-height:1.65;margin:0 0 24px}
+.inicio-opciones button{margin-top:auto}
+.inicio-principal{background:var(--accent);color:var(--accent-ink)}
+.inicio-alcance{color:var(--muted);font-size:13px;margin-top:24px;line-height:1.6}
+.secciones{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.secciones button[aria-current="page"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.contexto-trabajo{margin:22px 0 16px}
+.contexto-trabajo h1{font-size:28px;margin-top:6px}
+.contexto-trabajo p{color:var(--muted);font-size:15px;margin:6px 0}
+body button,body select,body summary{min-height:44px}
+body summary{cursor:pointer;padding:10px 12px}
+.config-conexion{margin:10px 14px;border:1px solid var(--line2);border-radius:8px}
+#simulacionControles{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+#simulacionControles .mando{margin:0;border:0;box-shadow:none;position:static}
+#simulacionControles #selectorEscenario{padding:12px 16px;display:block}
+#selectorEscenario select{max-width:100%;width:100%;min-width:0}
+#simulacionControles .kpis{border:0;border-radius:0 0 10px 10px}
+#simulacionControles .clockbox{display:none}
+.layout{display:block}
+.layout .side{position:static;max-height:none;opacity:1!important;visibility:visible!important;max-width:1000px}
+.tabs,#mbar,#btnPanel{display:none!important}
+body{padding-bottom:20px}
+body[data-vista="inicio"] .appbar .status,body[data-vista="inicio"] .appbar .clockbox,
+body[data-vista="inicio"] #selectorEscenario,body[data-vista="inicio"] #mando,body[data-vista="live"] .appbar .status,
+body[data-vista="live"] .appbar .clockbox{display:none}
+.appbar .clockbox b{font-size:20px}
+.vista-herramientas{display:flex;flex-wrap:wrap;gap:8px;padding:14px}
+#fuenteVista{color:var(--ambar)}
+body[data-vista="live"] #fuenteVista{color:var(--accent)}
+body[data-vista="inicio"] #footer{max-width:940px;margin:24px auto}
+body:not([data-vista="mapa"]) .mapcard{display:none}
+@media(max-width:640px){.inicio-opciones{grid-template-columns:1fr}.inicio-opciones article{padding:20px}.inicio{margin-top:24px}.secciones{gap:5px}.secciones button{flex:1 0 auto}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.appbar{gap:10px}.ctx{display:none}}
+@media print{#inicio,#secciones,#contextoTrabajo,#simulacionControles,.vista-herramientas{display:none!important}}
 </style>
 </head>
-<body>
+<body data-vista="inicio">
+<dialog id="guia" class="resumen guia" aria-labelledby="guiaTitulo" aria-describedby="guiaTexto guiaConsejo">
+  <span class="eyebrow">Bienvenido a TRIA · Guía de inicio</span>
+  <progress id="guiaProgreso" max="6" value="1" aria-label="Progreso de la guía"></progress>
+  <div aria-live="polite" aria-atomic="true">
+    <span id="guiaPaso" class="eyebrow"></span>
+    <h2 id="guiaTitulo" tabindex="-1"></h2>
+    <p id="guiaTexto"></p>
+    <p id="guiaConsejo" class="consejo"></p>
+  </div>
+  <div class="res-acc">
+    <button id="guiaOmitir" type="button">Omitir</button>
+    <button id="guiaAnterior" type="button">Anterior</button>
+    <button id="guiaSiguiente" type="button" class="pri">Siguiente</button>
+  </div>
+</dialog>
 <div id="boot" class="boot" hidden aria-hidden="true"><div class="boot-box">
   <svg width="56" height="56" viewBox="0 0 38 38"><rect width="38" height="38" rx="9" fill="#5aaee6"/><path d="M19 7 L31 29 H7 Z" fill="none" stroke="#06121c" stroke-width="2.6" stroke-linejoin="round"/><path d="M19 15v7M15.5 18.5h7" stroke="#06121c" stroke-width="2.6" stroke-linecap="round"/></svg>
   <b>TRIA</b><ol id="bootLines"></ol><div class="boot-bar"><i id="bootBar"></i></div><span class="boot-skip">Clic o cualquier tecla para omitir</span>
@@ -1295,21 +1353,17 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
   <ol class="pasos">
     <li><b>Elija un escenario</b> arriba (sismo, avenida torrencial, alud, inundación, tormenta).</li>
     <li><b>Pulse ▶</b> para que pase el tiempo, o arrastre la línea de tiempo a cualquier minuto.</li>
-    <li><b>Lea las prioridades</b> a la derecha (abajo en el celular): la zona 1 es la más urgente y dice qué equipo va y cuándo llega. Toque una zona para ver por qué.</li>
+    <li><b>Abra Prioridades</b> en la navegación superior: la zona 1 es la más urgente y dice qué equipo va y cuándo llega. Toque una zona para ver por qué.</li>
   </ol>
   <h3>En el mapa</h3>
   <p>Los círculos de color son zonas con reporte (rojo, amarillo, verde); los punteados violeta, zonas sin contacto con su probabilidad de afectación. Los cuadrados numerados son los equipos. <b>Toque una vía</b> para marcarla como caída: TRIA recalcula rutas al instante. En <b>Capas del mapa</b> cambia la base (oscura, clara, satélite) y activa el nivel de amenaza o el cupo de hospitales. ◎ centra el mapa en su ubicación.</p>
   <h3>Atajos</h3>
   <p><kbd>Espacio</kbd> reproduce o pausa · <kbd>→</kbd> avanza 15 min · <kbd>R</kbd> reinicia · <kbd>?</kbd> esta ayuda</p>
   <h3>Más opciones</h3>
-  <p>En <b>Más</b>, sobre el mapa: compartir un enlace, informe en PDF, bitácora en CSV, narración y ajuste de ubicaciones. La pestaña <b>En vivo</b> muestra el motor real con los reportes de las balizas.</p>
+  <p>En <b>Bitácora</b>: compartir un enlace, informe de simulación y CSV. En <b>Más</b>, sobre el mapa: narración y ajuste de ubicaciones. <b>Motor conectado</b> consulta los datos del servidor por separado; su conexión no acredita que sean reales o verificados.</p>
   <div class="res-acc"><button id="ayCerrar" class="pri">Entendido</button></div>
 </dialog>
-<div class="guia" id="guia" role="dialog" aria-labelledby="guiaTit" hidden>
-  <b id="guiaTit">Empiece aquí</b>
-  <ol><li>Elija un <b>escenario</b> arriba.</li><li>Pulse <b>▶</b> y mire cómo cambian las prioridades.</li><li>Toque una <b>zona</b> para saber por qué va primero.</li></ol>
-  <div class="guia-acc"><button id="guiaVer" class="pri">Ver una demostración</button><button id="guiaOk">Entendido</button></div>
-</div>
+
 <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
 <!-- Leaflet 1.9.4 local (BSD-2): el mapa carga sin internet -->
 <script src="vendor/leaflet/leaflet.js"></script>
@@ -1324,12 +1378,14 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
     <strong>Pitalito, Huila</strong>
   </div>
   <div class="status"><i></i><span id="scenTag">Operando sin conexión</span></div>
+  <button id="btnGuia" type="button" aria-haspopup="dialog">Cómo usar</button>
   <button id="btnInstalar" class="instalar" hidden title="Instalar TRIA en este equipo">Instalar app</button>
   <button id="btnTema" class="tema" aria-pressed="false" aria-label="Tema claro" title="Tema claro u oscuro"></button>
-  <label><span class="eyebrow" style="display:block;margin-bottom:3px">Escenario</span>
+  <label id="selectorEscenario"><span class="eyebrow" style="display:block;margin-bottom:3px">Escenario de práctica</span>
     <select id="scen"></select></label>
   <div class="clockbox"><span class="eyebrow">Hora del evento</span><b id="clock">02:10</b><span id="tplus">T+0 min</span></div>
 </header>
+
 
 <section class="mando" id="mando" aria-label="Controles de la simulación">
   <button id="btnPlay" class="play invita" aria-label="Reproducir"><svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg></button>
@@ -1342,8 +1398,38 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
   <button id="btnReset" title="Volver al inicio del escenario (R)">Reiniciar</button>
   <button id="btnAyuda" class="ayuda" aria-label="Ayuda" title="Cómo usar TRIA">?</button>
 </section>
-
-<main class="layout" id="layout">
+<section id="inicio" class="inicio" aria-labelledby="inicioTitulo">
+  <span class="eyebrow">Apoyo a la decisión · Pitalito</span>
+  <h1 id="inicioTitulo" tabindex="-1">¿Qué necesitas hacer?</h1>
+  <p class="inicio-intro">Empieza por una tarea. Abre los detalles cuando los necesites.</p>
+  <div class="inicio-opciones">
+    <article><span class="eyebrow">Aprender y ensayar</span><h2>Explorar la simulación</h2>
+      <p>Revisa un escenario ilustrativo: zonas, prioridades, equipos y rutas. Puedes avanzar o pausar sin enviar reportes al servidor.</p>
+      <button type="button" data-vista="mapa" class="inicio-principal">Abrir simulación</button>
+    </article>
+    <article><span class="eyebrow">Consultar una fuente conectada</span><h2>Consultar el motor</h2>
+      <p>Consulta los reportes y las recomendaciones de la API. La conexión no garantiza que sus datos sean reales, actuales o verificados.</p>
+      <button type="button" data-vista="live">Consultar motor</button>
+    </article>
+  </div>
+  <p class="inicio-alcance"><strong>Prototipo en validación.</strong> Apoya la revisión del Puesto de Mando; no confirma despachos ni sustituye la verificación en terreno.</p>
+</section>
+<nav id="secciones" class="secciones" aria-label="Áreas de trabajo" hidden>
+  <button type="button" data-vista="inicio">Inicio</button>
+  <button type="button" data-vista="mapa">Mapa</button>
+  <button type="button" data-vista="prio">Prioridades</button>
+  <button type="button" data-vista="rec">Recursos</button>
+  <button type="button" data-vista="log">Bitácora</button>
+  <button type="button" data-vista="model">Modelo</button>
+  <button type="button" data-vista="live">Motor conectado</button>
+</nav>
+<section id="contextoTrabajo" class="contexto-trabajo" hidden aria-labelledby="vistaTitulo">
+  <span class="eyebrow" id="fuenteVista">Simulación · datos ilustrativos</span>
+  <h1 id="vistaTitulo" tabindex="-1"></h1>
+  <p id="vistaDescripcion"></p>
+</section>
+<section id="simulacionControles" hidden aria-label="Controles e indicadores de simulación"></section>
+<main class="layout" id="layout" hidden>
   <div style="min-width:0">
     <section class="kpis" id="kpis" aria-label="Indicadores"></section>
     <section class="card mapcard">
@@ -1400,12 +1486,15 @@ kbd{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;b
     <div class="tabpanel" id="tab-log" hidden><div class="log" id="log"></div></div>
     <div class="tabpanel" id="tab-model" hidden><div class="model" id="model"></div></div>
     <div class="tabpanel" id="tab-live" hidden>
-      <div class="listhead"><span id="liveEstado">Buscando la API de TRIA…</span><button id="liveSync" title="Pone el reloj del motor en el minuto de la simulación">Sincronizar reloj</button></div>
-      <form class="liveapi" id="lvApiForm"><label>Servidor de la API<input id="lvApi" type="url" inputmode="url" placeholder="Este mismo sitio" autocomplete="off"></label><button>Conectar</button></form>
-      <p class="livenota">Prioridades calculadas por el motor en Python (AHP + Bayes) con los reportes que recibe la API: balizas por el puente LoRa (<code>herramientas/puente_serial.py</code>) u otros canales. Se actualiza cada 5 s.</p>
+      <div class="listhead"><span id="liveEstado" role="status">Sin consultar.</span></div>
+      <p id="liveActualizado" class="livenota" role="status">Todavía no se han recibido datos.</p>
+      <details id="configConexion" class="config-conexion"><summary>Configurar conexión</summary><form class="liveapi" id="lvApiForm"><label>Servidor de la API<input id="lvApi" type="url" inputmode="url" placeholder="Este mismo sitio" autocomplete="off"></label><button>Conectar</button></form></details>
+      <p class="livenota">Prioridades calculadas a partir de los reportes recibidos por el servidor. Se consultan cada 5 segundos mientras esta sección está abierta. Verifica su origen y vigencia con el Puesto de Mando.</p>
       <ol class="prio" id="livePrio"></ol>
-      <div class="section" id="liveAsigBox" hidden><h3>Asignación del motor (programación lineal entera)</h3><div id="liveAsig"></div></div>
-      <details class="livedemo" id="liveDemo"><summary>Probar sin hardware</summary>
+      <div class="section" id="liveAsigBox" hidden><h3>Asignaciones recomendadas · no son despachos confirmados</h3><div id="liveAsig"></div></div>
+      <details class="livedemo" id="liveDemo"><summary>Herramientas de prueba · modifican el servidor</summary>
+        <p class="livenota">Úsalas solo en un entorno de prueba autorizado. Cada acción requiere confirmación.</p>
+        <button id="liveSync" type="button">Copiar minuto de la simulación al motor</button>
         <div class="livegrid">
           <label>Zona<select id="lvZona"></select></label>
           <label>Color<select id="lvColor"><option value="rojo">Rojo</option><option value="amarillo">Amarillo</option><option value="verde">Verde</option></select></label>
@@ -1817,6 +1906,8 @@ function initMap(){
   };
   BASE=base;
   {let elegida=null;try{elegida=localStorage.getItem("tria-base")}catch(e){}
+   // Una preferencia CARTO anterior debe volver al modo automático del tema.
+   if(/^(Claro|Oscuro) \(CARTO\)$/.test(elegida||"")){elegida=null;try{localStorage.removeItem("tria-base")}catch(e){}}
    (base[elegida]||base[baseDelTema()]).addTo(MAP)}
   // Si el usuario elige una base a mano, se recuerda y deja de seguir al tema
   MAP.on("baselayerchange",e=>{if(BASE_AUTO)return;try{localStorage.setItem("tria-base",e.name)}catch(err){}});
@@ -1954,7 +2045,7 @@ $("resLog").onclick=()=>{$("resumen").close();document.querySelector('.tabs butt
 $("resOtra").onclick=()=>{$("resumen").close();$("btnReset").click()};
 // ---------- En vivo: prioridades del motor real vía API ----------
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const LIVE={ok:false,prev:null,timer:null,t:0,espera:5000};
+const LIVE={ok:false,prev:null,timer:null,t:0,espera:5000,lastOk:null};
 const API_CRIT=[["severidad","Severidad"],["personas","Personas"],["vulnerabilidad","Vulnerab."],["tiempo","Tiempo"]];
 // La clave (si la API la pide) va en X-TRIA-Clave y se guarda solo en este navegador
 const claveGet=()=>{try{return localStorage.getItem("tria-clave")||""}catch(e){return ""}};
@@ -1968,12 +2059,12 @@ try{const q=new URLSearchParams(location.search).get("api");if(q!==null)localSto
 async function api(ruta,opts){const h={"Content-Type":"application/json"};const k=claveGet();if(k)h["X-TRIA-Clave"]=k;
   const r=await fetch(apiBase()+ruta,{headers:h,signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined,...opts});if(!r.ok)throw new Error(r.status===401?"falta la clave o no es correcta":r.status);return r.json()}
 async function liveCargar(){
-  try{const [est,filas,asig]=await Promise.all([api("estado"),api("prioridades"),api("asignacion").catch(()=>null)]);LIVE.ok=true;LIVE.t=est.minuto;$("liveDot").classList.add("ok");
+  try{const [est,filas,asig]=await Promise.all([api("estado"),api("prioridades"),api("asignacion").catch(()=>null)]);LIVE.ok=true;LIVE.lastOk=Date.now();actualizarFrescura();LIVE.t=est.minuto;$("liveDot").classList.add("ok");
     $("liveEstado").textContent=`Conectado al motor · minuto ${Math.round(est.minuto)} · consistencia AHP ${est.consistencia}${est.requiere_clave?" · requiere clave":""}`;
     $("lvClaveBox").hidden=!est.requiere_clave;
     if(!$("lvZona").options.length)$("lvZona").innerHTML=filas.map(f=>`<option value="${esc(f.zona)}">${esc(f.nombre)}</option>`).join("");
     liveRender(filas);liveAsig(asig);LIVE.espera=5000}
-  catch(e){LIVE.ok=false;$("liveDot").classList.remove("ok");LIVE.espera=Math.min(60000,LIVE.espera*2);
+  catch(e){LIVE.ok=false;actualizarFrescura();$("configConexion").open=true;$("liveDot").classList.remove("ok");LIVE.espera=Math.min(60000,LIVE.espera*2);
     $("liveEstado").textContent=`Sin conexión con la API${apiBase()?" en "+apiBase():""}: revise el servidor de arriba, ábralo con uvicorn (uvicorn tria.api:app) o en Render. Nuevo intento en ${Math.round(LIVE.espera/1000)} s.`;$("livePrio").innerHTML="";liveAsig(null)}}
 // Asignación óptima del motor (PuLP): lista equipo → zona y dibuja sus rutas en el mapa mientras la pestaña está abierta
 function liveAsig(asig){
@@ -2013,10 +2104,10 @@ $("lvApi").value=apiBase();
 $("lvApiForm").onsubmit=e=>{e.preventDefault();try{const u=normApi($("lvApi").value);localStorage.setItem("tria-api",u);$("lvApi").value=u;
   LIVE.espera=5000;LIVE.prev=null;$("lvZona").innerHTML="";liveCiclo()}catch(err){$("liveEstado").textContent=err.message}};
 $("lvClave").onchange=e=>{try{localStorage.setItem("tria-clave",e.target.value.trim())}catch(err){}};
-$("liveSync").onclick=async()=>{try{await api(`reloj/${S.t}`,{method:"POST"});liveCargar()}catch(e){$("liveEstado").textContent="No se pudo sincronizar el reloj ("+e.message+")."}};
-$("lvReporte").onclick=async()=>{const z=$("lvZona").value;try{await api("reportes",{method:"POST",body:JSON.stringify({zona:z,color:$("lvColor").value,personas:+$("lvPers").value||0,heridos:+$("lvHer").value||0,canal:"baliza"})});
+$("liveSync").onclick=async()=>{if(!confirm("¿Cambiar el reloj del servidor al minuto "+S.t+" de la simulación? Esta acción modifica el motor conectado."))return;try{await api(`reloj/${S.t}`,{method:"POST"});liveCargar()}catch(e){$("liveEstado").textContent="No se pudo sincronizar el reloj ("+e.message+")."}};
+$("lvReporte").onclick=async()=>{const z=$("lvZona").value;if(!z||!confirm("¿Enviar un reporte de prueba para "+z+" al servidor? Afectará sus prioridades y recomendaciones."))return;try{await api("reportes",{method:"POST",body:JSON.stringify({zona:z,color:$("lvColor").value,personas:+$("lvPers").value||0,heridos:+$("lvHer").value||0,canal:"baliza"})});
   $("lvMsg").textContent="Reporte enviado.";liveCargar()}catch(e){$("lvMsg").textContent="No se pudo enviar ("+e.message+")."}};
-$("lvLatido").onclick=async()=>{const z=$("lvZona").value;try{await api("latidos",{method:"POST",body:JSON.stringify({zona:z,vivo:false})});
+$("lvLatido").onclick=async()=>{const z=$("lvZona").value;if(!z||!confirm("¿Marcar como destruida la baliza de "+z+" en el servidor? Afectará sus prioridades."))return;try{await api("latidos",{method:"POST",body:JSON.stringify({zona:z,vivo:false})});
   $("lvMsg").textContent="Baliza marcada como destruida.";liveCargar()}catch(e){$("lvMsg").textContent="No se pudo marcar ("+e.message+")."}};
 // Al pasar por una zona de la lista se ilumina su marcador en el mapa
 let HOVER=null;
@@ -2226,7 +2317,7 @@ function armarInforme(){const zs=Object.values(S.zones).map(z=>({z,...urgency(z)
     return `<tr><td>${i+1}</td><td>${esc(NODES[z.id].name)}</td><td class="est">${STATE_LABEL[st]}</td><td>${r.U.toFixed(2)}</td><td>${z.silent?"—":z.personas}</td><td>${z.silent?"—":z.heridos}</td><td>${esc(eq||"—")}</td></tr>`}).join("");
   const hosp=Object.entries(S.hosp).map(([id,h])=>`<tr><td>${esc(NODES[id].name)}</td><td>${h.occ}/${h.cap}</td><td>${h.energia?"Sí":"No"}</td></tr>`).join("");
   const log=[...S.log].reverse().map(l=>`<tr><td>${hhmm(l.t)}</td><td>${esc(l.text)}</td></tr>`).join("");
-  $("informe").innerHTML=`<h1>TRIA · Informe del Puesto de Mando</h1><p class="meta">Pitalito, Huila · ${esc(nombreEscenario())} · hora del evento ${hhmm(S.t)} (T+${S.t} min) · generado ${new Date().toLocaleString("es-CO")}</p>
+  $("informe").innerHTML=`<h1>TRIA · Informe de simulación</h1><p class="meta">Pitalito, Huila · ${esc(nombreEscenario())} · hora del evento ${hhmm(S.t)} (T+${S.t} min) · generado ${new Date().toLocaleString("es-CO")}</p>
     <h2>Indicadores</h2><div class="kp">${kp}</div>
     <h2>Prioridades</h2><table><thead><tr><th>#</th><th>Zona</th><th>Estado</th><th>Índice</th><th>Personas</th><th>Heridos</th><th>Equipos asignados</th></tr></thead><tbody>${filas}</tbody></table>
     <h2>Hospitales</h2><table><thead><tr><th>Hospital</th><th>Ocupación</th><th>Energía</th></tr></thead><tbody>${hosp}</tbody></table>
@@ -2261,11 +2352,6 @@ $("btnCsv").onclick=()=>{const c=v=>`"${String(v).replace(/"/g,'""')}"`;
 // ---------- Ayuda y guía de primera vez ----------
 $("btnAyuda").onclick=()=>{const d=$("ayuda");if(d.showModal&&!d.open)d.showModal()};
 $("ayCerrar").onclick=()=>$("ayuda").close();
-function cerrarGuia(){$("guia").hidden=true;try{localStorage.setItem("tria-guia","1")}catch(e){}}
-function mostrarGuia(){let visto=false;try{visto=localStorage.getItem("tria-guia")==="1"}catch(e){}
-  if(!visto&&!new URLSearchParams(location.search).has("escenario"))$("guia").hidden=false}
-$("guiaOk").onclick=cerrarGuia;
-$("guiaVer").onclick=()=>{cerrarGuia();if(!playing)$("btnPlay").click()};
 // El botón ▶ deja de llamar la atención cuando se usa por primera vez
 $("btnPlay").addEventListener("click",()=>$("btnPlay").classList.remove("invita"));
 $("btnStep").addEventListener("click",()=>$("btnPlay").classList.remove("invita"));
@@ -2274,6 +2360,7 @@ if(matchMedia("(max-width:640px)").matches)$("leyenda").open=false;
 // Atajos para presentar la demo; no actúan mientras se escribe, en el mapa enfocado ni con la pantalla de arranque
 addEventListener("keydown",e=>{if(e.ctrlKey||e.metaKey||e.altKey||!$("boot").hidden||document.querySelector("dialog[open]"))return;
   if(e.key==="?"&&!e.target.closest?.("input,select,textarea")){e.preventDefault();$("btnAyuda").click();return}
+  if(["inicio","live"].includes(document.body.dataset.vista))return;
   if(e.target.closest?.("input,select,textarea,.leaflet-container"))return;
   if(e.key===" "&&e.target.closest?.("button,[tabindex]"))return; // Espacio sobre un botón o zona enfocada lo activa a él
   if(e.key===" "){e.preventDefault();$("btnPlay").click()}else if(e.key==="ArrowRight")$("btnStep").click();else if(e.key==="r"||e.key==="R")$("btnReset").click()});
@@ -2301,17 +2388,140 @@ init();
   const e=q.get("escenario");if(e&&SCEN[e]&&e!==CUR_SCEN){$("scen").value=e;CUR_SCEN=e;$("btnReset").onclick()}
   const t=parseInt(q.get("t"),10);if(Number.isFinite(t)&&t>0)irA(t);
   const z=q.get("zona");if(z&&S.zones[z]){S.sel=z;render();setTimeout(()=>volarA(z),700)}}catch(err){falla(err,"Enlace no válido")}})();
-// Pantalla de arranque: solo la primera vez en la sesión y nunca con movimiento reducido
-(function boot(){
-  let visto=false;try{visto=sessionStorage.getItem("tria-boot")==="1";sessionStorage.setItem("tria-boot","1")}catch(e){}
-  if(visto||matchMedia("(prefers-reduced-motion:reduce)").matches){sacudir();mostrarGuia();return}
-  const el=$("boot"),ol=$("bootLines"),bar=$("bootBar");el.hidden=false;
-  const pasos=["Enlace satelital del PMU","Escuchando balizas LoRa","Amenaza SGC · censo DANE","Prioridades (AHP + Bayes)"];
-  let i=0,tm=null;
-  const fin=()=>{if(el.classList.contains("out"))return;clearTimeout(tm);el.classList.add("out");removeEventListener("keydown",fin);setTimeout(()=>el.hidden=true,500);sacudir();setTimeout(mostrarGuia,600)};
-  const paso=()=>{if(i>=pasos.length){tm=setTimeout(fin,350);return}
-    ol.insertAdjacentHTML("beforeend",`<li><span>${pasos[i]}</span><em>OK</em></li>`);i++;bar.style.width=(i/pasos.length*100)+"%";tm=setTimeout(paso,380)};
-  el.addEventListener("click",fin);addEventListener("keydown",fin);tm=setTimeout(paso,250);
+// El inicio por tareas reemplaza el arranque decorativo y sus conexiones simuladas.
+// Guía inicial: independiente de la animación de arranque; se recuerda por navegador.
+(function prepararGuia(){
+  const clave="tria-guia-v1", dialogo=$("guia");
+  const pasos=[
+    ["Elige un escenario",
+      "En los controles de la simulación, selecciona el tipo de emergencia que quieres explorar: sismo, avenida torrencial, alud, inundación o tormenta.",
+      "Consejo: empieza con un escenario y recórrelo con calma. Los datos son ilustrativos; TRIA recomienda y el Puesto de Mando decide."],
+    ["Pon en marcha la simulación",
+      "En la barra de simulación, pulsa Reproducir o +15 min para avanzar. Puedes pausar, cambiar la velocidad y usar Reiniciar para volver al comienzo.",
+      "Consejo: avanza de 15 en 15 minutos para observar cómo llegan reportes y cambian las prioridades."],
+    ["Aprende a leer el mapa",
+      "Selecciona una zona para ver su detalle. Rojo, amarillo y verde identifican sus reportes; violeta indica una zona sin contacto. También verás hospitales, equipos y rutas.",
+      "Consejo: una zona en silencio no significa que esté a salvo. En la simulación, puedes pulsar una vía para bloquearla o habilitarla."],
+    ["Revisa a quién atender primero",
+      "En Prioridades, selecciona una zona para entender su índice: severidad, personas afectadas, vulnerabilidad y tiempo sin atención.",
+      "Consejo: activa Comparar con orden de llegada para ver por qué las zonas incomunicadas también necesitan atención."],
+    ["Consulta recursos y resultados",
+      "Recursos muestra equipos y hospitales. Bitácora registra los eventos. En Bitácora encontrarás Compartir, Informe para imprimir o guardar un PDF y la exportación CSV.",
+      "Consejo: usa la navegación superior para abrir una sección a la vez, también desde el celular."],
+    ["Explora En vivo cuando lo necesites",
+      "Motor conectado consulta la API por separado de la simulación. Sus herramientas de prueba modifican el servidor y pueden pedir la Clave de TRIA al administrador.",
+      "Consejo: puedes explorar la simulación sin clave. Abre Cómo usar cuando quieras repetir esta guía."]
+  ];
+  let indice=0,origen=null;
+  function pintar(){
+    const [titulo,texto,consejo]=pasos[indice];
+    $("guiaPaso").textContent="Paso "+(indice+1)+" de "+pasos.length;
+    $("guiaTitulo").textContent=titulo;
+    $("guiaTexto").textContent=texto;
+    $("guiaConsejo").textContent=consejo;
+    $("guiaProgreso").max=pasos.length;
+    $("guiaProgreso").value=indice+1;
+    $("guiaAnterior").disabled=indice===0;
+    $("guiaSiguiente").textContent=indice===pasos.length-1?"Empezar a usar TRIA":"Siguiente";
+    $("guiaTitulo").focus();
+    dialogo.scrollTop=0;
+  }
+  function abrir(){
+    if(dialogo.open)return;
+    origen=document.activeElement;
+    playing=false;stepLeft=0;stop();setPlayUI();
+    indice=0;dialogo.showModal();pintar();
+  }
+  function cerrar(){
+    try{localStorage.setItem(clave,"1")}catch(e){}
+    dialogo.close();
+    (origen&&origen!==document.body&&origen.isConnected?origen:$("btnGuia")).focus();
+  }
+  $("btnGuia").onclick=abrir;
+  $("guiaOmitir").onclick=cerrar;
+  $("guiaAnterior").onclick=()=>{if(indice>0){indice--;pintar()}};
+  $("guiaSiguiente").onclick=()=>{if(indice===pasos.length-1)cerrar();else{indice++;pintar()}};
+  dialogo.addEventListener("cancel",e=>{e.preventDefault();cerrar()});
+  let vista=false;try{vista=localStorage.getItem(clave)==="1"}catch(e){}
+  window.mostrarGuiaInicial=()=>{if(!vista){vista=true;abrir()}};
+  if(vista||document.body.dataset.vista==="inicio")return;
+  if($("boot").hidden)abrir();
+  else{
+    const observador=new MutationObserver(()=>{
+      if($("boot").hidden){observador.disconnect();abrir()}
+    });
+    observador.observe($("boot"),{attributes:true,attributeFilter:["hidden"]});
+  }
+})();
+// Navegación por tarea: conserva el escenario al cambiar de sección y pausa al salir de él.
+function actualizarFrescura(){
+  const el=$("liveActualizado");if(!el)return;
+  if(!LIVE.lastOk){el.textContent="Todavía no se han recibido datos del servidor.";return}
+  const segundos=Math.max(0,Math.floor((Date.now()-LIVE.lastOk)/1000));
+  const fecha=new Date(LIVE.lastOk).toLocaleTimeString("es-CO");
+  el.textContent=(LIVE.ok&&segundos<20?"Última consulta correcta: ":"Datos sin actualizar. Última consulta correcta: ")+fecha+" · hace "+segundos+" s. La hora de consulta no confirma la vigencia de los reportes.";
+}
+(function organizarVistas(){
+  const vistas={
+    inicio:["Inicio",""],
+    mapa:["Situación en el mapa","Explora las zonas y las vías del escenario. Las áreas violetas son estimaciones, no daños confirmados."],
+    prio:["¿A quién atender primero?","Revisa el orden sugerido y selecciona una zona para entender los criterios. El PMU valida la decisión."],
+    rec:["¿Con qué recursos contamos?","Equipos y cupos hospitalarios del escenario simulado. No representan disponibilidad confirmada en terreno."],
+    log:["¿Qué ha ocurrido?","Eventos de la simulación, con su hora. Comparte o exporta este ejercicio desde aquí."],
+    model:["¿Cómo se calcula la prioridad?","Consulta los criterios y supuestos del modelo. Sus estimaciones necesitan calibración y validación local."],
+    live:["Consulta del motor conectado","Fuente independiente de la simulación. Revisa la conexión y la vigencia de los reportes antes de interpretar las recomendaciones."]
+  };
+  const mapa=document.querySelector("#layout > div"), lado=document.querySelector(".side");
+  // Los controles siguen disponibles al revisar prioridades, recursos o bitácora.
+  $("simulacionControles").append($("selectorEscenario"),$("mando"),$("kpis"));
+  const exportar=document.createElement("div");exportar.className="vista-herramientas";
+  exportar.append($("btnCompartir"),$("btnInforme"),$("btnCsv"));$("tab-log").prepend(exportar);
+  ["btnCompartir","btnInforme","btnCsv"].forEach(id=>$(id).removeAttribute("role"));
+  $("menuMas").querySelector("hr")?.remove();
+  const pie=$("footer"),detalle=document.createElement("details"),resPie=document.createElement("summary"),contenido=document.createElement("p");
+  resPie.textContent="Acerca del prototipo y alcance de los datos";contenido.textContent=pie.textContent;
+  detalle.append(resPie,contenido);pie.replaceChildren(detalle);
+  let vistaMapa=null;
+  function ir(id,enfocar=true){
+    if(!vistas[id])id="inicio";
+    if(document.body.dataset.vista==="mapa"&&MAP)vistaMapa={centro:MAP.getCenter(),zoom:MAP.getZoom()};
+    document.body.dataset.vista=id;
+    const inicio=id==="inicio",live=id==="live",sim=!inicio&&!live;
+    if(!sim){playing=false;stepLeft=0;stop();setPlayUI();$("toasts").replaceChildren()}
+    $("inicio").hidden=!inicio;$("layout").hidden=inicio;
+    $("secciones").hidden=inicio;$("contextoTrabajo").hidden=inicio;
+    $("simulacionControles").hidden=!sim;
+    mapa.hidden=id!=="mapa";lado.hidden=inicio||id==="mapa";
+    $("vistaTitulo").textContent=vistas[id][0];$("vistaDescripcion").textContent=vistas[id][1];
+    $("fuenteVista").textContent=live?"API conectada · datos pendientes de validación":"Simulación · datos ilustrativos";
+    document.querySelectorAll("#secciones [data-vista]").forEach(b=>{
+      if(b.dataset.vista===id)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
+    });
+    document.querySelectorAll(".tabs button").forEach(b=>{
+      const activa=b.dataset.tab===id;
+      b.setAttribute("aria-selected",String(activa));b.tabIndex=activa?0:-1;
+      $("tab-"+b.dataset.tab).hidden=!activa;
+    });
+    if(id==="log")$("logCount").classList.remove("hot");
+    // Invalida peticiones anteriores para que no reinicien el sondeo al salir.
+    LIVE.gen=(LIVE.gen||0)+1;liveCiclo();
+    if(live)actualizarFrescura();
+    if(id==="mapa")requestAnimationFrame(()=>{
+      MAP.invalidateSize({pan:false});
+      if(vistaMapa)MAP.setView(vistaMapa.centro,vistaMapa.zoom,{animate:false});else centrar();
+      renderMap();
+    });
+    if(enfocar)(inicio?$("inicioTitulo"):$("vistaTitulo")).focus();
+    if(sim)window.mostrarGuiaInicial?.();
+  }
+  document.querySelectorAll("button[data-vista]").forEach(b=>b.onclick=()=>ir(b.dataset.vista));
+  // Conserva los enlaces internos, incluido «Ver bitácora» al terminar un escenario.
+  document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>ir(b.dataset.tab));
+  document.querySelectorAll("#mbar button").forEach(b=>b.onclick=()=>ir(b.dataset.ir));
+  document.addEventListener("visibilitychange",actualizarFrescura);
+  setInterval(()=>{if(document.body.dataset.vista==="live")actualizarFrescura()},1000);
+  const q=new URLSearchParams(location.search);
+  ir(q.has("escenario")||q.has("zona")||q.has("t")?"mapa":"inicio",false);
 })();
 // Sin internet: guarda la app y las teselas vistas (solo funciona servido por http/https, no con file://)
 if("serviceWorker" in navigator&&location.protocol.startsWith("http"))
