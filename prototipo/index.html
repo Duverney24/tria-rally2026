@@ -1591,7 +1591,7 @@ const SCRIPT_SISMO_TOTAL=[
               log(s,"TRIA opera sin conexión en el PMU (portátil con batería y panel solar) con el mapa de amenaza y el censo DANE precargados. Primera asignación con cero reportes.","asig");
               hbLost(s,"BRU");}},
   {t:5,ev:s=>hbLost(s,"PAL")},
-  {t:10,ev:s=>report(s,"CRI","baliza LoRa (salto por la malla)")},
+  {t:2,ev:s=>report(s,"CRI","baliza LoRa (salto por la malla)")},
   {t:15,ev:s=>{block(s,"CRI","BRU","Derrumbe en la vía a Bruselas");report(s,"REG","baliza LoRa (salto por la malla)");}},
   {t:20,ev:s=>{s.shake=true;log(s,"Mapa de intensidad sísmica del SGC recibido por el enlace satelital del PMU: probabilidades previas actualizadas por zona.","asig");}},
   {t:25,ev:s=>report(s,"CHA","baliza LoRa")},
@@ -1659,7 +1659,8 @@ const SCEN={
                 log(s,"TRIA prioriza con el mapa de amenaza por movimientos en masa. Chillurco no tiene ningún medio de reporte.","asig");hbLost(s,"BRU");}},
     {t:5,ev:s=>block(s,"J1","CHI","Alud sobre la vía a Chillurco")},
     {t:10,ev:s=>{s.shake=true;log(s,"Mapa de lluvia acumulada y amenaza por movimientos en masa cargado: la ladera occidental queda en nivel muy alto.","asig");}},
-    {t:15,ev:s=>{block(s,"CRI","BRU","Deslizamiento en la vía a Bruselas");report(s,"CRI","baliza LoRa");}},
+    {t:3,ev:s=>report(s,"CRI","baliza LoRa")},
+    {t:15,ev:s=>block(s,"CRI","BRU","Deslizamiento en la vía a Bruselas")},
     {t:20,ev:s=>{report(s,"CAS","SMS");report(s,"CED","SMS");report(s,"CEN","WhatsApp");}},
     {t:25,ev:s=>report(s,"LAG","baliza LoRa (salto por la malla)")},
     {t:30,ev:s=>{report(s,"PAL","baliza LoRa");report(s,"CHA","baliza LoRa");}},
@@ -1679,9 +1680,9 @@ const SCEN={
    script:[
     {t:0,ev:s=>{log(s,"Después de varios días de lluvia, el río sube unos 30 cm por hora en la zona norte (escenario). A diferencia de un sismo, hay tiempo para anticiparse.","alerta");
                 log(s,"TRIA ordena reconocimientos y evacuaciones por prioridad antes de que el agua llegue a su máximo.","asig");}},
+    {t:2,ev:s=>report(s,"REG","baliza LoRa")},
     {t:5,ev:s=>{report(s,"CEN","SMS");report(s,"CAS","SMS");report(s,"CED","SMS");}},
     {t:10,ev:s=>{s.shake=true;log(s,"Nivel del río del IDEAM cargado: Guacacallo y Regueros en alerta roja.","asig");}},
-    {t:15,ev:s=>report(s,"REG","baliza LoRa")},
     {t:20,ev:s=>block(s,"J2","GUA","El puente de la vía a Guacacallo quedó bajo el agua")},
     {t:25,ev:s=>hbLost(s,"GUA")},
     {t:30,ev:s=>{report(s,"CRI","baliza LoRa");report(s,"CHA","baliza LoRa");report(s,"PAL","baliza LoRa");}},
@@ -1705,7 +1706,7 @@ const SCEN={
    script:[
     {t:0,ev:s=>{log(s,"Tormenta eléctrica con vendaval (escenario). Se cae la energía en todo el municipio y hay árboles sobre varias vías.","alerta");
                 block(s,"J1","CRI","Árbol caído en la vía a Criollo");}},
-    {t:5,ev:s=>{report(s,"CEN","SMS");report(s,"CAS","SMS");}},
+    {t:2,ev:s=>{report(s,"CEN","SMS");report(s,"CAS","SMS");}},
     {t:10,ev:s=>{s.shake=true;log(s,"Reporte de ráfagas y descargas del IDEAM cargado: el occidente tuvo los vientos más fuertes.","asig");report(s,"CED","SMS");}},
     {t:15,ev:s=>{block(s,"J3","CHA","Poste caído en la vía a Charguayaco");report(s,"BRU","baliza LoRa");}},
     {t:20,ev:s=>{SIN_ENERGIA(s);report(s,"LAG","baliza LoRa");}},
@@ -1775,7 +1776,7 @@ function init(){
 }
 function log(s,text,kind=""){s.log.unshift({t:s.t,text,kind})}
 function hbLost(s,id){s.zones[id].hb=false;log(s,`${NODES[id].name}: la baliza dejó de emitir su latido. Probable destrucción; TRIA eleva la urgencia de la zona.`,"alerta")}
-function report(s,id,via,who){const z=s.zones[id];if(!z.silent)return;if(!s.alertaHecha){s.alertaHecha=true;s.alertaPend=id}const tr=TRUTH[id]||VERDE();Object.assign(z,{silent:false,color:tr.color,personas:tr.personas,senales:tr.senales,heridos:tr.heridos,colapso:tr.colapso,via,nota:tr.nota});
+function report(s,id,via,who){const z=s.zones[id];if(!z.silent)return;if(!s.alertaHecha&&TRUTH[id]&&TRUTH[id].color!=="verde"){s.alertaHecha=true;s.alertaPend=id}const tr=TRUTH[id]||VERDE();Object.assign(z,{silent:false,color:tr.color,personas:tr.personas,senales:tr.senales,heridos:tr.heridos,colapso:tr.colapso,via,nota:tr.nota});
   if(z.firstReport===null)z.firstReport=s.t;log(s,`${NODES[id].name}: reporte ${tr.color.toUpperCase()} por ${via} — ${pl(tr.personas,"persona")}, ${pl(tr.heridos,"herido")}${tr.senales?`, ${pl(tr.senales,"persona")} ${SC().atrap}`:""}.`,tr.color==="rojo"?"alerta":"");
   const ns=needs(z);
   for(const t of s.teams) if(t!==who&&t.job&&t.job.zone===id&&!t.job.cancel&&(t.job.phase==="ida"||t.job.phase==="servicio")&&!ns.includes(t.job.need)){const nd=t.job.need;
@@ -2176,8 +2177,9 @@ function render(){
   // Al ver el mapa por primera vez en el evento: sacudida si es sismo; y alerta roja con el primer reporte
   if(S&&mapaVisible()){
     // Alerta roja inmediata al abrir el mapa del evento (con el primer reporte si ya llegó)
-    if(!S.sacudido){S.sacudido=true;const id=S.alertaPend||null;S.alertaPend=null;setTimeout(()=>alertaRoja(id),60)}
-    else if(S.alertaPend){const id=S.alertaPend;S.alertaPend=null;setTimeout(()=>alertaRoja(id),60)}}
+    // Temblor al abrir el mapa; la alerta roja sale con el primer reporte
+    if(!S.sacudido){S.sacudido=true;setTimeout(sacudir,60)}
+    if(S.alertaPend){const id=S.alertaPend;S.alertaPend=null;setTimeout(()=>alertaRoja(id),60)}}
   $("scenTag").textContent=SC().tag;
   $("scen").value=S.scen;
   $("clock").textContent=hhmm(S.t);$("mClock").textContent=hhmm(S.t);$("mTplus").textContent="T+"+S.t;$("tplus").textContent=`T+${S.t} min`;
