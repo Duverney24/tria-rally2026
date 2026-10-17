@@ -3,7 +3,7 @@
 // - Librerías, fuentes, íconos y manifiesto locales: copia guardada primero.
 // - Teselas de CARTO, OpenStreetMap y Esri: se guardan al verlas (no se descargan en bloque, por las políticas de uso).
 // - La API (/version, /estado, …) nunca se guarda.
-const VER = "tria-v2";
+const VER = "tria-v3"; // subir este número obliga a los navegadores a traer la versión nueva
 const APP = VER + "-app";
 const TESELAS = "tria-teselas";
 const MAX_TESELAS = 1500;

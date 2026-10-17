@@ -1793,25 +1793,25 @@ const URB=new Set(["CEN","CAS","CED","C1","C2","C4"]);
 const ll=id=>[NODES[id].lat,NODES[id].lng];
 
 let MAP=null,LY={},TM={},EDIT=false,edgesKey="",BASE=null,CAPAS=null,BASE_AUTO=false,mmiKey="",hcapKey="";
-const baseDelTema=()=>document.documentElement.dataset.theme==="light"?"Claro (CARTO)":"Oscuro (CARTO)";
+const baseDelTema=()=>document.documentElement.dataset.theme==="light"?"Claro":"Oscuro";
+const BASES_TEMA=["Claro","Oscuro"];
 // Cambia la base al cambiar el tema, salvo que el usuario haya elegido otra a mano
 function baseSegunTema(){if(!MAP||!BASE)return;let elegida=null;try{elegida=localStorage.getItem("tria-base")}catch(e){}
-  if(elegida&&!/CARTO/.test(elegida))return;const quiero=BASE[baseDelTema()];if(MAP.hasLayer(quiero))return;
+  if(elegida&&BASES_TEMA.indexOf(elegida)<0&&BASE[elegida])return;const quiero=BASE[baseDelTema()];if(MAP.hasLayer(quiero))return;
   BASE_AUTO=true;for(const l of Object.values(BASE))if(MAP.hasLayer(l))MAP.removeLayer(l);quiero.addTo(MAP);BASE_AUTO=false;
   try{localStorage.removeItem("tria-base")}catch(e){}}
 function initMap(){
   MAP=L.map("map",{zoomControl:true,zoomSnap:.5,minZoom:8,maxZoom:18});
   const base={
-    // Ninguna de estas capas requiere clave (API key).
-    // CARTO (sin clave, con atribución): base por defecto, cambia sola con el tema claro u oscuro
-    "Oscuro (CARTO)":L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap · © CARTO"}),
-    "Claro (CARTO)":L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap · © CARTO"}),
-    "OSM oscurecido":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:"tiles-dark",attribution:"© OpenStreetMap"}),
+    // Ninguna de estas capas requiere clave (API key). CARTO no se usa: desde algunos dominios
+    // (por ejemplo onrender.com) responde "API KEY REQUIRED".
+    // Base por defecto: OpenStreetMap, oscurecido o claro según el tema.
+    "Oscuro":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:"tiles-dark",attribution:"© OpenStreetMap"}),
+    "Claro":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}),
     "Satélite":L.layerGroup([
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imágenes © Esri, Maxar, Earthstar Geographics"}),
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,opacity:.9}),
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,})]),
-    "Calles":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}),
     "Relieve":L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,attribution:"© OpenStreetMap · SRTM · © OpenTopoMap"}),
   };
   BASE=base;
