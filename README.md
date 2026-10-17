@@ -26,6 +26,7 @@ TRIA es un sistema de apoyo a la decisión para el **Puesto de Mando Unificado (
 | **Mapa operativo real** | Pitalito con zoom; capas oscura, satelital, de calles y de relieve; áreas probables de afectación; equipos en movimiento. |
 | **Bitácora** | Registro con hora de cada reporte, asignación, re-enrutamiento y entrega de heridos. |
 | **Comparación con "quien reporta primero"** | Muestra que atender por orden de llegada deja por fuera a las zonas incomunicadas. |
+| **Red nacional de PMU** | Vista de Colombia (`/red.html`): cada Puesto de Mando envía latidos a la Sala de Crisis Nacional (UNGRD) y a dos PMU vecinos; si pierde 3 latidos se genera una alerta y un vecino asume como respaldo con la última réplica. Ver [red nacional](docs/red_nacional.md). |
 | **Escenarios multiamenaza** | Sismo (apagón total o red parcial), avenida torrencial, alud o deslizamiento, inundación lenta y tormenta con vendaval, cada uno con su mapa de amenaza y su fuente oficial (SGC, IDEAM). Ver [escenarios](docs/escenarios.md). |
 
 ### Para la comunidad (quien reporta)
