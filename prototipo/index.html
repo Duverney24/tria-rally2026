@@ -2045,9 +2045,9 @@ let prevKpi=null,prevLog=-1,prevSel=null,prevShake=false;
 // Alerta roja: banner, destello rojo, sacudida (si es sismo) y ondas sobre la zona del primer reporte
 function alertaRoja(id){const w=$("mapwrap");if(!w||!S||!S.zones[id])return;
   w.querySelectorAll(".alerta-roja").forEach(x=>x.remove());
-  const z=S.zones[id],tipo=(SC().label.split("·")[0]||"Evento").trim().toUpperCase();
+  const z=S.zones[id];
   const d=document.createElement("div");d.className="alerta-roja";d.setAttribute("role","alert");
-  d.innerHTML=`<i></i><div><b>ALERTA ROJA · ${tipo}</b><span>Primer reporte: ${NODES[id].name} · ${String(z.color||"").toUpperCase()} · ${pl(z.personas,"persona")}${z.heridos?` · ${pl(z.heridos,"herido")}`:""}</span></div>`;
+  d.innerHTML=`<i></i><div><b>ALERTA ROJA</b><span>Primer reporte: ${NODES[id].name} · ${String(z.color||"").toUpperCase()} · ${pl(z.personas,"persona")}${z.heridos?` · ${pl(z.heridos,"herido")}`:""}</span></div>`;
   w.appendChild(d);
   w.classList.remove("alarma");void w.offsetWidth;w.classList.add("alarma");setTimeout(()=>w.classList.remove("alarma"),2900);
   sacudir();
