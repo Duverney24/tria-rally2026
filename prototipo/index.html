@@ -1910,7 +1910,8 @@ const CARTO_FIJA="";
 let CARTO_SERVIDOR="";
 const claveValida=k=>/^[A-Za-z0-9_\-]{8,200}$/.test(k||"");
 try{const q=new URLSearchParams(location.search).get("cartokey");if(q!==null){if(claveValida(q))localStorage.setItem("tria-carto",q);else if(!q)localStorage.removeItem("tria-carto")}}catch(e){}
-function claveCarto(){let k="";try{k=localStorage.getItem("tria-carto")||""}catch(e){}return [k,CARTO_FIJA,CARTO_SERVIDOR].find(claveValida)||""}
+// "-" guardado en este navegador = el usuario apagó CARTO, aunque el servidor entregue una clave
+function claveCarto(){let k="";try{k=localStorage.getItem("tria-carto")||""}catch(e){}if(k==="-")return "";return [k,CARTO_FIJA,CARTO_SERVIDOR].find(claveValida)||""}
 function capasBase(tema){const k=claveCarto();
   if(k)return [L.tileLayer(`https://basemaps.cartocdn.com/rastertiles/${tema==="claro"?"light_all":"dark_all"}/{z}/{x}/{y}.png?key=${encodeURIComponent(k)}`,
     {maxZoom:20,attribution:"© OpenStreetMap · © CARTO"})];
@@ -2390,11 +2391,11 @@ $("btnCsv").onclick=()=>{const c=v=>`"${String(v).replace(/"/g,'""')}"`;
     const pnl=$(id);if(pnl){pnl.setAttribute("role","tabpanel");pnl.setAttribute("aria-labelledby",t.id)}})}
 // ---------- Clave CARTO: menú y servidor ----------
 function estadoCarto(){const k=claveCarto();$("cartoEstado").textContent=k?"Activa: mapas base de CARTO":"Sin clave: mapas base de OpenStreetMap"}
-$("btnCarto").onclick=()=>{let actual="";try{actual=localStorage.getItem("tria-carto")||""}catch(e){}
+$("btnCarto").onclick=()=>{let actual="";try{actual=localStorage.getItem("tria-carto")||""}catch(e){}if(actual==="-")actual="";
   const k=prompt("Pegue su clave gratuita de CARTO (se pide en carto.com/basemaps/apikey). Se guarda solo en este navegador.\nDéjela vacía para volver a OpenStreetMap, que no pide clave.",actual);
   if(k===null)return;const v=k.trim();
   if(v&&!claveValida(v)){aviso({t:S.t,kind:"alerta",text:"Esa clave no parece válida (solo letras, números, - y _)."});return}
-  try{v?localStorage.setItem("tria-carto",v):localStorage.removeItem("tria-carto")}catch(e){}
+  try{localStorage.setItem("tria-carto",v||"-")}catch(e){}
   refrescarBases();estadoCarto();aviso({t:S.t,kind:"ok",text:v?"Clave de CARTO guardada: mapas base de CARTO.":"Sin clave: mapas base de OpenStreetMap."})};
 estadoCarto();
 // La API puede entregar la clave del equipo (TRIA_CARTO_KEY) para que todos vean CARTO sin configurar nada
