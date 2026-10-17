@@ -2389,13 +2389,13 @@ $("btnCsv").onclick=()=>{const c=v=>`"${String(v).replace(/"/g,'""')}"`;
   tabs.forEach(t=>{const id="tab-"+t.dataset.tab;t.setAttribute("aria-controls",id);t.id=t.id||"tb-"+t.dataset.tab;
     const pnl=$(id);if(pnl){pnl.setAttribute("role","tabpanel");pnl.setAttribute("aria-labelledby",t.id)}})}
 // ---------- Clave CARTO: menú y servidor ----------
-function estadoCarto(){const k=claveCarto();$("cartoEstado").textContent=k?"Activa: mapas base de CARTO":"Sin clave: mapas base de Esri"}
+function estadoCarto(){const k=claveCarto();$("cartoEstado").textContent=k?"Activa: mapas base de CARTO":"Sin clave: mapas base de OpenStreetMap"}
 $("btnCarto").onclick=()=>{let actual="";try{actual=localStorage.getItem("tria-carto")||""}catch(e){}
-  const k=prompt("Pegue su clave gratuita de CARTO (se pide en carto.com/basemaps/apikey). Se guarda solo en este navegador.\nDéjela vacía para volver a los mapas de Esri, que no piden clave.",actual);
+  const k=prompt("Pegue su clave gratuita de CARTO (se pide en carto.com/basemaps/apikey). Se guarda solo en este navegador.\nDéjela vacía para volver a OpenStreetMap, que no pide clave.",actual);
   if(k===null)return;const v=k.trim();
   if(v&&!claveValida(v)){aviso({t:S.t,kind:"alerta",text:"Esa clave no parece válida (solo letras, números, - y _)."});return}
   try{v?localStorage.setItem("tria-carto",v):localStorage.removeItem("tria-carto")}catch(e){}
-  refrescarBases();estadoCarto();aviso({t:S.t,kind:"ok",text:v?"Clave de CARTO guardada: mapas base de CARTO.":"Sin clave: mapas base de Esri."})};
+  refrescarBases();estadoCarto();aviso({t:S.t,kind:"ok",text:v?"Clave de CARTO guardada: mapas base de CARTO.":"Sin clave: mapas base de OpenStreetMap."})};
 estadoCarto();
 // La API puede entregar la clave del equipo (TRIA_CARTO_KEY) para que todos vean CARTO sin configurar nada
 api("config").then(c=>{if(c&&claveValida(c.carto_key)){CARTO_SERVIDOR=c.carto_key;refrescarBases();estadoCarto()}}).catch(()=>{});
