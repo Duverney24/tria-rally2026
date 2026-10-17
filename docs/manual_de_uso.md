@@ -7,29 +7,28 @@ El prototipo simula la consola del **Puesto de Mando Unificado (PMU)** de Pitali
 
 ---
 
-## Empezar en 30 segundos
+## Guía de bienvenida
 
-1. Elija un **escenario** arriba.
-2. Pulse **▶** en la barra de mando (siempre visible arriba) o arrastre la línea de tiempo.
-3. Lea las **prioridades**: la zona 1 es la más urgente y dice qué equipo va y cuándo llega; tóquela para ver por qué.
+La entrada muestra dos opciones: **Explorar la simulación** y **Consultar el motor**. El mapa y los paneles se abren después de elegir una tarea. Al entrar por primera vez a la simulación, aparece una guía de seis pasos: escenario, reproducción, mapa, prioridades, recursos y En vivo. Use **Siguiente** y **Anterior**, o **Omitir** para entrar directamente. **Empezar a usar TRIA** cierra el último paso.
 
-La primera vez aparece una guía con estos pasos y un botón **Ver una demostración**. El botón **?** (o la tecla `?`) abre la ayuda en cualquier momento. Las opciones secundarias (compartir, informe, CSV, narración, ajustar ubicaciones) están en el menú **Más** sobre el mapa.
+La guía se recuerda en este navegador al terminarla u omitirla (también con Escape). Puede abrirla de nuevo con **Cómo usar**, en la barra superior. Mientras está abierta, la simulación queda pausada y sus atajos no actúan; al cerrarla, pulse Reproducir para continuar. Si borra los datos del sitio o usa otro navegador, volverá a aparecer. Si el navegador bloquea el almacenamiento, la guía funciona, pero puede reaparecer en la siguiente visita.
 
 ## 1. Partes de la pantalla
 
 | Zona de la pantalla | Qué muestra |
 |---|---|
-| **Barra superior** | Estado de operación, selector de escenario y hora del evento (T+ minutos desde el sismo). |
+| **Barra superior** | Identidad de TRIA, ayuda y tema. En simulación, muestra la hora del escenario. |
 | **Indicadores** | Zonas con reporte, zonas sin contacto, personas reportadas, heridos trasladados, equipos libres y vías caídas. |
-| **Mapa operativo** | Zonas, hospitales, PMU, vías, rutas y equipos sobre el mapa real de Pitalito. |
+| **Mapa operativo** | Vista principal con zonas, hospitales, PMU, vías, rutas y equipos sobre el mapa real de Pitalito. |
 | **Línea de tiempo** | Avance del evento; cada marca es un suceso del escenario. |
-| **Panel derecho** | Pestañas *Prioridades*, *Recursos*, *Bitácora* y *Modelo*. |
+| **Panel operativo derecho** | *Prioridades*, *Recursos* y *Bitácora* sin ocultar el mapa. En pantallas angostas aparece debajo del mapa. |
+| **Navegación superior** | *Mapa operativo*, *Modelo* y *Motor conectado*. *Inicio* vuelve a las dos opciones de entrada. |
 
 ## 2. Cómo reproducir la simulación
 
 1. Elija el escenario arriba: **sismo** (apagón total o red parcial), **avenida torrencial**, **alud o deslizamiento**, **inundación lenta** o **tormenta y vendaval**. Ver [escenarios](escenarios.md).
 2. Pulse **▶** para reproducir o **+15 min** para avanzar un ciclo de recálculo.
-3. Ajuste la velocidad: **Lenta** (ideal para grabar video), **Normal** o **Rápida**.
+3. Ajuste la velocidad: **1×** (lenta), **2×** (normal) o **4×** (rápida). En celular se mantiene la velocidad normal.
 4. **Reiniciar** vuelve al minuto 0.
 5. **Atajos de teclado** para presentar: <kbd>Espacio</kbd> reproduce o pausa, <kbd>→</kbd> avanza 15 min, <kbd>R</kbd> reinicia.
 6. El botón de **tema claro u oscuro** cambia la apariencia (el claro se ve mejor con proyector).
@@ -38,15 +37,17 @@ La primera vez aparece una guía con estos pasos y un botón **Ver una demostrac
 
 **Línea de tiempo:** arrástrela (o haga clic) para ir a cualquier minuto; con el foco en ella, las flechas avanzan o retroceden 5 min, *Re Pág/Av Pág* 15 min, *Inicio* y *Fin* van al principio y al final. Para retroceder, TRIA vuelve a reproducir el escenario desde el inicio (las vías marcadas a mano se pierden).
 
-**Panel lateral:** en pantallas grandes, *Ocultar panel* deja el mapa a todo el ancho; la elección se recuerda. En el celular, la **barra inferior** lleva a Mapa, Prioridades, Recursos, Bitácora y En vivo, y marca en rojo la Bitácora si hay alertas sin leer.
+**Vista operativa:** el mapa permanece como área principal. En escritorio, a la derecha se cambia entre **Prioridades**, **Recursos** y **Bitácora**; en celular, el panel aparece debajo del mapa. El escenario se conserva al cambiar el contenido del panel. Al volver a Inicio o entrar al Motor conectado, la simulación se pausa. Los indicadores y el mapa simulados no se muestran en Motor conectado.
 
-**Compartir, informe y CSV** (botones sobre el mapa):
+**Compartir, informe y CSV** (en la sección Bitácora):
 
 - **Compartir** copia un enlace que abre el mismo escenario, minuto y zona, por ejemplo `…/?escenario=alud&t=90&zona=BRU` (también acepta `&tema=claro`). En el celular abre el menú de compartir.
 - **Informe** abre la impresión con un resumen limpio: indicadores, prioridades con equipos asignados, hospitales y bitácora completa. Elija "Guardar como PDF" para enviarlo.
 - **Bitácora CSV** descarga la bitácora para Excel (separador `;`, con tildes).
 
-**Pestañas con teclado:** con el foco en una pestaña, las flechas ← → pasan a la anterior o la siguiente; *Inicio* y *Fin* van a la primera y la última.
+**Navegación con teclado:** Tab recorre la navegación y las pestañas del panel; las flechas izquierda y derecha cambian entre **Prioridades**, **Recursos** y **Bitácora**. El título recibe el foco al cambiar de vista.
+
+La ayuda rápida sigue disponible con el botón **?** o la tecla **?**. La leyenda del mapa es plegable y empieza cerrada en celular.
 
 ## 3. Cómo leer el mapa
 
@@ -66,8 +67,8 @@ La primera vez aparece una guía con estos pasos y un botón **Ver una demostrac
 
 **Capas del mapa** (botón arriba a la derecha):
 
-- *Bases:* Oscuro y Claro cambian solas con el tema; también hay OSM oscurecido, Satélite, Calles y Relieve. Si elige una base a mano, se recuerda.
-- *Clave de mapas CARTO (opcional):* desde septiembre de 2026 CARTO pide una clave gratuita (se solicita en https://carto.com/basemaps/apikey, llega por correo, sin cuenta; gratis hasta 5 millones de teselas al mes para uso no comercial). Sin clave, Oscuro y Claro usan los mapas gris de Esri, que no la piden, y nunca aparece la marca "API KEY REQUIRED". Con clave se usan los de CARTO. La clave se pone de cualquiera de estas formas:
+- *Bases:* Oscuro y Claro usan OpenStreetMap y cambian con el tema; también hay Satélite y Relieve. Ninguna requiere API key (con una clave CARTO, Oscuro y Claro pasan a CARTO; ver abajo). Si elige una base a mano, se recuerda.
+- *Clave de mapas CARTO (opcional):* desde septiembre de 2026 CARTO pide una clave gratuita (se solicita en https://carto.com/basemaps/apikey, llega por correo, sin cuenta; gratis hasta 5 millones de teselas al mes para uso no comercial). Sin clave, Oscuro y Claro usan OpenStreetMap, que no la pide, y nunca aparece la marca "API KEY REQUIRED". Con clave se usan los de CARTO. La clave se pone de cualquiera de estas formas:
   - **Para todos:** variable `TRIA_CARTO_KEY` en Render (*Environment*) o en Docker; la API la entrega al prototipo.
   - **Solo en este navegador:** menú **Más → Clave de mapas CARTO**.
   - **En un enlace:** `?cartokey=SU_CLAVE`.
@@ -86,27 +87,29 @@ La primera vez aparece una guía con estos pasos y un botón **Ver una demostrac
 
 ## 5. Corregir ubicaciones
 
-1. Pulse **Ajustar ubicaciones**.
+1. En Mapa, abra **Más** y pulse **Ajustar ubicaciones**.
 2. Arrastre cada zona, hospital o cruce a su sitio real (use la capa *Satélite* o *Calles*).
 3. Pulse **Copiar coordenadas** y pegue el resultado en `GEO_FIJO` dentro de `prototipo/index.html`.
 
-## 6. Pestaña En vivo (motor real)
+## 6. Motor conectado (consulta de la API)
 
-Funciona cuando el prototipo se abre desde la API (Render, Docker o `uvicorn tria.api:app`) y también desde Vercel o GitHub Pages: ahí se conecta por defecto a la API de Render (`https://tria-rally2026.onrender.com`). El campo **Servidor de la API** permite usar otra (por ejemplo la del PMU en la red local); también se puede abrir con `?api=https://…`. La API acepta peticiones de Vercel, GitHub Pages y localhost; para otros dominios se define `TRIA_ORIGENES` (expresión regular). Al abrirla, el punto junto a **En vivo** se pone verde.
+Funciona cuando el prototipo se abre desde la API (Render, Docker o `uvicorn tria.api:app`) y también desde Vercel o GitHub Pages: ahí se conecta por defecto a la API de Render (`https://tria-rally2026.onrender.com`). El campo **Servidor de la API** permite usar otra (por ejemplo la del PMU en la red local); también se puede abrir con `?api=https://…`. La API acepta peticiones de Vercel, GitHub Pages y localhost; para otros dominios se define `TRIA_ORIGENES` (expresión regular). La sección muestra el estado de conexión y la hora de la última consulta correcta. Esta hora no confirma la vigencia de los reportes. Si la consulta falla o envejece, se señala **Datos sin actualizar**; los errores de conexión abren la configuración del servidor.
 
 1. La lista muestra las prioridades que calcula el **motor en Python** (AHP + Bayes) con los reportes que recibe la API, con el aporte de cada criterio. Se actualiza cada 5 s; cuando una zona cambia, parpadea y aparece un aviso.
-2. **Sincronizar reloj** pone el motor en el minuto de la simulación, para comparar ambas listas.
-   Debajo aparece la **asignación del motor** (programación lineal entera con PuLP): qué equipo va a cada zona, por qué ruta y en cuántos minutos. Mientras la pestaña está abierta, esas rutas se dibujan en el mapa con líneas punteadas.
-3. **Probar sin hardware**: envía un reporte (zona, color, personas, heridos) como si llegara de una baliza, o marca una baliza como destruida.
+2. En **Herramientas de prueba**, **Copiar minuto de la simulación al motor** modifica el reloj del servidor tras confirmar la acción.
+   Debajo aparece la **asignación del motor** (programación lineal entera con PuLP): qué equipo va a cada zona, por qué ruta y en cuántos minutos. La lista de recomendaciones permanece separada del mapa simulado. No equivale a despachos confirmados.
+3. **Herramientas de prueba**: tras confirmar, envía un reporte (zona, color, personas, heridos) como si llegara de una baliza, o marca una baliza como destruida.
 4. Con el receptor LoRa conectado, `herramientas/puente_serial.py` envía los reportes reales a la misma API y aparecen aquí.
 
-**Clave de la API.** Si el servidor tiene la variable `TRIA_CLAVE`, todo lo que cambia el estado (reportes, latidos, vías, intensidad, reloj) exige esa clave; consultar sigue abierto. En Render la clave se genera sola: se ve en el panel del servicio, en *Environment*. En el prototipo se escribe en **Probar sin hardware → Clave de TRIA** (queda guardada solo en ese navegador), y en el puente LoRa con `--clave` o la variable `TRIA_CLAVE`:
+**Clave de la API.** Si el servidor tiene la variable `TRIA_CLAVE`, todo lo que cambia el estado (reportes, latidos, vías, intensidad, reloj) exige esa clave; consultar sigue abierto. En Render la clave se genera sola: se ve en el panel del servicio, en *Environment*. En el prototipo se escribe en **Herramientas de prueba → Clave de TRIA** (queda guardada solo en ese navegador), y en el puente LoRa con `--clave` o la variable `TRIA_CLAVE`:
 
 ```bash
 python herramientas/puente_serial.py --puerto COM3 --api https://<servicio>.onrender.com --clave <clave>
 ```
 
 En la red local del PMU, sin `TRIA_CLAVE`, la API sigue abierta como antes.
+
+**Alcance:** este prototipo requiere validación técnica y operativa antes de utilizarse en emergencias reales. Estar conectado a la API no acredita que sus datos sean reales o actuales. El registro único de personas y los despachos confirmados no están implementados en esta interfaz.
 
 ## 7. API (para desarrolladores)
 
