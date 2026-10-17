@@ -17,3 +17,7 @@ services:
       # se consulta en el panel del servicio (Environment) y se usa en el prototipo y en el puente LoRa.
       - key: TRIA_CLAVE
         generateValue: true
+      # Clave gratuita de mapas base de CARTO (carto.com/basemaps/apikey). Se escribe en el panel de Render.
+      # Sin ella, el prototipo usa los mapas base de Esri, que no piden clave.
+      - key: TRIA_CARTO_KEY
+        sync: false

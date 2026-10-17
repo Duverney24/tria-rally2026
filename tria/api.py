@@ -75,6 +75,13 @@ def salud():
     return {"ok": True, "zonas": len(pmu.zonas), "minuto": pmu.t}
 
 
+@app.get("/config")
+def config():
+    """Configuración pública para el prototipo. TRIA_CARTO_KEY es la clave de los mapas base de CARTO:
+    es una clave de navegador (viaja en cada tesela), así que exponerla aquí no agrega riesgo."""
+    return {"carto_key": os.getenv("TRIA_CARTO_KEY", "")}
+
+
 @app.get("/estado")
 def estado():
     return {"minuto": pmu.t, "pesos_ahp": [round(w, 3) for w in pmu.pesos],
