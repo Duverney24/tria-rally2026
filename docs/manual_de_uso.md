@@ -19,9 +19,10 @@ La guía se recuerda en este navegador al terminarla u omitirla (también con Es
 |---|---|
 | **Barra superior** | Identidad de TRIA, ayuda y tema. En simulación, muestra la hora del escenario. |
 | **Indicadores** | Zonas con reporte, zonas sin contacto, personas reportadas, heridos trasladados, equipos libres y vías caídas. |
-| **Mapa operativo** | Zonas, hospitales, PMU, vías, rutas y equipos sobre el mapa real de Pitalito. |
+| **Mapa operativo** | Vista principal con zonas, hospitales, PMU, vías, rutas y equipos sobre el mapa real de Pitalito. |
 | **Línea de tiempo** | Avance del evento; cada marca es un suceso del escenario. |
-| **Navegación por tareas** | *Mapa*, *Prioridades*, *Recursos*, *Bitácora*, *Modelo* y *Motor conectado*, una sección a la vez. *Inicio* vuelve a las dos opciones de entrada. |
+| **Panel operativo derecho** | *Prioridades*, *Recursos* y *Bitácora* sin ocultar el mapa. En pantallas angostas aparece debajo del mapa. |
+| **Navegación superior** | *Mapa operativo*, *Modelo* y *Motor conectado*. *Inicio* vuelve a las dos opciones de entrada. |
 
 ## 2. Cómo reproducir la simulación
 
@@ -36,7 +37,7 @@ La guía se recuerda en este navegador al terminarla u omitirla (también con Es
 
 **Línea de tiempo:** arrástrela (o haga clic) para ir a cualquier minuto; con el foco en ella, las flechas avanzan o retroceden 5 min, *Re Pág/Av Pág* 15 min, *Inicio* y *Fin* van al principio y al final. Para retroceder, TRIA vuelve a reproducir el escenario desde el inicio (las vías marcadas a mano se pierden).
 
-**Secciones:** la navegación superior funciona en escritorio y celular. El escenario se conserva entre las secciones de simulación. Al volver a Inicio o entrar al Motor conectado, la simulación se pausa. Los indicadores y el mapa simulados no se muestran en Motor conectado.
+**Vista operativa:** el mapa permanece como área principal. En escritorio, a la derecha se cambia entre **Prioridades**, **Recursos** y **Bitácora**; en celular, el panel aparece debajo del mapa. El escenario se conserva al cambiar el contenido del panel. Al volver a Inicio o entrar al Motor conectado, la simulación se pausa. Los indicadores y el mapa simulados no se muestran en Motor conectado.
 
 **Compartir, informe y CSV** (en la sección Bitácora):
 
@@ -44,7 +45,7 @@ La guía se recuerda en este navegador al terminarla u omitirla (también con Es
 - **Informe** abre la impresión con un resumen limpio: indicadores, prioridades con equipos asignados, hospitales y bitácora completa. Elija "Guardar como PDF" para enviarlo.
 - **Bitácora CSV** descarga la bitácora para Excel (separador `;`, con tildes).
 
-**Navegación con teclado:** Tab recorre los botones de las secciones; Enter abre la elegida. El título recibe el foco al cambiar de sección.
+**Navegación con teclado:** Tab recorre la navegación y las pestañas del panel; las flechas izquierda y derecha cambian entre **Prioridades**, **Recursos** y **Bitácora**. El título recibe el foco al cambiar de vista.
 
 La ayuda rápida sigue disponible con el botón **?** o la tecla **?**. La leyenda del mapa es plegable y empieza cerrada en celular.
 
@@ -66,7 +67,7 @@ La ayuda rápida sigue disponible con el botón **?** o la tecla **?**. La leyen
 
 **Capas del mapa** (botón arriba a la derecha):
 
-- *Bases:* Oscuro y Claro (Esri) cambian solas con el tema; también hay OSM oscurecido, Satélite, Calles y Relieve. Si elige una base a mano, se recuerda.
+- *Bases:* Oscuro y Claro usan OpenStreetMap y cambian con el tema; también hay Satélite y Relieve. Ninguna requiere API key. Si elige una base a mano, se recuerda.
 - *Nivel de amenaza del fenómeno:* cuando llega el mapa del fenómeno activo (intensidad del SGC en el sismo; alerta hidrológica, lluvia acumulada o ráfagas del IDEAM en los demás), un círculo por zona con su nivel (amarillo, naranja, rojo de menor a mayor).
 - *Cupo de hospitales:* el círculo punteado crece con las camas libres y cambia de color con la ocupación (verde, ámbar, rojo; gris sin energía).
 - **◎ Mi ubicación** (bajo el zoom) centra el mapa donde está el equipo; necesita permiso del navegador y conexión segura (https).
